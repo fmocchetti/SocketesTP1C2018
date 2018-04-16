@@ -1,4 +1,4 @@
-# tp-2018-1c-Socketes
+# consola-planificador
 
 Consola del Planificador
 
