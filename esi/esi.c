@@ -6,11 +6,11 @@
 #include<sys/socket.h>    //socket
 #include<arpa/inet.h> //inet_addr
 
+
 int main(int argc , char *argv[])
 {
     int sock;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -36,8 +36,9 @@ int main(int argc , char *argv[])
     //keep communicating with server
     while(1)
     {
+    	char * message = malloc(sizeof(char)*30);
         printf("Enter message : ");
-        scanf("%s" , message);
+        gets(message);
 
         //Send some data
         if( send(sock , message , strlen(message) , 0) < 0)
@@ -45,6 +46,8 @@ int main(int argc , char *argv[])
             puts("Send failed");
             return 1;
         }
+        free(message);
+        char * server_reply = malloc(sizeof(char)*30);
 
         //Receive a reply from the server
         if( recv(sock , server_reply , 2000 , 0) < 0)
@@ -55,8 +58,9 @@ int main(int argc , char *argv[])
 
         puts("Server reply :");
         puts(server_reply);
+        free(server_reply);
     }
 
-    close(sock);
+    shutdown(sock, SHUT_RDWR	);
     return 0;
 }
