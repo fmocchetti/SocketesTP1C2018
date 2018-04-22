@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <errno.h>
+#include <strings.h>
 
 #define SERVER_PORT  12345
 #define TRUE             1

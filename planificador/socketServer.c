@@ -183,6 +183,7 @@ int createServer(int max_connections, int timeout) {
             }
             break;
           }
+          send(new_sd , "Hola!", 5, 0);
 
           /*****************************************************/
           /* Add the new incoming connection to the            */
@@ -222,6 +223,7 @@ int createServer(int max_connections, int timeout) {
           /* failure occurs, we will close the                 */
           /* connection.                                       */
           /*****************************************************/
+
           rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
           if (rc < 0)
           {
@@ -253,7 +255,16 @@ int createServer(int max_connections, int timeout) {
           /*****************************************************/
           /* Echo the data back to the client                  */
           /*****************************************************/
+          int z = 0;
+          for(z=0;z<sizeof(buffer);z++){
+        	  buffer [z] = 0;
+          }
+          char identificate[] = "Identificate";
+          if (strcmp(buffer, identificate) >= 0) {
+                rc = send(fds[i].fd, "planificador", 13, 0);
+          }
           rc = send(fds[i].fd, buffer, len, 0);
+          printf("%s\n",buffer);
           if (rc < 0)
           {
             perror("  send() failed");
