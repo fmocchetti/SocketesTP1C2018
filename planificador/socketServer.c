@@ -7,7 +7,14 @@
 
 #include "socketServer.h"
 
-int createServer(int max_connections, int timeout) {
+t_log * logger;
+
+void configure_logger() {
+  logger = log_create("planificador.log", "Planificador", true, LOG_LEVEL_INFO);
+}
+
+
+int createServer(int max_connections, int timeout, char* identidad) {
   int    len, rc, on = 1;
   int    listen_sd = -1, new_sd = -1;
   int    end_server = FALSE, compress_array = FALSE;
@@ -24,7 +31,7 @@ int createServer(int max_connections, int timeout) {
   listen_sd = socket(AF_INET, SOCK_STREAM, 0);
   if (listen_sd < 0)
   {
-    perror("socket() failed");
+	log_error(logger, "socket() failed");
     exit(-1);
   }
 
@@ -34,7 +41,7 @@ int createServer(int max_connections, int timeout) {
   rc = setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
   if (rc < 0)
   {
-    perror("setsockopt() failed");
+	log_error(logger, "setsockopt() failed");
     shutdown(listen_sd, SHUT_RDWR);
     exit(-1);
   }
@@ -47,7 +54,7 @@ int createServer(int max_connections, int timeout) {
   rc = ioctl(listen_sd, FIONBIO, (char *)&on);
   if (rc < 0)
   {
-    perror("ioctl() failed");
+	log_error(logger,"ioctl() failed");
     shutdown(listen_sd, SHUT_RDWR);
     exit(-1);
   }
@@ -62,7 +69,7 @@ int createServer(int max_connections, int timeout) {
   rc = bind(listen_sd, (struct sockaddr *)&addr, sizeof(addr));
   if (rc < 0)
   {
-    perror("bind() failed");
+	log_error(logger,"bind() failed");
     shutdown(listen_sd, SHUT_RDWR);
     exit(-1);
   }
@@ -73,7 +80,7 @@ int createServer(int max_connections, int timeout) {
   rc = listen(listen_sd, max_connections);
   if (rc < 0)
   {
-    perror("listen() failed");
+	log_error(logger,"listen() failed");
     shutdown(listen_sd, SHUT_RDWR);
     exit(-1);
   }
@@ -112,7 +119,7 @@ int createServer(int max_connections, int timeout) {
     /***********************************************************/
     if (rc < 0)
     {
-      perror("  poll() failed");
+      log_error(logger,"poll() failed");
       break;
     }
 
@@ -121,7 +128,7 @@ int createServer(int max_connections, int timeout) {
     /***********************************************************/
     if (rc == 0)
     {
-      printf("  poll() timed out.  End program.\n");
+      log_info(logger,"  poll() timed out.  End program.\n");
       break;
     }
 
@@ -147,7 +154,7 @@ int createServer(int max_connections, int timeout) {
       /*********************************************************/
       if(fds[i].revents != POLLIN)
       {
-        printf("  Error! revents = %d\n", fds[i].revents);
+    	log_error(logger,"  Error! revents = %d\n", fds[i].revents);
         end_server = TRUE;
         break;
 
@@ -157,7 +164,7 @@ int createServer(int max_connections, int timeout) {
         /*******************************************************/
         /* Listening descriptor is readable.                   */
         /*******************************************************/
-        printf("  Listening socket is readable\n");
+        log_info(logger,"Listening socket is readable\n");
 
         /*******************************************************/
         /* Accept all incoming connections that are            */
@@ -178,7 +185,7 @@ int createServer(int max_connections, int timeout) {
           {
             if (errno != EWOULDBLOCK)
             {
-              perror("  accept() failed");
+              log_error(logger,"accept() failed");
               end_server = TRUE;
             }
             break;
@@ -189,7 +196,7 @@ int createServer(int max_connections, int timeout) {
           /* Add the new incoming connection to the            */
           /* pollfd structure                                  */
           /*****************************************************/
-          printf("  New incoming connection - %d\n", new_sd);
+          log_info(logger,"  New incoming connection - %d\n", new_sd);
           fds[nfds].fd = new_sd;
           fds[nfds].events = POLLIN;
           nfds++;
@@ -208,7 +215,7 @@ int createServer(int max_connections, int timeout) {
 
       else
       {
-        printf("  Descriptor %d is readable\n", fds[i].fd);
+    	log_info(logger, "  Descriptor %d is readable\n", fds[i].fd);
         close_conn = FALSE;
         /*******************************************************/
         /* Receive all incoming data on this socket            */
@@ -223,13 +230,17 @@ int createServer(int max_connections, int timeout) {
           /* failure occurs, we will close the                 */
           /* connection.                                       */
           /*****************************************************/
+		int z = 0;
+		for(z=0;z<sizeof(buffer);z++){
+		  buffer [z] = 0;
+		}
 
           rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
           if (rc < 0)
           {
             if (errno != EWOULDBLOCK)
             {
-              perror("  recv() failed");
+              log_error(logger, "  recv() failed");
               close_conn = TRUE;
             }
             //break;
@@ -241,7 +252,7 @@ int createServer(int max_connections, int timeout) {
           /*****************************************************/
           if (rc == 0)
           {
-            printf("  Connection closed\n");
+        	log_info(logger, "  Connection closed\n");
             close_conn = TRUE;
             //break;
           }
@@ -250,24 +261,23 @@ int createServer(int max_connections, int timeout) {
           /* Data was received                                 */
           /*****************************************************/
           len = rc;
-          printf("  %d bytes received\n", len);
+          log_info(logger, "  %d bytes received\n", len);
+          log_info(logger, " recibido: %s \n", buffer);
 
           /*****************************************************/
           /* Echo the data back to the client                  */
           /*****************************************************/
-          int z = 0;
-          for(z=0;z<sizeof(buffer);z++){
-        	  buffer [z] = 0;
+          if (strcmp(buffer, "Identificate") == 0) {
+        	  rc = send(fds[i].fd, identidad, strlen(identidad), 0);
+        	  log_info(logger,"Enviado: %s",identidad);
+          } else {
+        	  rc = send(fds[i].fd, buffer, len, 0);
+        	  log_info(logger,"Enviado: %s", buffer);
           }
-          char identificate[] = "Identificate";
-          if (strcmp(buffer, identificate) >= 0) {
-                rc = send(fds[i].fd, "planificador", 13, 0);
-          }
-          rc = send(fds[i].fd, buffer, len, 0);
-          printf("%s\n",buffer);
+
           if (rc < 0)
           {
-            perror("  send() failed");
+        	log_error(logger,"  send() failed" );
             close_conn = TRUE;
             //break;
           }

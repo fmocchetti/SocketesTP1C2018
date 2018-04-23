@@ -264,3 +264,147 @@
 [INFO] 20:34:43:859 INSTANCIA/(5519:5519): Mensaje de hola recibido: 'Hola!'
 [INFO] 20:34:46:316 INSTANCIA/(5519:5519): recibi  de 4
 
+[INFO] 20:43:48:520 INSTANCIA/(5692:5692): Conectado!
+[INFO] 20:43:48:520 INSTANCIA/(5692:5692): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:45:33:2 INSTANCIA/(5769:5769): Conectado!
+[INFO] 20:45:33:3 INSTANCIA/(5769:5769): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:45:40:655 INSTANCIA/(5769:5769): recibi Identificate de 4
+
+[ERROR] 20:46:03:394 INSTANCIA/(5783:5783): No me pude conectar al servidor
+[INFO] 20:46:12:462 INSTANCIA/(5795:5795): Conectado!
+[INFO] 20:46:12:462 INSTANCIA/(5795:5795): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:46:15:644 INSTANCIA/(5795:5795): recibi Identificate de 4
+
+[INFO] 20:47:04:670 INSTANCIA/(5836:5836): Conectado!
+[INFO] 20:47:04:670 INSTANCIA/(5836:5836): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:47:06:804 INSTANCIA/(5836:5836): recibi  de 4
+
+[INFO] 20:47:16:773 INSTANCIA/(5836:5836): recibi planificador de 4
+
+[INFO] 20:47:39:382 INSTANCIA/(5836:5836): recibi planificador de 4
+
+[INFO] 20:53:22:714 INSTANCIA/(5929:5929): Conectado!
+[INFO] 20:53:22:715 INSTANCIA/(5929:5929): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:53:34:289 INSTANCIA/(5929:5929): recibi  de 4
+
+[INFO] 20:54:17:14 INSTANCIA/(5972:5972): Conectado!
+[INFO] 20:54:17:15 INSTANCIA/(5972:5972): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:54:29:142 INSTANCIA/(5972:5972): recibi asdasdas de 4
+
+[INFO] 20:54:36:462 INSTANCIA/(5972:5972): recibi holaquetal de 4
+
+[INFO] 20:57:27:562 INSTANCIA/(6053:6053): Conectado!
+[INFO] 20:57:27:565 INSTANCIA/(6053:6053): Mensaje de hola recibido: 'Hola!'
+[INFO] 20:57:29:733 INSTANCIA/(6053:6053): recibi asdasdasd de 4
+
+[INFO] 20:57:35:194 INSTANCIA/(6053:6053): recibi holaaaaaa de 4
+
+[INFO] 21:14:04:509 INSTANCIA/(8581:8581): Conectado!
+[INFO] 21:14:04:509 INSTANCIA/(8581:8581): Mensaje de hola recibido: 'Hola!'
+[ERROR] 21:16:23:527 INSTANCIA/(8656:8656): No me pude conectar al servidor
+[INFO] 21:16:28:587 INSTANCIA/(8672:8672): Conectado!
+[INFO] 21:16:28:587 INSTANCIA/(8672:8672): Mensaje de hola recibido: 'Hola!'
+[INFO] 21:16:32:966 INSTANCIA/(8672:8672): recibi que de planificador
+
+[INFO] 21:16:32:966 INSTANCIA/(8672:8672): recibi haces de planificador
+
+[INFO] 21:16:32:966 INSTANCIA/(8672:8672): recibi guachen de planificador
+
+[INFO] 21:18:33:253 Consola-Planificador/(8718:8718): Conectado!
+[INFO] 21:18:33:258 Consola-Planificador/(8718:8718): Mensaje de hola recibido: 'Hola!'
+[INFO] 21:18:39:88 Consola-Planificador/(8718:8718): recibi asdasd de planificador
+
+[INFO] 21:19:28:100 Consola-Planificador/(8764:8764): Conectado!
+[INFO] 21:19:28:101 Consola-Planificador/(8764:8764): Mensaje de hola recibido: 'Hola!'
+[INFO] 21:19:35:874 Consola-Planificador/(8764:8764): envie daleQueSoVo a planificador
+
+[INFO] 21:19:35:874 Consola-Planificador/(8764:8764): recibi daleQueSoVo de planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): envie deale a planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): recibi deale de planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): envie que a planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): recibi que de planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): envie so a planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): recibi so de planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): envie vo a planificador
+
+[INFO] 21:19:49:672 Consola-Planificador/(8764:8764): recibi vo de planificador
+
+[INFO] 21:40:58:689 Consola-Planificador/(9262:9262): Conectado!
+[ERROR] 21:40:59:21 Consola-Planificador/(9262:9262): No se pudo recibir hola
+[INFO] 21:41:27:678 Consola-Planificador/(9280:9280): Conectado!
+[ERROR] 21:41:27:786 Consola-Planificador/(9280:9280): No se pudo recibir hola
+[INFO] 21:51:02:434 Consola-Planificador/(9523:9523): Conectado!
+[INFO] 21:51:02:434 Consola-Planificador/(9523:9523): Mensaje de hola recibido: 'Hola!'
+[INFO] 21:51:09:807 Consola-Planificador/(9523:9523): envie guacheeeeeeeeeeeeeeen a planificador
+
+[INFO] 21:51:09:807 Consola-Planificador/(9523:9523): recibi guacheeeeeeeeeeeeeeen de planificador
+
+[INFO] 21:57:18:423 Consola-Planificador/(9619:9619): Conectado!
+[INFO] 21:57:18:424 Consola-Planificador/(9619:9619): Mensaje de hola recibido: 'Hola!'
+[INFO] 21:57:22:334 Consola-Planificador/(9619:9619): envie aaaaaaaaaaaaaaaaaaaaaaaaaaaaa a planificador
+
+[INFO] 21:57:22:334 Consola-Planificador/(9619:9619): recibi aaaaaaaaaaaaaaaaaaaaaaaaaaaaa de planificador
+
+[INFO] 22:03:52:752 Consola-Planificador/(9805:9805): Conectado!
+[INFO] 22:03:52:754 Consola-Planificador/(9805:9805): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:03:58:112 Consola-Planificador/(9805:9805): envie asdasd a plan
+
+[INFO] 22:03:58:112 Consola-Planificador/(9805:9805): recibi asdasd de plan
+
+[INFO] 22:05:59:606 Consola-Planificador/(9873:9873): Conectado!
+[INFO] 22:05:59:606 Consola-Planificador/(9873:9873): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:06:40:974 Consola-Planificador/(9892:9892): Conectado!
+[INFO] 22:06:40:975 Consola-Planificador/(9892:9892): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:07:01:11 Consola-Planificador/(9892:9892): envie asdasd a plan
+
+[INFO] 22:07:01:11 Consola-Planificador/(9892:9892): recibi asdasd de plan
+
+[INFO] 22:07:09:452 Consola-Planificador/(9892:9892): envie gggggfdgfdfgdgfdfgdfgdfgd a plan
+
+[INFO] 22:07:09:452 Consola-Planificador/(9892:9892): recibi gggggfdgfdfgdgfdfgdfgdfgd de plan
+
+[INFO] 22:08:40:595 Consola-Planificador/(9945:9945): Conectado!
+[INFO] 22:08:40:595 Consola-Planificador/(9945:9945): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:08:57:418 Consola-Planificador/(9977:9977): Conectado!
+[INFO] 22:08:57:419 Consola-Planificador/(9977:9977): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:11:06:958 Consola-Planificador/(10075:10075): Conectado!
+[INFO] 22:11:06:958 Consola-Planificador/(10075:10075): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:11:53:367 Consola-Planificador/(10121:10121): Conectado!
+[INFO] 22:11:53:368 Consola-Planificador/(10121:10121): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:13:18:105 Consola-Planificador/(10172:10172): Conectado!
+[INFO] 22:13:18:106 Consola-Planificador/(10172:10172): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:13:20:449 Consola-Planificador/(10172:10172): envie asdasd a plan
+
+[INFO] 22:13:20:449 Consola-Planificador/(10172:10172): recibi asdasd de plan
+
+[INFO] 22:14:26:251 Consola-Planificador/(10218:10218): Conectado!
+[INFO] 22:14:26:252 Consola-Planificador/(10218:10218): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:14:34:390 Consola-Planificador/(10218:10218): envie asddsadsa a 
+
+[INFO] 22:14:34:390 Consola-Planificador/(10218:10218): recibi  de 
+
+[INFO] 22:15:31:632 Consola-Planificador/(10277:10277): Conectado!
+[INFO] 22:15:31:632 Consola-Planificador/(10277:10277): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:18:11:914 Consola-Planificador/(10353:10353): Conectado!
+[INFO] 22:18:11:915 Consola-Planificador/(10353:10353): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:18:28:557 Consola-Planificador/(10353:10353): envie asdasd a plan
+
+[INFO] 22:18:28:557 Consola-Planificador/(10353:10353): recibi asdasd de plan
+
+[INFO] 22:19:48:159 Consola-Planificador/(10353:10353): envie kljfslkaslkaklfjalkfjaklsjflkasflkajflkjalkfjalkjfslkasfjafsj a plan
+
+[INFO] 22:19:48:159 Consola-Planificador/(10353:10353): recibi kljfslkaslkaklfjalkfjaklsjflkasflkajflkjalkfjalkjfslkasfjafsj de plan
+
+[INFO] 22:22:16:400 Consola-Planificador/(10440:10440): Conectado!
+[INFO] 22:22:16:403 Consola-Planificador/(10440:10440): Mensaje de hola recibido: 'Hola!'
+[INFO] 22:22:19:499 Consola-Planificador/(10440:10440): envie asdasdasdasd a planificador
+
+[INFO] 22:22:19:499 Consola-Planificador/(10440:10440): recibi asdasdasdasd de planificador
+

@@ -17,11 +17,12 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <strings.h>
+#include <commons/log.h>
 
 #define SERVER_PORT  12345
 #define TRUE             1
 #define FALSE            0
 
-int createServer(int max_connections, int timeout);
+int createServer(int max_connections, int timeout, char* identidad);
 
 #endif /* SOCKETSERVER_H_ */

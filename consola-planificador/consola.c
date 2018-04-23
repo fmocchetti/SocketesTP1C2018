@@ -3,7 +3,7 @@
 void configure_logger();
 int connect_to_server(char * ip, char * port);
 void wait_hello(int socket);
-void enviarServer(int);
+void enviarServer(int, char*);
 char * aQuienMeConecte(int);
 
 int main() {
@@ -11,12 +11,7 @@ int main() {
   int socket = connect_to_server(IP, PUERTO);
   wait_hello(socket);
   char * serverDondeMeConecte = aQuienMeConecte(socket);
-  printf("%s\n", serverDondeMeConecte);
-  enviarServer(socket);
-
-
-
-
+  enviarServer(socket,serverDondeMeConecte);
   exit_gracefully(0);
 }
 
@@ -73,7 +68,7 @@ void exit_gracefully(int return_nr) {
 
 void configure_logger() {
 
-  logger = log_create("instancia.log", "INSTANCIA", true, LOG_LEVEL_INFO);
+  logger = log_create("instancia.log", "Consola-Planificador", true, LOG_LEVEL_INFO);
 }
 
 void  wait_hello(int socket) {
@@ -117,7 +112,7 @@ void  wait_hello(int socket) {
     free(buffer);
 }
 
-void enviarServer(int socket){
+void enviarServer(int socket, char * serverDondeMeConecte){
 while (1) {
   		char mensaje [1000];
   		printf("escribi algo!\n");
@@ -125,6 +120,7 @@ while (1) {
   		printf("valor de mensaje %s!\n", mensaje);
 
   		send(socket, mensaje, strlen(mensaje), 0);
+  		log_info(logger,"envie %s a %s\n", mensaje, serverDondeMeConecte );
 
 
   		char * server_reply = (char*) calloc(sizeof(char), 100);
@@ -136,7 +132,7 @@ while (1) {
   		            puts("recv failed");
   		            break;
   		        }
-  		log_info(logger,"recibi %s de %d\n", server_reply, socket );
+  		log_info(logger,"recibi %s de %s\n", server_reply, serverDondeMeConecte );
   		free(server_reply);
   		}
 }
@@ -144,10 +140,9 @@ while (1) {
 char * aQuienMeConecte(int socket){
 	char  mensaje [] = "Identificate";
 	send(socket, mensaje, strlen(mensaje), 0);
-	printf("envie %s\n",mensaje);
 	char * server_reply = (char*) calloc(sizeof(char), 100);
 	recv(socket, server_reply, 100, 0);
-	printf("recibi %s\n", server_reply);
+	printf("%s\n",server_reply);
 	return(server_reply);
 
 }
