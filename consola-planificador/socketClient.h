@@ -1,14 +1,13 @@
 /*
- * consola-planificador.h
+ * socketClient.h
  *
- *  Created on: 21 abr. 2018
+ *  Created on: 24 abr. 2018
  *      Author: utnso
+ */
 
+#ifndef SOCKETCLIENT_H_
+#define SOCKETCLIENT_H_
 
-#ifndef CONSOLA_PLANIFICADOR_H_
-#define CONSOLA_PLANIFICADOR_H_
-
-// Aca incluimos las bibliotecas que vamos a usar
 #include <stdio.h>
 #include <openssl/md5.h> // Para calcular el MD5
 #include <string.h>
@@ -20,13 +19,10 @@
 #include <commons/log.h>
 #include <commons/collections/list.h>
 
-// Definimos algunas constantes para nuestro código
-#define IP "127.0.0.1"
-#define PUERTO "12345"
-
 // Definimos algunas variables globales
 t_log * logger;
 
+void createClient(char*, char*);
 void configure_logger();
 int connect_to_server(char * ip, char * port);
 void wait_hello(int socket);
@@ -36,4 +32,4 @@ void _exit_with_error(int, char*, void*);
 void exit_gracefully(int);
 
 
-#endif /* CONSOLA_PLANIFICADOR_H_ */
+#endif /* SOCKETCLIENT_H_ */

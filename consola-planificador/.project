@@ -3,6 +3,7 @@
 	<name>consola-planificador</name>
 	<comment></comment>
 	<projects>
+		<project>sharedL</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,6 +1,22 @@
+
+
+int main() {
+
+	createClient("127.0.0.1","12345");
+}
+
+
+
+
+
+
+
+
+
+
 /*
     C ECHO client example using sockets
-*/
+
 #include<stdio.h> //printf
 #include<string.h>    //strlen
 #include<sys/socket.h>    //socket
@@ -63,4 +79,4 @@ int main(int argc , char *argv[])
 
     shutdown(sock, SHUT_RDWR	);
     return 0;
-}
+}*/
