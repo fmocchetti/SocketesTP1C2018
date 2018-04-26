@@ -1,9 +1,16 @@
+#include "circular.h"
 /*
  * circular.c
  *
  *  Created on: 26 abr. 2018
  *      Author: Pablo S Monti
  */
+
+bool no_hay_lugar(int tamanio,char* l,char* fin){
+
+return ((int)(fin-l)<tamanio) ? true : false;
+}
+
 
 void agrego_circular(char** l,char* s,char* ppio,char* fin){
 
@@ -12,9 +19,16 @@ void agrego_circular(char** l,char* s,char* ppio,char* fin){
 	if(*l==fin){
 
 		*l=ppio;
+
 	}
-	else{
-		// chequear si no entra y asignar
+	else if( no_hay_lugar( longitudS, *l, fin) ){
+
+		int espacioRestante = fin-*l;
+		memcpy(*l,s,espacioRestante);
+		*l=ppio;
+		memcpy(*l,(s+(espacioRestante)),longitudS-espacioRestante);
+		*l += (longitudS-espacioRestante);
+		return;
 
 	}
 
