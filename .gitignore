@@ -1,3 +1,6 @@
+# No log files
+*.log
+
 # Prerequisites
 *.d
 

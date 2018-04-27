@@ -14,8 +14,8 @@ void configure_logger() {
 }
 
 
-int createServer(int max_connections, int timeout, char* identidad) {
-  int    len, rc, on = 1;
+void create_server(int max_connections, int timeout, char* identidad) {
+  int    rc, on = 1;
   int    listen_sd = -1, new_sd = -1;
   int    end_server = FALSE, compress_array = FALSE;
   int    close_conn;
@@ -190,90 +190,79 @@ int createServer(int max_connections, int timeout, char* identidad) {
             }
             break;
           }
-          send(new_sd , "Hola!", 5, 0);
 
           /*****************************************************/
           /* Add the new incoming connection to the            */
           /* pollfd structure                                  */
           /*****************************************************/
+
           log_info(logger,"  New incoming connection - %d\n", new_sd);
+
           fds[nfds].fd = new_sd;
           fds[nfds].events = POLLIN;
           nfds++;
+
+          send(new_sd , "identify", strlen("identify"), 0);
+
+          log_info(logger,"  Waiting for the client to identify\n");
+
+          rc = recv(new_sd, buffer, sizeof(buffer), 0);
+          if (rc < 0) {
+             if (errno != EWOULDBLOCK) {
+               log_error(logger, "  recv() failed");
+               close_conn = TRUE;
+             }
+          }
+
+          log_info(logger," The client is an: %s",buffer);
+
+          /*
+           *	Aca tendria que meter al cliente en la lista que corresponda
+           */
 
           /*****************************************************/
           /* Loop back up and accept another incoming          */
           /* connection                                        */
           /*****************************************************/
         } while (new_sd != -1);
-      }
+      } else {
 
-      /*********************************************************/
-      /* This is not the listening socket, therefore an        */
-      /* existing connection must be readable                  */
-      /*********************************************************/
+          /*********************************************************/
+          /* This is not the listening socket, therefore an        */
+          /* existing connection must be readable                  */
+          /*********************************************************/
 
-      else
-      {
-    	log_info(logger, "  Descriptor %d is readable\n", fds[i].fd);
-        close_conn = FALSE;
-        /*******************************************************/
-        /* Receive all incoming data on this socket            */
-        /* before we loop back and call poll again.            */
-        /*******************************************************/
+    	  log_info(logger, "  Descriptor %d is readable\n", fds[i].fd);
+    	  close_conn = FALSE;
 
-       /* do
-        {*/
-          /*****************************************************/
-          /* Receive data on this connection until the         */
-          /* recv fails with EWOULDBLOCK. If any other        */
-          /* failure occurs, we will close the                 */
-          /* connection.                                       */
-          /*****************************************************/
-		int z = 0;
-		for(z=0;z<sizeof(buffer);z++){
-		  buffer [z] = 0;
-		}
+    	  int z = 0;
+    	  for(z=0;z<sizeof(buffer);z++){
+    		  buffer[z] = 0;
+    	  }
 
           rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-          if (rc < 0)
-          {
-            if (errno != EWOULDBLOCK)
-            {
+          if (rc < 0) {
+            if (errno != EWOULDBLOCK) {
               log_error(logger, "  recv() failed");
               close_conn = TRUE;
             }
-            //break;
           }
 
-          /*****************************************************/
-          /* Check to see if the connection has been           */
-          /* closed by the client                              */
-          /*****************************************************/
-          if (rc == 0)
-          {
+          if (rc == 0) {
         	log_info(logger, "  Connection closed\n");
             close_conn = TRUE;
-            //break;
           }
 
-          /*****************************************************/
-          /* Data was received                                 */
-          /*****************************************************/
-          len = rc;
-          log_info(logger, "  %d bytes received\n", len);
+          log_info(logger, "  %d bytes received\n", rc);
+
           log_info(logger, " recibido: %s \n", buffer);
 
           /*****************************************************/
           /* Echo the data back to the client                  */
           /*****************************************************/
-          if (strcmp(buffer, "Identificate") == 0) {
-        	  rc = send(fds[i].fd, identidad, strlen(identidad), 0);
-        	  log_info(logger,"Enviado: %s",identidad);
-          } else {
-        	  rc = send(fds[i].fd, buffer, len, 0);
-        	  log_info(logger,"Enviado: %s", buffer);
-          }
+		  rc = send(fds[i].fd, buffer, sizeof(buffer), 0);
+		  log_info(logger,"Enviado: %s", buffer);
+
 
           if (rc < 0)
           {
@@ -282,14 +271,6 @@ int createServer(int max_connections, int timeout, char* identidad) {
             //break;
           }
 
-        /*} while(TRUE);*/
-
-        /*******************************************************/
-        /* If the close_conn flag was turned on, we need       */
-        /* to clean up this active connection. This           */
-        /* clean up process includes removing the              */
-        /* descriptor.                                         */
-        /*******************************************************/
         if (close_conn)
         {
           shutdown(fds[i].fd,SHUT_RDWR);

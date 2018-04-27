@@ -23,7 +23,7 @@
 #define TRUE             1
 #define FALSE            0
 
-int createServer(int max_connections, int timeout, char* identidad);
+void create_server(int max_connections, int timeout, char* identidad);
 void configure_logger();
 
 #endif /* SOCKETSERVER_H_ */
