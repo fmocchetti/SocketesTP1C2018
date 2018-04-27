@@ -19,7 +19,7 @@
 #include <strings.h>
 #include <commons/log.h>
 
-#define SERVER_PORT  12346
+#define SERVER_PORT  12345
 #define TRUE             1
 #define FALSE            0
 

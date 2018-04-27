@@ -22,12 +22,11 @@
 // Definimos algunas variables globales
 t_log * logger;
 
-void createClient(char*, char*);
+int create_client(char*, char*);
 void configure_logger();
-int connect_to_server(char * ip, char * port);
-void wait_hello(int socket);
-void enviarServer(int, char*);
-char * aQuienMeConecte(int);
+int connect_to_server(char *, char *);
+void wait_hello(int);
+void send_message(int);
 void _exit_with_error(int, char*, void*);
 void exit_gracefully(int);
 

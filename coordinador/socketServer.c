@@ -10,7 +10,7 @@
 t_log * logger;
 
 void configure_logger() {
-  logger = log_create("planificador.log", "Planificador", true, LOG_LEVEL_INFO);
+  logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
 }
 
 
