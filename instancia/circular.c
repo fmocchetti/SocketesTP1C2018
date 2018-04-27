@@ -8,7 +8,7 @@
 
 bool no_hay_lugar(int tamanio,char* l,char* fin){
 
-return ((int)(fin-l)<tamanio) ? true : false;
+return ((fin-l)<tamanio);
 }
 
 

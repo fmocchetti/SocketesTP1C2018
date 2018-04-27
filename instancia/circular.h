@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+
 bool no_hay_lugar(int tamanio,char* l,char* fin);
 
 void agrego_circular(char** l,char* s,char* ppio,char* fin);
