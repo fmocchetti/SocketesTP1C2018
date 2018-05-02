@@ -17,12 +17,13 @@
 #include <unistd.h> // Para close
 #include <readline/readline.h> // Para usar readline
 #include <commons/log.h>
+#include <commons/config.h>
 #include <commons/collections/list.h>
 
 // Definimos algunas variables globales
 t_log * logger;
 
-int create_client(char*, char*);
+int create_client(char*, char *);
 void configure_logger();
 int connect_to_server(char *, char *);
 void wait_hello(int);

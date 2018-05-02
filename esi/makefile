@@ -3,7 +3,7 @@
 # Como por ejemplo, bibliotecas, flags, el compilador (el "CC")
 
 TARGET = esi # Definimos la tarea que va a ejecutar make por defecto Y el nombre del binario final
-LIBS = -lcrypto -lcommons	-lreadline # Incluimos las bibliotecas que necesitamos, las commos y la biblio para el MD5
+LIBS = -lcrypto -lcommons	-lreadline -lpthread # Incluimos las bibliotecas que necesitamos, las commos y la biblio para el MD5
 CC = gcc # Vamos a usar gcc como compilador, porque nos encanta!
 CFLAGS = -g -Wall # Compilamos con los flags -g (con simbolos de debug) y -Wall (que nos muestre todos los warnings)
 

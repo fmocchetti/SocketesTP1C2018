@@ -6,20 +6,29 @@
  */
 
 #include "socketClient.h"
-#define IDENTIDAD "consola-planificador"
+#include <stdlib.h>
+#include <errno.h>
+#define IDENTIDAD "esi"
 
 
 int connect_to_server(char * ip, char * port) {
 	struct addrinfo hints;
-	struct addrinfo *server_info;
+	struct addrinfo * server_info;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;    // Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
 	hints.ai_socktype = SOCK_STREAM;  // Indica que usaremos el protocolo TCP
 
+	printf("Trying to connect to: %s : %s \n", ip, port);
+
 	getaddrinfo(ip, port, &hints, &server_info);  // Carga en server_info los datos de la conexion
 
 	int server_socket = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+
+	if(server_socket < 0) {
+		printf("Failed creating socket %d\n", errno);
+		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+	}
 
 	int res = connect(server_socket, server_info->ai_addr, server_info->ai_addrlen);
 
