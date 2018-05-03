@@ -12,28 +12,34 @@ return ((fin-l)<tamanio);
 }
 
 
-void agrego_circular(char** l,char* s,char* ppio,char* fin){
+void agrego_circular(char** posicionDeLectura,char* stringAGuardar,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
-	int longitudS = strlen(s);
+	int longitudS = strlen(stringAGuardar);
 
-	if(*l==fin){
+	if(*posicionDeLectura==posicionFinalMemoria){
 
-		*l=ppio;
+		*posicionDeLectura=primeraPosicionMemoria;
 
 	}
-	else if( no_hay_lugar( longitudS, *l, fin) ){
+	else if( no_hay_lugar( longitudS, *posicionDeLectura, posicionFinalMemoria) ){
 
-		int espacioRestante = fin-*l;
-		memcpy(*l,s,espacioRestante);
-		*l=ppio;
-		memcpy(*l,(s+(espacioRestante)),longitudS-espacioRestante);
-		*l += (longitudS-espacioRestante);
+		int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
+
+		memcpy(*posicionDeLectura,stringAGuardar,espacioRestante);
+
+		*posicionDeLectura=primeraPosicionMemoria;
+
+		memcpy(*posicionDeLectura,(stringAGuardar+(espacioRestante)),longitudS-espacioRestante);
+
+		*posicionDeLectura += (longitudS-espacioRestante);
+
 		return;
 
 	}
 
-	memcpy(*l,s,longitudS);
-	*l += longitudS;
+	memcpy(*posicionDeLectura,stringAGuardar,longitudS);
+
+	*posicionDeLectura += longitudS;
 
 }
 
