@@ -45,8 +45,8 @@ int main () {
 	otroDato.valor = &otraMateria;
 	otroDato.clave = &otraClave;
 
-	registrar_dato_en_tabla(&tabla,&unDato,&unaClave);
-	registrar_dato_en_tabla(&tabla,&otroDato,&otraClave);
+	registrar_dato_en_tabla(&tabla,&unDato);
+	registrar_dato_en_tabla(&tabla,&otroDato);
 
 
 	//-----------------------------------------UNIT TESTS CASERAS --------------------------------------------------------

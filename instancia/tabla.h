@@ -21,13 +21,13 @@ struct Dato{
 	char* clave;
 };
 
-void agregar_a_tabla(t_list** tabla,struct Dato* unDato);
+//void agregar_a_tabla(t_list** tabla,struct Dato* unDato);
 
 char* buscar(t_list *tabla,char* claveBuscada);
 
 
 
-void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato,char* clave);
+void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 
 
 #endif /* TABLA_H_ */

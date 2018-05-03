@@ -10,13 +10,13 @@
 #include "tabla.h"
 
 
-
+/*
 void agregar_a_tabla(t_list** tabla,struct Dato* unDato){
 
 	list_add(*tabla,unDato);
 
 }
-
+*/
 char* buscar(t_list *tabla,char* claveBuscada){
 
 	bool elemento_buscado(struct Dato* unDato) {
@@ -30,7 +30,7 @@ return d->valor;
 
 
 
-void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato,char* clave){
+void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
 	list_add(*tabla,unDato);
 
