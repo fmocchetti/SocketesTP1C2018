@@ -1,10 +1,3 @@
-/*
- * tabla.h
- *
- *  Created on: 27 abr. 2018
- *      Author: utnso
- */
-
 #ifndef TABLA_H_
 #define TABLA_H_
 
@@ -14,18 +7,23 @@
 
 struct Dato{
 
-	char* valor;
 	char* posicionMemoria;
 	unsigned int frecuenciaUso;
-	//solo se agrego para el test
+	unsigned int cantidadDeBytes;
 	char* clave;
 };
 
 //void agregar_a_tabla(t_list** tabla,struct Dato* unDato);
 
-char* buscar(t_list *tabla,char* claveBuscada);
+void* buscar(t_list *tabla,char* claveBuscada);
 
+/*
+ * get_key busca por clave en la memoria y devuelve la posicion de memoria en donde
+ * se encuentra dicho valor de la clave
+ * */
+//char* obtener_valor(char* memoria, char* posicionDeMemoria,unsigned int longBytes,char* valor);
 
+//char* get_key(char* memoria,t_list* tabla,char* clave);
 
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 

@@ -9,6 +9,7 @@ int main () {
 	char* posicionDeLectura = storage;
 	char* posicionFinDeMemoria = (storage+tamanio);
 
+	/*
 	char* b[]={"Esta es...\n"};
 	char* c[]={"una version Beta...\n"};
 	char* d[]={"de insercion Cicular...\n"};
@@ -29,7 +30,7 @@ int main () {
 	// Mas adelate estas funciones estaran incluidas en las funciones de circular.c
 
 
-
+*/
 
 	//tabla guarda un puntero a la dir de memoria, la frecuencia de uso y el tamanio
 	t_list* tabla = list_create();
@@ -39,26 +40,72 @@ int main () {
 	char unaClave[] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
 	char otraClave[] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
 
-	struct Dato unDato, otroDato;
-	unDato.valor = &unaMateria;
-	unDato.clave = &unaClave;
-	otroDato.valor = &otraMateria;
-	otroDato.clave = &otraClave;
+	SET_circular(&posicionDeLectura,&tabla,&unaMateria,storage,posicionFinDeMemoria);
 
-	registrar_dato_en_tabla(&tabla,&unDato);
-	registrar_dato_en_tabla(&tabla,&otroDato);
+
+
+	//struct Dato unDato, otroDato;
+
+	//unDato.clave = &unaClave;
+
+	//otroDato.clave = &otraClave;
+
+	//registrar_dato_en_tabla(&tabla,&unDato);
+	//registrar_dato_en_tabla(&tabla,&otroDato);
 
 
 	//-----------------------------------------UNIT TESTS CASERAS --------------------------------------------------------
 
 	puts("\n UNIT TESTS \n");
 	//busca palabra
+	char otraOtraClave[] = {"K9321"};
+	char* a = buscar(tabla,&otraOtraClave);
 	if(buscar(tabla,&otraClave)==&otraMateria){
 		printf("La clave %s buscada coincide con el valor: %s",otraClave,otraMateria);
 	};
 
 
+	//Pruebo el uso de get_key que devuelve un valor dependiendo de la clave buscada
 
+	//-----------------------------primero agrego_circular----------------------------------
+	// Voy registrando los datos en tabla manualmenta ya que por ahora no esta agregada esta funcionalidad
+	// en agrego_circular
+
+	//tabla guarda un puntero a la dir de memoria, la frecuencia de uso y el tamanio
+	//t_list* tabla = list_create();
+
+/*
+
+	char unaClave[] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
+	char otraClave[] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
+
+	struct Dato unDato, otroDato;
+
+
+	unDato.posicionMemoria = posicionDeLectura;
+	unDato.clave = &unaClave;
+	unDato.cantidadDeBytes = strlen(unaMateria);
+
+	agrego_circular(&posicionDeLectura,&unaMateria,storage,posicionFinDeMemoria);
+	registrar_dato_en_tabla(&tabla,&unDato);
+
+
+	otroDato.clave = &otraClave;
+	otroDato.posicionMemoria = posicionDeLectura;
+	otroDato.cantidadDeBytes = strlen(otraMateria);
+
+	agrego_circular(&posicionDeLectura,&otraMateria,storage,posicionFinDeMemoria);
+
+	registrar_dato_en_tabla(&tabla,&otroDato);
+
+
+
+	puts(get_key(storage,tabla,otraClave));
+
+
+	list_destroy(tabla);
+	free(storage);
+*/
 
 return EXIT_SUCCESS;
 }
