@@ -95,6 +95,46 @@ void testSetYRegistrarObtenerClave(){
 
 }
 
+void testSetYRegistrarObtenerValor(){
+
+	int tamanio = 200;
+	char* storage = (char*)malloc(tamanio);
+	*storage =0;
+	char* posicionDeLectura = storage;
+	char* posicionFinDeMemoria = (storage+tamanio);
+	t_list* tabla = list_create();
+
+	char unaClave[40] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
+	char otraClave[40] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
+
+	struct ClaveValor claveValor,claveValor2;
+
+	strcpy(claveValor.clave,unaClave);
+	claveValor.valor = (char*)&unaMateria;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+
+
+	strcpy(claveValor2.clave,otraClave);
+	claveValor2.valor = (char*)&otraMateria;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+
+
+	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
+
+	char* unValorObtenidoDeStorage = malloc(unDato->cantidadDeBytes);
+	memcpy(unValorObtenidoDeStorage,unDato->posicionMemoria,unDato->cantidadDeBytes);
+
+	CU_ASSERT_STRING_EQUAL(unValorObtenidoDeStorage,otraMateria);
+
+    free(storage);free(unValorObtenidoDeStorage);
+    list_destroy(tabla);
+
+
+
+}
+
 
 int correrTests(){
 
@@ -105,6 +145,7 @@ int correrTests(){
 	  CU_add_test(prueba, "PrueboAgregarAMemoria", testAgregarCircular);
 	  CU_add_test(prueba, "PrueboRegistrarDatoConClaveEnTabla", testRegistrarEnTablaClave);
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaLaClave", testSetYRegistrarObtenerClave);
+	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaUnValor", testSetYRegistrarObtenerValor);
 
 	  CU_basic_set_mode(CU_BRM_VERBOSE);
 	  CU_basic_run_tests();

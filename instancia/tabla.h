@@ -4,14 +4,8 @@
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/collections/node.h>
+#include "Dato.h"
 
-struct Dato{
-
-	char* posicionMemoria;
-	unsigned int frecuenciaUso;
-	unsigned int cantidadDeBytes;
-	char clave[40];
-};
 
 //void agregar_a_tabla(t_list** tabla,struct Dato* unDato);
 
