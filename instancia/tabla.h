@@ -10,7 +10,7 @@ struct Dato{
 	char* posicionMemoria;
 	unsigned int frecuenciaUso;
 	unsigned int cantidadDeBytes;
-	char* clave;
+	char clave[40];
 };
 
 //void agregar_a_tabla(t_list** tabla,struct Dato* unDato);

@@ -12,20 +12,24 @@ bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria
 return ((posicionFinalMemoria - posicionDeLectura)<tamanio);
 }
 
-void cargar_info_en_dato(struct Dato** unDato,char* posicionDeLectura,int longitudS){
+void cargar_info_en_dato(struct Dato** unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
+	int longitudS = strlen(claveValor->valor);
 	(*unDato)->posicionMemoria = posicionDeLectura;
 	(*unDato)->cantidadDeBytes = longitudS;
+	//*((*unDato)->clave) = *(claveValor->clave);
+	strcpy((*unDato)->clave,claveValor->clave);
+
 
 
 }
 
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
-void SET_circular(char** posicionDeLectura,t_list** tabla,char* stringAGuardar,char* primeraPosicionMemoria,char* posicionFinalMemoria){
+void SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
 	struct Dato* unDato;
 
-	int longitudS = strlen(stringAGuardar);
+	int longitudS = strlen(claveValor->valor);
 	//si se termino la memoria vuelvo al principio
 	if(*posicionDeLectura==posicionFinalMemoria){
 
@@ -38,15 +42,15 @@ void SET_circular(char** posicionDeLectura,t_list** tabla,char* stringAGuardar,c
 
 		int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
 
-		memcpy(*posicionDeLectura,stringAGuardar,espacioRestante);
+		memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
 
-		cargar_info_en_dato(&unDato,*posicionDeLectura,longitudS);
+		cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 
 		registrar_dato_en_tabla(tabla,unDato);
 
 		*posicionDeLectura=primeraPosicionMemoria;
 
-		memcpy(*posicionDeLectura,(stringAGuardar+(espacioRestante)),longitudS-espacioRestante);
+		memcpy(*posicionDeLectura,(claveValor->valor+(espacioRestante)),longitudS-espacioRestante);
 
 		*posicionDeLectura += (longitudS-espacioRestante);
 
@@ -54,9 +58,9 @@ void SET_circular(char** posicionDeLectura,t_list** tabla,char* stringAGuardar,c
 
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
-	memcpy(*posicionDeLectura,stringAGuardar,longitudS);
+	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 
-	cargar_info_en_dato(&unDato,*posicionDeLectura,longitudS);
+	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*/,claveValor);
 	registrar_dato_en_tabla(tabla,unDato);
 
 	*posicionDeLectura += longitudS;
