@@ -1,39 +1,59 @@
-#include "socketClient.h"
+#include "esi.h"
 #include <pthread.h>
+#include "socketClient.h"
 
+void send_hello(int, ESI*);
 
-void * planificador();
-void * coordinador();
-
-t_config * config_file;
 
 int main(){
-	pthread_t thread_plani, thread_coordi;
-	int r1, r2;
+	ESI* esi = (ESI*) malloc(sizeof(ESI));
+
+	esi->id_mensaje = 18;
+	esi->id_ESI = 1;
+	esi->cantidadDeLineas = 10;
 
 	configure_logger();
 
-	config_file = config_create("esi.conf");
+	int server = create_client("127.0.0.1","12345");
 
-	r1 = pthread_create(&thread_plani, NULL, planificador, NULL);
-	r2 = pthread_create(&thread_coordi, NULL, coordinador, NULL);
-	pthread_join(thread_plani, NULL);
-	pthread_join(thread_coordi, NULL);
+	//send_message(server);
+
+	send_hello(server, esi);
 
 	exit_gracefully(0);
+
 }
 
+void send_hello(int socket, ESI* esi) {
+  log_info(logger, "Enviando info actual de la ESI");
+  /*
+    10.   Ahora SI nos toca mandar el hola con los datos del alumno.
+          Pero nos falta algo en nuestra estructura, el id_mensaje del protocolo.
+          Segun definimos, el tipo de id para un mensaje de tamaño fijo con
+          la informacion del alumno es el id 99
+  */
 
-void * planificador () {
-	printf("Entre al thread del planificador \n");
-	int planificador = create_client(config_get_string_value(config_file, "ip_planificador"), config_get_string_value(config_file, "puerto_planificador"));
-	send_message(planificador);
-	return NULL;
-}
 
-void * coordinador () {
-	printf("Entre al thread del coordinador \n");
-	int coordinador = create_client(config_get_string_value(config_file, "ip_coordinador"), config_get_string_value(config_file, "puerto_coordinador"));
-	send_message(coordinador);
-	return NULL;
+  /*
+    10.1. Como algo extra, podes probar enviando caracteres invalidos en el nombre
+          o un id de otra operacion a ver que responde el servidor y como se
+          comporta nuestro cliente.
+  */
+
+  // alumno.id = 33;
+  // alumno.nombre[2] = -4;
+
+  /*
+    12.   Finalmente, enviemos la estructura por el socket!
+          Recuerden que nuestra estructura esta definida como __attribute__((packed))
+          por lo que no tiene padding y la podemos mandar directamente sin necesidad
+          de un buffer y usando el tamaño del tipo Alumno!
+  */
+  int resultado = send(socket, esi, sizeof(ESI), 0);
+  if (resultado <= 0) {
+    /*
+      12.1. Recuerden que al salir tenemos que cerrar el socket (ademas de loggear)!
+    */
+    _exit_with_error(socket, "No se pudo enviar el hola", NULL);
+  }
 }
