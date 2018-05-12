@@ -19,6 +19,7 @@
 #include <strings.h>
 #include <commons/log.h>
 #include "protocolo.h"
+#include "algoritmos.h"
 
 #define SERVER_PORT  12345
 #define TRUE             1

@@ -16,6 +16,8 @@ void configure_logger() {
 
 void create_server(int max_connections, int timeout) {
   int    rc, on = 1;
+  int 	 n = 0;
+  int    ejemplo = 0;
   int    listen_sd = -1, new_sd = -1;
   int    end_server = FALSE, compress_array = FALSE;
   int    close_conn;
@@ -23,7 +25,11 @@ void create_server(int max_connections, int timeout) {
   struct sockaddr_in addr;
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
-  ESI *esi;
+  ESI *esi= (ESI*) malloc(sizeof(ESI));
+  //ESI *esi;
+  ESI *esi2 = (ESI*) malloc(sizeof(ESI));
+
+
 
   /*************************************************************/
   /* Create an AF_INET stream socket to receive incoming       */
@@ -112,7 +118,9 @@ void create_server(int max_connections, int timeout) {
     /***********************************************************/
     /* Call poll() and wait 3 minutes for it to complete.      */
     /***********************************************************/
-    printf("Waiting on poll()...\n");
+	  printf("mensaje de esi>%d\n", esi->id_mensaje);
+	  printf("%d\n",sizeof(*esi));
+	 printf("Waiting on poll()...\n");
     rc = poll(fds, max_connections, timeout);
 
     /***********************************************************/
@@ -220,21 +228,46 @@ void create_server(int max_connections, int timeout) {
 
            //-----------	Aca tendria que meter al cliente en la lista que corresponda ---------------------
 
-           	rc = recv(new_sd, esi, sizeof(esi),0);
+           	rc = recv(new_sd, &esi->id_mensaje, sizeof(esi->id_mensaje),0);
+
            	if(rc < 0) {
            		if (errno != EWOULDBLOCK) {
                	   	   log_error(logger, "  recv() failed");
                	   	   close_conn = TRUE;
                	   	   }
            	}
+           	rc = recv(new_sd, &esi->id_ESI, sizeof(esi->id_ESI),0);
+           	if(rc < 0) {
+           	           		if (errno != EWOULDBLOCK) {
+           	               	   	   log_error(logger, "  recv() failed");
+           	               	   	   close_conn = TRUE;
+           	               	   	   }
+           	           	}
+           	rc = recv(new_sd, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas),0);
+           	if(rc < 0) {
+           	           		if (errno != EWOULDBLOCK) {
+           	               	   	   log_error(logger, "  recv() failed");
+           	               	   	   close_conn = TRUE;
+           	               	   	   }
+           	           	}
+
                	if(esi->id_mensaje != 18){
                		log_error(logger, "id de mensaje incorrecto");
                		}
                	else{
-               	 printf("sabe\n");
+
+               	list_add(listos, (ESI*)esi);
+               	esi2 =  (ESI*) list_get(listos, n);
+
+               	printf("sabe\n");
+               	esi2->cantidadDeLineas = esi2->cantidadDeLineas + ejemplo;
+               	printf("%d\n", esi2->cantidadDeLineas);
 				}
 
-               	printf("%d\n",esi->id_mensaje);
+               	//printf("%d\n",esi->id_mensaje);
+               	printf("cantidad lineas de esi: %d\n",esi->cantidadDeLineas);
+               	n++;
+               	ejemplo++;
 
           /*****************************************************/
           /* Loop back up and accept another incoming          */

@@ -17,8 +17,8 @@ typedef struct  {
   int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;
-} __attribute__((packed)) ESI;
-
+}  ESI;
+//__attribute__((packed))
 typedef struct {
   int id;
   int len;

@@ -12,13 +12,17 @@ int main(){
 	esi->id_ESI = 1;
 	esi->cantidadDeLineas = 10;
 
+	printf("esi mide %d\n",sizeof(ESI));
+
 	configure_logger();
 
 	int server = create_client("127.0.0.1","12345");
 
 	//send_message(server);
 
+
 	send_hello(server, esi);
+	printf("%d\n",esi->cantidadDeLineas);
 
 	exit_gracefully(0);
 
@@ -49,7 +53,9 @@ void send_hello(int socket, ESI* esi) {
           por lo que no tiene padding y la podemos mandar directamente sin necesidad
           de un buffer y usando el tamaño del tipo Alumno!
   */
-  int resultado = send(socket, esi, sizeof(ESI), 0);
+  int resultado = send(socket, &esi->id_mensaje, sizeof(esi->id_mensaje), 0);
+  send(socket, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+  send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
   if (resultado <= 0) {
     /*
       12.1. Recuerden que al salir tenemos que cerrar el socket (ademas de loggear)!
