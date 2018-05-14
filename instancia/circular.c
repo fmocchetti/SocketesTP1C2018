@@ -34,7 +34,7 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
 	(unDato)->frecuenciaUso = 0;
-	strcpy((unDato->clave),claveValor->clave);
+	strcpy((char*)(unDato->clave),claveValor->clave);
 	//memcpy((unDato->clave),claveValor->clave,40);
 }
 

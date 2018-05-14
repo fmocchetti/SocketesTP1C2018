@@ -55,7 +55,23 @@ char* get_key(char* memoria,t_list* tabla,char* clave){
 */
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
-	list_add(*tabla,unDato);
+	struct Dato* unDatos = (struct Dato*)malloc(sizeof(struct Dato));
+	unDatos->cantidadDeBytes = unDato->cantidadDeBytes;
+	memcpy(unDatos->clave, unDato->clave,sizeof(unDato->clave));
+	unDatos->frecuenciaUso = unDato->frecuenciaUso;
+	unDatos->posicionMemoria = unDato->posicionMemoria;
+
+	list_add(*tabla,unDatos);
+
+}
+
+void* liberar_recursos(t_list** tabla){
+
+	void liberar_dato(struct Dato* unDato){
+		free(unDato);
+	}
+
+	list_destroy_and_destroy_elements(*tabla,liberar_dato);
 
 }
 

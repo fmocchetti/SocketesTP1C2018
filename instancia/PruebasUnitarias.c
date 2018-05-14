@@ -4,7 +4,7 @@
 
 void testAgregarCircular(){
 
-	int cantidadEntradas =20 ;
+	int cantidadEntradas =8 ;
 	int tamanioEntradas = 5;
 	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
 	*storage =0;
@@ -12,31 +12,39 @@ void testAgregarCircular(){
 	char* posicionFinDeMemoria = (storage+(cantidadEntradas*tamanioEntradas));
 	t_list* tabla = list_create();
 
-	char unaClave[40] = {"K2005"}; char unaMateria[] = "Sistemas Operativos";
-	char otraClave[40] = {"K9521"}; char otraMateria[] = "Sintaxis y Semantica de los Lenguajes";
+	char unaClave[40] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
+	char otraClave[40] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
 
-	struct ClaveValor claveValor;
+	struct ClaveValor claveValor,claveValor2;
 
 	strcpy(claveValor.clave,unaClave);
 	claveValor.valor = (char*)&unaMateria;
 	claveValor.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
-
-
-	strcpy(claveValor.clave,otraClave);
-	claveValor.valor = (char*)&otraMateria;
-	claveValor.tamanioEntrada = tamanioEntradas;
 
 	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
-	char* unido = "Sistemas Operativos Sintaxis y Semantica de los Lenguajes";
+
+	strcpy(claveValor2.clave,otraClave);
+	claveValor2.valor = (char*)&otraMateria;
+	claveValor2.tamanioEntrada = tamanioEntradas;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
-	CU_ASSERT_STRING_EQUAL(storage,unido);
+	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
 
-    free(storage);
-    list_destroy(tabla);
+	char* unValorObtenidoDeStorage = malloc(unDato->cantidadDeBytes);
+	memcpy(unValorObtenidoDeStorage,unDato->posicionMemoria,20);
+	memcpy(unValorObtenidoDeStorage+20,storage,unDato->cantidadDeBytes-20);
+
+
+	CU_ASSERT_STRING_EQUAL(unValorObtenidoDeStorage,otraMateria);
+
+    free(storage);free(unValorObtenidoDeStorage);
+    liberar_recursos(&tabla);
+
+
 }
 
 
@@ -57,7 +65,7 @@ void testRegistrarEnTablaClave(){
 	CU_ASSERT_STRING_EQUAL(unDato.clave,datoObtenido->clave);
 
 
-    list_destroy(tabla);
+	liberar_recursos(&tabla);
 }
 
 void testSetYRegistrarObtenerClave(){
@@ -98,7 +106,7 @@ void testSetYRegistrarObtenerClave(){
 	CU_ASSERT_STRING_EQUAL(unDato->clave,otraClave);
 
     free(storage);
-    list_destroy(tabla);
+    liberar_recursos(&tabla);
 
 
 
@@ -143,9 +151,49 @@ void testSetYRegistrarObtenerValor(){
 	CU_ASSERT_STRING_EQUAL(unValorObtenidoDeStorage,otraMateria);
 
     free(storage);free(unValorObtenidoDeStorage);
-    list_destroy(tabla);
+    liberar_recursos(&tabla);
 
 
+
+}
+void testSetYRegistrarObtenerDireccion(){
+
+	int cantidadEntradas =20 ;
+	int tamanioEntradas = 5;
+	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
+	*storage =0;
+	char* posicionDeLectura = storage;
+	char* posicionFinDeMemoria = (storage+(cantidadEntradas*tamanioEntradas));
+	t_list* tabla = list_create();
+
+	char unaClave[40] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
+	char otraClave[40] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
+
+	struct ClaveValor claveValor,claveValor2;
+
+	strcpy(claveValor.clave,unaClave);
+	claveValor.valor = (char*)&unaMateria;
+	claveValor.tamanioEntrada = tamanioEntradas;
+
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+
+
+	strcpy(claveValor2.clave,otraClave);
+	claveValor2.valor = (char*)&otraMateria;
+	claveValor2.tamanioEntrada = tamanioEntradas;
+
+	char* posicionDondeGuardoElSegundoValor = posicionDeLectura;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+
+
+	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
+
+	CU_ASSERT_EQUAL(unDato->posicionMemoria,posicionDondeGuardoElSegundoValor);
+
+    free(storage);
+    liberar_recursos(&tabla);
 
 }
 
@@ -156,10 +204,11 @@ int correrTests(){
 	  CU_initialize_registry();
 
 	  CU_pSuite prueba = CU_add_suite("Suite de prueba", NULL, NULL);
-	  //CU_add_test(prueba, "PrueboAgregarAMemoria", testAgregarCircular);
+	  CU_add_test(prueba, "PrueboAgregarAMemoria", testAgregarCircular);
 	  CU_add_test(prueba, "PrueboRegistrarDatoConClaveEnTabla", testRegistrarEnTablaClave);
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaLaClave", testSetYRegistrarObtenerClave);
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaUnValor", testSetYRegistrarObtenerValor);
+	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaUnaDireccion", testSetYRegistrarObtenerDireccion);
 
 	  CU_basic_set_mode(CU_BRM_VERBOSE);
 	  CU_basic_run_tests();
