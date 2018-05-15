@@ -146,7 +146,8 @@ void testSetYRegistrarObtenerValor(){
 	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
 
 	char* unValorObtenidoDeStorage = malloc(unDato->cantidadDeBytes);
-	memcpy(unValorObtenidoDeStorage,unDato->posicionMemoria,unDato->cantidadDeBytes);
+	//el valor ocupa 2 entradas
+	memcpy(unValorObtenidoDeStorage,unDato->posicionMemoria,cantidadEntradas*2);
 
 	CU_ASSERT_STRING_EQUAL(unValorObtenidoDeStorage,otraMateria);
 
