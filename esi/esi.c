@@ -1,5 +1,6 @@
 #include "socketClient.h"
 #include <pthread.h>
+#include <parsi/parser.h>
 
 
 void * planificador();
@@ -7,13 +8,16 @@ void * coordinador();
 
 t_config * config_file;
 
-int main(){
+int main(int argc, char **argv){
 	pthread_t thread_plani, thread_coordi;
 	int r1, r2;
+	char * line = NULL;
 
 	configure_logger();
 
 	config_file = config_create("esi.conf");
+
+	t_esi_operacion parsed = parse(line);
 
 	r1 = pthread_create(&thread_plani, NULL, planificador, NULL);
 	r2 = pthread_create(&thread_coordi, NULL, coordinador, NULL);
