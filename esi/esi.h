@@ -10,11 +10,10 @@
 #include <stdbool.h>
 
 
-//void * planificador();
-//void * coordinador();
+void * planificador();
+void * coordinador();
 bool solicitudDeEjecucionPlanificador();
-void enviarAlCoordinador(t_esi_operacion parsed);
-bool respuestaCoordinador();
+bool envioYRespuestaCoordinador(t_esi_operacion parsed);
 void enviarRespuestaAlPlanificador();
 
 

@@ -1,17 +1,18 @@
 #include "socketClient.h"
 #include "esi.h"
 
-//t_config * config_file;
+t_config * config_file;
 
 int main(int argc, char **argv){
-	//pthread_t thread_plani, thread_coordi;
-	//int r1, r2;
+	pthread_t thread_plani, thread_coordi;
+	int r1, r2;
 	FILE *script;
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
+	bool respuestaCoordinador;
 
-	/*configure_logger();
+	configure_logger();
 
 	config_file = config_create("esi.conf");
 
@@ -19,7 +20,7 @@ int main(int argc, char **argv){
 	r1 = pthread_create(&thread_plani, NULL, planificador, NULL);
 	r2 = pthread_create(&thread_coordi, NULL, coordinador, NULL);
 	pthread_join(thread_plani, NULL);
-	pthread_join(thread_coordi, NULL);*/
+	pthread_join(thread_coordi, NULL);
 
 
 	script = fopen(argv[1], "r");
@@ -32,19 +33,18 @@ int main(int argc, char **argv){
 	while ((read = getline(&line, &len, script)) != -1) {
 		t_esi_operacion parsed = parse(line);
 
+		//fprintf(stderr, "Linea <%s>\n", line);
 		if(parsed.valido){
 			if(solicitudDeEjecucionPlanificador() == true){
-				printf("La solicitud del coordinador fue true");
-				enviarAlCoordinador(parsed);
-				if (respuestaCoordinador() == true){
-					printf("Respuesta del coordinador fue exito");
+				respuestaCoordinador = envioYRespuestaCoordinador(parsed);
+				if (respuestaCoordinador == true){
 					enviarRespuestaAlPlanificador();
 				}else{
-					printf("Respuesta del coordinador fue fallo");
+					printf("Respuesta del coordinador fue fallo\n");
 					exit(EXIT_FAILURE);
 				}
 		    }else{
-		    	printf("El planificador no te quiere");
+		    	printf("El planificador fallo\n");
 		    	exit(EXIT_FAILURE);
 		    }
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
 }
 
 
-/*void * planificador () {
+void * planificador () {
 	printf("Entre al thread del planificador \n");
 	int planificador = create_client(config_get_string_value(config_file, "ip_planificador"), config_get_string_value(config_file, "puerto_planificador"));
 	send_message(planificador);
@@ -78,7 +78,7 @@ void * coordinador () {
 	int coordinador = create_client(config_get_string_value(config_file, "ip_coordinador"), config_get_string_value(config_file, "puerto_coordinador"));
 	send_message(coordinador);
 	return NULL;
-}*/
+}
 
 
 bool solicitudDeEjecucionPlanificador(){
@@ -88,16 +88,12 @@ bool solicitudDeEjecucionPlanificador(){
 }
 
 
-void enviarAlCoordinador(t_esi_operacion parsed){
-
-
-}
-
-
-bool respuestaCoordinador(){
+bool envioYRespuestaCoordinador(t_esi_operacion parsed){
 
 	return true;
 }
+
+
 
 void enviarRespuestaAlPlanificador(){
 
