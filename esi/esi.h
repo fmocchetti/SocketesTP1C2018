@@ -12,9 +12,9 @@
 
 void * planificador();
 void * coordinador();
-bool solicitudDeEjecucionPlanificador();
-bool envioYRespuestaCoordinador(t_esi_operacion parsed);
-void enviarRespuestaAlPlanificador();
+bool solicitudDeEjecucionPlanificador(int socket);
+bool envioYRespuestaCoordinador(int socket, t_esi_operacion parsed);
+void enviarRespuestaAlPlanificador(int socket, bool respuesta);
 
 
 #endif  /* ESI_H_ */
