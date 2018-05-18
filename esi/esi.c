@@ -82,12 +82,21 @@ void * coordinador () {
 bool solicitudDeEjecucionPlanificador(int socket){
 
 	int buffer;
+	int rc;
 
-	recv(socket, buffer, sizeof(buffer), 0);
+	rc = recv(socket, buffer, sizeof(buffer), 0);
 
-	if(buffer != 1){
-		free(socket);
-		return false;
+	if (rc == 0){
+		printf("Desconexion con el Planificador");
+		exit(EXIT_FAILURE);
+	}else if (rc == -1){
+		printf("ERROR");
+		exit(EXIT_FAILURE);
+	}else{
+		if(buffer != 1){
+			free(socket);
+			return false;
+		}
 	}
 
 
@@ -118,10 +127,16 @@ bool envioYRespuestaCoordinador(int socket, t_esi_operacion parsed){
 
 void enviarRespuestaAlPlanificador(int socket, bool respuesta){
 
+	int sd;
+
 	if(respuesta){
-		send(socket, 2, sizeof(int), 0);
+		sd = send(socket, 2, sizeof(int), 0);
 	}else{
-		send(socket, 9, sizeof(int), 0);
+		sd = send(socket, 9, sizeof(int), 0);
+	}
+
+	if (sd == -1){
+		_exit_with_error(socket, "No se pudo enviar", NULL);
 	}
 
 	free(socket);

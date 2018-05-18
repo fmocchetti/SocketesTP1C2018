@@ -8,6 +8,23 @@
 #include <stdio.h>
 #include <parsi/parser.h>
 #include <stdbool.h>
+#include <string.h>
+#include <sys/socket.h> // Para crear sockets, enviar, recibir, etc
+#include <commons/log.h>
+
+
+typedef struct  {
+  int id_mensaje;
+  int id_ESI;
+  int cantidadDeLineas;
+}  ESI;
+//__attribute__((packed))
+typedef struct {
+  int id;
+  int len;
+} __attribute__((packed)) ContentHeader;
+
+
 
 
 void * planificador();
