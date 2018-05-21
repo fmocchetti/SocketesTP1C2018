@@ -14,6 +14,7 @@
 #include <commons/log.h>
 
 typedef struct  {
+  int socket_esi;
   int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;

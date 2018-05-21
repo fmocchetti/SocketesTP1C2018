@@ -238,6 +238,10 @@ void create_server(int max_connections, int timeout) {
                	   	   }
            	}
 
+           	esi->socket_esi = new_sd;
+
+           	printf("El socket de la ESI es %d\n",esi->socket_esi);
+
            	//Chequeo si el mensaje recibido de la ESI es el correcto
            	           	if(esi->id_mensaje != 18){
            	           		log_error(logger, "id de mensaje incorrecto");
