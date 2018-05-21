@@ -23,6 +23,7 @@ int main(){
 
 	send_hello(server, esi);
 	printf("%d\n",esi->cantidadDeLineas);
+	printf("%d\n", esi->id_ESI);
 
 	exit_gracefully(0);
 
@@ -62,4 +63,6 @@ void send_hello(int socket, ESI* esi) {
     */
     _exit_with_error(socket, "No se pudo enviar el hola", NULL);
   }
+  recv(socket, &esi->id_ESI, sizeof(esi->id_ESI),0);
+  //printf("%d\n", esi->id_ESI);
 }
