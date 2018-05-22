@@ -16,9 +16,13 @@ int main(){
 
 	int server = create_client("127.0.0.1","12345");
 
-	//send_message(server);
+	send_message(server);
 
-	send_hello(server, esi);
+	for(int i = 0; i < 10; i++) {
+		send_hello(server, esi);
+		sleep(10);
+	}
+
 
 	exit_gracefully(0);
 

@@ -23,7 +23,19 @@
 #define TRUE             1
 #define FALSE            0
 
-enum {	POOL, THREAD_CONNECTION, SELECT };
+
+enum mensajes {
+	IDENTIFY
+};
+
+enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 2};
+
+typedef struct {
+	int socket;
+	int identidad;
+} thread_handle_struct;
+
+enum {	POLL, THREAD_CONNECTION, SELECT };
 
 void configure_logger();
 void create_server(int max_connections, int timeout, int server_type, int port);
