@@ -276,6 +276,7 @@ void create_server(int max_connections, int timeout) {
             list_add(listos, (ESI*)esi);
             printf("sabe\n");
 
+            //hacer un signal a fifo() para hacerle saber que se encolo un nuevo proceso.
 
           /*****************************************************/
           /* Loop back up and accept another incoming          */

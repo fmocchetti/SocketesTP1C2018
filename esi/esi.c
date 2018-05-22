@@ -7,6 +7,7 @@ void send_hello(int, ESI*);
 
 int main(){
 	ESI* esi = (ESI*) malloc(sizeof(ESI));
+	int contestacion_esi;
 
 	esi->id_mensaje = 18;
 	esi->id_ESI = 1;
@@ -22,8 +23,16 @@ int main(){
 
 
 	send_hello(server, esi);
-	printf("%d\n",esi->cantidadDeLineas);
-	printf("%d\n", esi->id_ESI);
+	//printf("%d\n",esi->cantidadDeLineas);
+	//printf("%d\n", esi->id_ESI);
+
+	while(esi->cantidadDeLineas > 0){
+		recv(socket, &contestacion_esi, sizeof(contestacion_esi),0);
+		if(contestacion_esi == 1){
+			(esi->cantidadDeLineas) --;
+			printf("La nueva cantidad de lineas es %d\n",esi->cantidadDeLineas);
+		}
+	}
 
 	exit_gracefully(0);
 
