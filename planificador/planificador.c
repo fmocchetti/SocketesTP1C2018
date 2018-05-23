@@ -1,15 +1,21 @@
 #include "socket.h"
 #include "protocolo.h"
+#include "algoritmos.h"
 #include <pthread.h>
 
 void generate_poll();
 void generate_planning();
 
 
+
+
 #define IDENTIDAD "planificador"
 
 int main (int argc, char *argv[])
 {
+	//inicializo los semaforos a utilizar
+	sem_init(&new_process, 0, 0);
+	sem_init(&mutex_listos, 0, 1);
 	//creo los threads a utilizar
 	pthread_t thread_poll;
 	pthread_t thread_planificador;
@@ -43,7 +49,7 @@ void generate_poll(){
 
 void generate_planning(){
 	printf("Entre al thread de planificacion \n");
-	//fifo();
+	fifo();
 	//while(1);
 	printf("holaaaaaa \n");
 }

@@ -3,11 +3,11 @@
 #include "socketClient.h"
 
 void send_hello(int, ESI*);
-
+void doUntilFinish(int, ESI*);
 
 int main(){
 	ESI* esi = (ESI*) malloc(sizeof(ESI));
-	int contestacion_esi;
+	//int contestacion_esi;
 
 	esi->id_mensaje = 18;
 	esi->id_ESI = 1;
@@ -23,16 +23,18 @@ int main(){
 
 
 	send_hello(server, esi);
+	doUntilFinish(server, esi);
 	//printf("%d\n",esi->cantidadDeLineas);
 	//printf("%d\n", esi->id_ESI);
 
-	while(esi->cantidadDeLineas > 0){
+	/*while(esi->cantidadDeLineas > 0){
 		recv(socket, &contestacion_esi, sizeof(contestacion_esi),0);
 		if(contestacion_esi == 1){
 			(esi->cantidadDeLineas) --;
 			printf("La nueva cantidad de lineas es %d\n",esi->cantidadDeLineas);
 		}
 	}
+	*/
 
 	exit_gracefully(0);
 
@@ -74,4 +76,26 @@ void send_hello(int socket, ESI* esi) {
   }
   recv(socket, &esi->id_ESI, sizeof(esi->id_ESI),0);
   //printf("%d\n", esi->id_ESI);
+}
+
+void doUntilFinish(int socket, ESI* esi){
+	//recibo permiso de ejecucion
+	printf("%d\n", esi->cantidadDeLineas);
+
+	int permisoDeEjecucion = 0;
+	int resultadoEjecucion = 1; // si es 1 es correcto, si es 2 no
+
+	while(esi->cantidadDeLineas > 0){
+		printf("Haciendo de lo mio \n");
+	recv(socket, &permisoDeEjecucion, sizeof(permisoDeEjecucion),0);
+	if(permisoDeEjecucion == 1){
+		esi->cantidadDeLineas --;
+	}
+	else{
+		printf("Error!\n");
+	}
+
+	send(socket, &resultadoEjecucion, sizeof(resultadoEjecucion), 0);
+	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+}
 }

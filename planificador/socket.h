@@ -20,6 +20,7 @@
 #include <commons/log.h>
 #include "protocolo.h"
 #include "algoritmos.h"
+#include <semaphore.h>
 
 #define SERVER_PORT  12345
 #define TRUE             1

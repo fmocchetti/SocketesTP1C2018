@@ -26,6 +26,7 @@ void create_server(int max_connections, int timeout) {
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
   int 	 config_plani = 1;
+
   ESI *esi= (ESI*) malloc(sizeof(ESI));
   //ESI *esi;
   ESI *esi2 = (ESI*) malloc(sizeof(ESI));
@@ -273,10 +274,13 @@ void create_server(int max_connections, int timeout) {
 
            	//agrego el nuevo proceso a la cola de listos
 
+           	sem_wait(&mutex_listos);
             list_add(listos, (ESI*)esi);
+            sem_post(&mutex_listos);
             printf("sabe\n");
 
-            //hacer un signal a fifo() para hacerle saber que se encolo un nuevo proceso.
+            //hacer un signal hacerle saber al algoritmo que se encolo un nuevo proceso.
+            sem_post(&new_process);
 
           /*****************************************************/
           /* Loop back up and accept another incoming          */
