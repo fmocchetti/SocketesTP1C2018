@@ -21,6 +21,7 @@ void* liberar_recursos(t_list** tabla);
 
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 
+int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir);
 
 
 #endif /* TABLA_H_ */

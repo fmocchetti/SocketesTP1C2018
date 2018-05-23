@@ -32,7 +32,7 @@ void testAgregarCircular(){
 	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
-	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
+	struct Dato* unDato = (struct Dato*)list_get(tabla,0);
 
 	char* unValorObtenidoDeStorage = malloc(unDato->cantidadDeBytes);
 	memcpy(unValorObtenidoDeStorage,unDato->posicionMemoria,20);
@@ -198,6 +198,52 @@ void testSetYRegistrarObtenerDireccion(){
 
 }
 
+void testSobreescribirMemoriaYRegistrar(){
+
+	int cantidadEntradas =8 ;
+	int tamanioEntradas = 5;
+	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
+	*storage =0;
+	char* posicionDeLectura = storage;
+	char* posicionFinDeMemoria = (storage+(cantidadEntradas*tamanioEntradas));
+	t_list* tabla = list_create();
+
+	char unaClave[40] = {"K2005"}; char unaMateria[] = {"Sistemas Operativos"};
+	char otraClave[40] = {"K9521"}; char otraMateria[] = {"Sintaxis y Semantica de los Lenguajes"};
+	char tercerClave[40] = {"K9543"}; char tercerMateria[] = {"Matematica Superior"};
+
+	struct ClaveValor claveValor,claveValor2,claveValor3;
+
+	strcpy(claveValor.clave,unaClave);
+	claveValor.valor = (char*)&unaMateria;
+	claveValor.tamanioEntrada = tamanioEntradas;
+
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+
+
+	strcpy(claveValor2.clave,otraClave);
+	claveValor2.valor = (char*)&otraMateria;
+	claveValor2.tamanioEntrada = tamanioEntradas;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+
+	strcpy(claveValor3.clave,tercerClave);
+	claveValor3.valor = (char*)&tercerMateria;
+	claveValor3.tamanioEntrada = tamanioEntradas;
+
+	SET_circular(&posicionDeLectura,&tabla,&claveValor3,storage,posicionFinDeMemoria);
+
+
+	CU_ASSERT_EQUAL(list_size(tabla),2);
+
+    free(storage);
+    liberar_recursos(&tabla);
+
+
+
+}
+
 
 int correrTests(){
 
@@ -210,6 +256,7 @@ int correrTests(){
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaLaClave", testSetYRegistrarObtenerClave);
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaUnValor", testSetYRegistrarObtenerValor);
 	  CU_add_test(prueba, "PrueboAgregarYObtenerDeTablaUnaDireccion", testSetYRegistrarObtenerDireccion);
+	  CU_add_test(prueba, "PrueboSobreescribirMemoriaYRegistrarEnTabla", testSobreescribirMemoriaYRegistrar);
 
 	  CU_basic_set_mode(CU_BRM_VERBOSE);
 	  CU_basic_run_tests();

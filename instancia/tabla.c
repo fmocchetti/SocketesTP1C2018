@@ -53,6 +53,29 @@ char* get_key(char* memoria,t_list* tabla,char* clave){
 	}
 }
 */
+
+int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir){
+
+	int bytesQueOcupaElDatoLeido,i;
+	bytesQueOcupaElDatoLeido = i = 0;
+
+	struct Dato* unDato;
+
+	while ( bytesQueOcupaElDatoLeido < bytesDeDatosASobreescribir ){
+
+		unDato = list_get(*tabla,i);
+		bytesQueOcupaElDatoLeido += unDato->cantidadDeBytes;
+		i++;
+	}
+	for(int j = 0; j <= (i-1); j++){
+
+		list_remove(*tabla,j);
+	}
+
+return 0;
+
+}
+
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
 	struct Dato* unDatos = (struct Dato*)malloc(sizeof(struct Dato));
@@ -69,6 +92,8 @@ void* liberar_recursos(t_list** tabla){
 
 	void liberar_dato(struct Dato* unDato){
 		free(unDato);
+		return;
+
 	}
 
 	list_destroy_and_destroy_elements(*tabla,liberar_dato);

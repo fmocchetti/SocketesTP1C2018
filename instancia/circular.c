@@ -14,15 +14,15 @@ return ((posicionFinalMemoria - posicionDeLectura)<tamanio);
 
 int calcular_cantidad_entradas(int longitudS,int tamEntrada){
 
-	int resto = longitudS%tamEntrada;
-	int resultado = longitudS/tamEntrada;
-	if(tamEntrada>longitudS){
+	int resto = longitudS % tamEntrada;
+	int resultado = longitudS / tamEntrada;
+	if(tamEntrada > longitudS){
 
 		return 1;
 	}
 	else if(resto > 0){
 
-		return resultado+1;
+		return resultado + 1;
 	}
 return resultado;
 }
@@ -61,6 +61,8 @@ void SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* cla
 		memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
 
 		cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+
+		actualizarTabla(tabla,longitudS - espacioRestante);
 
 		registrar_dato_en_tabla(tabla,&unDato);
 
