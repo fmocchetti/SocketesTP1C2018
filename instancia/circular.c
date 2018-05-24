@@ -1,11 +1,6 @@
 #include "circular.h"
 
-/*
- * circular.c
- *
- *  Created on: 26 abr. 2018
- *      Author: Pablo S Monti
- */
+
 // chequeo si el espacio libre es menor al tamaño requerido
 bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria){
 
@@ -39,7 +34,7 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 }
 
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
-void SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
+int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
 	struct Dato unDato;
 
@@ -72,7 +67,7 @@ void SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* cla
 
 		*posicionDeLectura += (espacioAOcupar-espacioRestante);
 
-		return;
+		return 0;
 
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores

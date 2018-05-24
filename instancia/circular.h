@@ -15,22 +15,15 @@
 #include <stdbool.h>
 #include <commons/collections/list.h>
 #include "tabla.h"
+#include "ClaveValor.h"
 
-// algo asi pienso que deberia recibir del coordinador
-struct ClaveValor{
-
-	char clave[40];
-	char* valor;
-	int tamanioEntrada;
-
-};
 
 
 bool no_hay_lugar(int tamanio,char* l,char* fin);
 
 void cargar_info_en_dato(struct Dato* unDato,char*posicionDeLectura,struct ClaveValor* claveValor);
 
-void SET_circular(char** l,t_list** t,struct ClaveValor* cv,char* ppio,char* fin);
+int SET_circular(char** l,t_list** t,struct ClaveValor* cv,char* ppio,char* fin);
 
 
 

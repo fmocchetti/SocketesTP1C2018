@@ -4,7 +4,8 @@
 
 int main () {
 
-	correrTests();
+	//correrTestsCircular();
+	correrTestsLRU();
 
 return EXIT_SUCCESS;
 }

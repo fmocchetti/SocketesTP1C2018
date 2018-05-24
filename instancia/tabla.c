@@ -1,13 +1,6 @@
 #include "tabla.h"
 
 
-/*
-void agregar_a_tabla(t_list** tabla,struct Dato* unDato){
-
-	list_add(*tabla,unDato);
-
-}
-*/
 void* buscar(t_list *tabla,char* claveBuscada){
 
 	bool elemento_buscado(struct Dato* unDato) {
@@ -16,11 +9,6 @@ void* buscar(t_list *tabla,char* claveBuscada){
 
 	}
 	struct Dato* dato = (struct Dato*)list_find(tabla, elemento_buscado);
-
-	// Si no lo encontro devuelve NULL
-	if(dato == NULL){
-		return NULL;
-	}
 
 return dato;
 }

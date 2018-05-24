@@ -245,7 +245,7 @@ void testSobreescribirMemoriaYRegistrar(){
 }
 
 
-int correrTests(){
+int correrTestsCircular(){
 
 
 	  CU_initialize_registry();
