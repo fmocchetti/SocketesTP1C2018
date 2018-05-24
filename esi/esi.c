@@ -8,10 +8,9 @@ void doUntilFinish(int, ESI*);
 int main(){
 	ESI* esi = (ESI*) malloc(sizeof(ESI));
 	//int contestacion_esi;
-
 	esi->id_mensaje = 18;
 	esi->id_ESI = 1;
-	esi->cantidadDeLineas = 10;
+	esi->cantidadDeLineas = 50;
 
 	printf("esi mide %d\n",sizeof(ESI));
 
@@ -24,6 +23,7 @@ int main(){
 
 	send_hello(server, esi);
 	doUntilFinish(server, esi);
+	getchar();
 	//printf("%d\n",esi->cantidadDeLineas);
 	//printf("%d\n", esi->id_ESI);
 
@@ -98,4 +98,5 @@ void doUntilFinish(int socket, ESI* esi){
 	send(socket, &resultadoEjecucion, sizeof(resultadoEjecucion), 0);
 	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 }
+	printf("Mi ID es %d\n",esi->id_ESI);
 }

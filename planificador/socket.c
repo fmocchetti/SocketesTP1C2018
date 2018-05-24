@@ -17,7 +17,6 @@ void configure_logger() {
 void create_server(int max_connections, int timeout) {
   int    rc, on = 1;
   int 	 n = 1;
-  int    ejemplo = 0;
   int    listen_sd = -1, new_sd = -1;
   int    end_server = FALSE, compress_array = FALSE;
   int    close_conn;
@@ -26,10 +25,12 @@ void create_server(int max_connections, int timeout) {
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
   int 	 config_plani = 1;
+  int lawea = 0;
 
   ESI *esi= (ESI*) malloc(sizeof(ESI));
   //ESI *esi;
   ESI *esi2 = (ESI*) malloc(sizeof(ESI));
+
 
 
 
@@ -113,7 +114,7 @@ void create_server(int max_connections, int timeout) {
 
   /*************************************************************/
   /* Loop waiting for incoming connects or for incoming data   */
-  /* on any of the connected sockets.                          */
+  /* on any of the connected sockets.                          */int m = 0;
   /*************************************************************/
   do
   {
@@ -269,7 +270,7 @@ void create_server(int max_connections, int timeout) {
 
            	esi->id_ESI = n;
            	send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
-           	//printf("%d\n", esi->id_ESI);
+           	printf("el nuevo ID de la esi fue mandado\n");
            	n++;
 
            	//agrego el nuevo proceso a la cola de listos
@@ -279,7 +280,15 @@ void create_server(int max_connections, int timeout) {
             sem_post(&mutex_listos);
             printf("sabe\n");
 
+/*
+            esi2 =  (ESI*) list_get(listos, lawea);
+            lawea=lawea+1;
+            printf("ID del nodo: %d\n", esi2->id_ESI);
+            */
+
+
             //hacer un signal hacerle saber al algoritmo que se encolo un nuevo proceso.
+            sleep(5);
             sem_post(&new_process);
 
           /*****************************************************/

@@ -16,6 +16,7 @@ int main (int argc, char *argv[])
 	//inicializo los semaforos a utilizar
 	sem_init(&new_process, 0, 0);
 	sem_init(&mutex_listos, 0, 1);
+
 	//creo los threads a utilizar
 	pthread_t thread_poll;
 	pthread_t thread_planificador;
@@ -25,6 +26,7 @@ int main (int argc, char *argv[])
 	ejecucion = list_create();
 	terminados = list_create();
 
+
 	//Configuro el log a utilizar
 		configure_logger();
 
@@ -33,9 +35,9 @@ int main (int argc, char *argv[])
 	pthread_create(&thread_planificador, NULL, (void*) generate_planning, NULL);
 	pthread_detach(thread_planificador);
 
-
-
 	printf("%s\n",IDENTIDAD);// borrar
+
+
     getchar();
 	//Creo el server
 	//create_server(32, 3 * 60 * 1000);
@@ -51,6 +53,6 @@ void generate_planning(){
 	printf("Entre al thread de planificacion \n");
 	fifo();
 	//while(1);
-	printf("holaaaaaa \n");
+	printf("adios mundo cruel \n");
 }
 

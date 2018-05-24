@@ -12,6 +12,7 @@
 #include <stdlib.h> // Para malloc
 #include <sys/socket.h> // Para crear sockets, enviar, recibir, etc
 #include <commons/log.h>
+#include "algoritmos.h"
 
 typedef struct  {
   int socket_esi;
