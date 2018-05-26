@@ -23,18 +23,8 @@ int main(){
 
 	send_hello(server, esi);
 	doUntilFinish(server, esi);
-	getchar();
 	//printf("%d\n",esi->cantidadDeLineas);
 	//printf("%d\n", esi->id_ESI);
-
-	/*while(esi->cantidadDeLineas > 0){
-		recv(socket, &contestacion_esi, sizeof(contestacion_esi),0);
-		if(contestacion_esi == 1){
-			(esi->cantidadDeLineas) --;
-			printf("La nueva cantidad de lineas es %d\n",esi->cantidadDeLineas);
-		}
-	}
-	*/
 
 	exit_gracefully(0);
 

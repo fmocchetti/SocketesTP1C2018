@@ -25,12 +25,8 @@ void create_server(int max_connections, int timeout) {
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
   int 	 config_plani = 1;
-  int lawea = 0;
-
   ESI *esi= (ESI*) malloc(sizeof(ESI));
-  //ESI *esi;
-  ESI *esi2 = (ESI*) malloc(sizeof(ESI));
-
+  ESI *esi2= (ESI*) malloc(sizeof(ESI));
 
 
 
@@ -114,16 +110,15 @@ void create_server(int max_connections, int timeout) {
 
   /*************************************************************/
   /* Loop waiting for incoming connects or for incoming data   */
-  /* on any of the connected sockets.                          */int m = 0;
+  /* on any of the connected sockets.                          */
   /*************************************************************/
   do
   {
     /***********************************************************/
     /* Call poll() and wait 3 minutes for it to complete.      */
     /***********************************************************/
-	  printf("mensaje de esi>%d\n", esi->id_mensaje);
-	  printf("%d\n",sizeof(*esi));
-	 printf("Waiting on poll()...\n");
+
+	printf("Waiting on poll()...\n");
     rc = poll(fds, max_connections, timeout);
 
     /***********************************************************/
@@ -231,6 +226,8 @@ void create_server(int max_connections, int timeout) {
 
            //-----------	Aca tendria que meter al cliente en la lista que corresponda ---------------------
 
+
+          	sem_wait(&mutex_listos);// si dejo este mutex, nunca tengo mas de uno en la lista de listos. Como se puede hacer???
            	rc = recv(new_sd, &esi->id_mensaje, sizeof(esi->id_mensaje),0);
 
            	if(rc < 0) {
@@ -273,23 +270,14 @@ void create_server(int max_connections, int timeout) {
            	printf("el nuevo ID de la esi fue mandado\n");
            	n++;
 
+
            	//agrego el nuevo proceso a la cola de listos
-
-           	sem_wait(&mutex_listos);
             list_add(listos, (ESI*)esi);
-            sem_post(&mutex_listos);
-            printf("sabe\n");
-
-/*
-            esi2 =  (ESI*) list_get(listos, lawea);
-            lawea=lawea+1;
-            printf("ID del nodo: %d\n", esi2->id_ESI);
-            */
 
 
-            //hacer un signal hacerle saber al algoritmo que se encolo un nuevo proceso.
-            sleep(5);
+            //semaforo para indicar que hay un nuevo proceso listo para su ejecucion
             sem_post(&new_process);
+
 
           /*****************************************************/
           /* Loop back up and accept another incoming          */
@@ -348,6 +336,7 @@ void create_server(int max_connections, int timeout) {
           shutdown(fds[i].fd,SHUT_RDWR);
           fds[i].fd = -1;
           compress_array = TRUE;
+          //free(esi);
         }
 
 
@@ -387,5 +376,6 @@ void create_server(int max_connections, int timeout) {
   {
     if(fds[i].fd >= 0)
       shutdown(fds[i].fd, SHUT_RDWR);
+    free(esi);
   }
 }
