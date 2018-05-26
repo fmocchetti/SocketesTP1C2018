@@ -6,6 +6,7 @@
  */
 
 #include "socket.h"
+#define IDENTIDAD "esi"
 
 t_log * logger;
 
@@ -25,10 +26,6 @@ void create_server(int max_connections, int timeout) {
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
   int 	 config_plani = 1;
-  ESI *esi= (ESI*) malloc(sizeof(ESI));
-  ESI *esi2= (ESI*) malloc(sizeof(ESI));
-
-
 
   /*************************************************************/
   /* Create an AF_INET stream socket to receive incoming       */
@@ -226,8 +223,10 @@ void create_server(int max_connections, int timeout) {
 
            //-----------	Aca tendria que meter al cliente en la lista que corresponda ---------------------
 
+          	ESI *esi= (ESI*) malloc(sizeof(ESI));
+          	ESI *esi2= (ESI*) malloc(sizeof(ESI));
 
-          	sem_wait(&mutex_listos);// si dejo este mutex, nunca tengo mas de uno en la lista de listos. Como se puede hacer???
+          	//Recibo ID del mensaje de la ESI
            	rc = recv(new_sd, &esi->id_mensaje, sizeof(esi->id_mensaje),0);
 
            	if(rc < 0) {
@@ -270,13 +269,30 @@ void create_server(int max_connections, int timeout) {
            	printf("el nuevo ID de la esi fue mandado\n");
            	n++;
 
+           	//esi2 = esi;
+           	//memcpy(&esi, &esi2, sizeof(esi2));
+           	esi2->id_mensaje = esi->id_mensaje;
+			esi2->socket_esi = esi->socket_esi;
+			esi2->id_ESI = esi->id_ESI;
+			esi2->cantidadDeLineas = esi->cantidadDeLineas;
+			free(esi);
 
            	//agrego el nuevo proceso a la cola de listos
-            list_add(listos, (ESI*)esi);
+           	printf("Agregando a la lista de ready\n");
+            list_add(listos, (ESI*)esi2);
+            printf("Agregado!\n");
+            //esi2 = (ESI*) list_get(listos, 0);
+            //printf("Cantidad de lineas por ejecutar: %d\n", esi->cantidadDeLineas);
+
+
+
 
 
             //semaforo para indicar que hay un nuevo proceso listo para su ejecucion
             sem_post(&new_process);
+
+            //sem_wait(&termino_proceso);
+            //free(esi2);
 
 
           /*****************************************************/
@@ -331,12 +347,13 @@ void create_server(int max_connections, int timeout) {
             //break;
           }
 
+    //Conexion se corta
         if (close_conn)
         {
           shutdown(fds[i].fd,SHUT_RDWR);
           fds[i].fd = -1;
           compress_array = TRUE;
-          //free(esi);
+
         }
 
 
@@ -376,6 +393,108 @@ void create_server(int max_connections, int timeout) {
   {
     if(fds[i].fd >= 0)
       shutdown(fds[i].fd, SHUT_RDWR);
-    free(esi);
   }
+}
+
+//-----------------------------------Socket cliente-----------------------------------------------
+
+
+int connect_to_server(char * ip, char * port) {
+	struct addrinfo hints;
+	struct addrinfo * server_info;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;    // Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
+	hints.ai_socktype = SOCK_STREAM;  // Indica que usaremos el protocolo TCP
+
+	printf("Trying to connect to: %s : %s \n", ip, port);
+
+	getaddrinfo(ip, port, &hints, &server_info);  // Carga en server_info los datos de la conexion
+
+	int server_socket = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+
+	if(server_socket < 0) {
+		printf("Failed creating socket %d\n", errno);
+		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+	}
+
+	int res = connect(server_socket, server_info->ai_addr, server_info->ai_addrlen);
+
+	freeaddrinfo(server_info);  // No lo necesitamos mas
+
+	if (res < 0) {
+		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+	}
+
+	log_info(logger, "Conectado!");
+
+	return server_socket;
+}
+
+void send_message(int socket){
+	char mensaje[1000];
+
+	char * server_reply = NULL;
+
+	while (1) {
+
+		printf("escribi algo!\n");
+
+  		scanf("%s", mensaje);
+
+  		printf("valor de mensaje %s!\n", mensaje);
+
+  		send(socket, mensaje, strlen(mensaje), 0);
+
+  		log_info(logger,"envie %s\n", mensaje);
+
+  		server_reply = (char *)calloc(sizeof(char), 1000);
+
+		//Receive a reply from the server
+		if(recv(socket , server_reply , 200 , 0) < 0)
+		{
+			puts("recv failed");
+
+			break;
+		}
+
+  		log_info(logger,"recibi %s\n", server_reply);
+
+  		free(server_reply);
+  	}
+}
+
+void wait_hello(int socket) {
+
+	char * hola = "identify";
+
+    char * buffer = (char*) calloc(sizeof(char), strlen(hola) + 1);
+
+    int result_recv = recv(socket, buffer, strlen(hola), MSG_WAITALL); //MSG_WAITALL
+
+	printf("Recibi %s\n",buffer);
+
+    if(result_recv <= 0) {
+      _exit_with_error(socket, "No se pudo recibir hola", buffer);
+    }
+
+    if (strcmp(buffer, hola) != 0) {
+      _exit_with_error(socket, "No es el mensaje que se esperaba", buffer);
+    }
+
+    log_info(logger, "Mensaje de hola recibido: '%s'", buffer);
+
+	send(socket, IDENTIDAD, strlen(IDENTIDAD), 0);
+
+    free(buffer);
+}
+
+int create_client(char * ip, char * port){
+	 int socket_server = 0;
+
+	 socket_server = connect_to_server(ip, port);
+
+	 wait_hello(socket_server);
+
+	 return socket_server;
 }

@@ -36,20 +36,23 @@ void estadoListas(){
 }
 
 void fifo(){
-	ESI *nodo_lista_ejecucion =(ESI*) malloc(sizeof(ESI));
-	int permisoDeEjecucion = 1;
-	int contestacionESI = 0;
-	sem_init(&mutex_ejecucion, 0, 1);
+	//sem_init(&mutex_ejecucion, 0, 1);
 	//pthread_mutex_init(&mutex_ejecucion,NULL);
 	//int lista_vacia = list_is_empty(ejecucion);
 
+	int permisoDeEjecucion = 1;
+	int contestacionESI = 0;
+
 	while(1){
+		ESI *nodo_lista_ejecucion = NULL;
 
 		printf("Esperando que haya un nuevo proceso encolado en listos\n");
 		estadoListas();
 
 		//espero a que me digan que hay algo en la cola de listos
 		sem_wait(&new_process);
+		printf("Nuevo elemento en la cola de listos\n");
+		estadoListas();
 
 		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
 		laWeaReplanificadoraFIFO(ejecucion,listos);
@@ -63,8 +66,21 @@ void fifo(){
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, sizeof(permisoDeEjecucion), 0);
 		//Espero que la esi me conteste
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, sizeof(contestacionESI),0);
+
+				//primero hago un recv del coordinador para ver si la clave a ejecutar esta bloqueada
+				//recv(coord)
+				/*if(buffer==50){
+				printf("Todo bien, ejecuta");
+					 }
+				else{
+				recv de clave a bloquear,
+				agregar clave a lista de claves bloqueadas
+				}
+				*/
+
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
 				if(contestacionESI == 1){
+					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
 				}
@@ -72,12 +88,11 @@ void fifo(){
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 				}
 		}
+		free(nodo_lista_ejecucion);
 		//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
 		list_clean(ejecucion);
 		printf("Limpio lista\n");
-		sem_post(&mutex_listos);
 	}
-	free(nodo_lista_ejecucion);
 }
 
 
