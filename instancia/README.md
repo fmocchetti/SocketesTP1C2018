@@ -1,6 +1,6 @@
 # instancia 
 
-***SI USAS LA VM DE LA CATEDRA PARA INSTALAR LAS CUNIT: https://docs.google.com/document/d/17li9WRr3VLbuFI18EBmgYuTmLnj3wushlLf4vODwjzg/edit ***
+***SI NO USAS LA VM DE LA CATEDRA PARA INSTALAR LAS CUNIT: https://docs.google.com/document/d/17li9WRr3VLbuFI18EBmgYuTmLnj3wushlLf4vODwjzg/edit ***
 
 Instancia
 
