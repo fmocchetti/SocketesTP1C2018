@@ -8,7 +8,7 @@
 
 #include "algoritmos.h"
 #include "protocolo.h"
-
+int tuwea = 0;
 
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
@@ -67,17 +67,6 @@ void fifo(){
 		//Espero que la esi me conteste
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, sizeof(contestacionESI),0);
 
-				//primero hago un recv del coordinador para ver si la clave a ejecutar esta bloqueada
-				//recv(coord)
-				/*if(buffer==50){
-				printf("Todo bien, ejecuta");
-					 }
-				else{
-				recv de clave a bloquear,
-				agregar clave a lista de claves bloqueadas
-				}
-				*/
-
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
 				if(contestacionESI == 1){
 					//recibo de la esi la cantidad de lineas
@@ -85,8 +74,72 @@ void fifo(){
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
 				}
 				else{
+					//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
+					//
+					//agregar a la estructura
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 				}
+
+				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
+				//recv(coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+
+				/*if(id_mensaje_coord == 24){ //GET
+
+				 //Recibo del coordinador la clave que la ESI va a ejecutar
+					recv(coord,&clave,sizeof(clave),0);
+
+				//Si la clave ya existe en el diccionario
+					if(dictionary_has_key(claves_bloqueadas,clave){
+						t_queue * queue_clave = dictionary_get(claves_bloqueadas,clave);
+						//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
+						if(queue_clave != NULL){
+							queue_push(queue_clave, nodo_lista_ejecucion->id_ESI);
+						}
+						//Si la queue no existe, se crea y se pushea el nuevo id_ESI en la cola de la clave bloqueada recientemente creada
+						else{
+							queue_clave = queue_create();
+							queue_push(queue_clave, nodo_lista_ejecucion->id_ESI);
+						}
+						//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+				   else{
+						t_queue * queue_clave = queue_create();
+						queue_push(queue_clave, nodo_lista_ejecucion->id_ESI);
+						dictionary_put(claves_bloqueadas, clave, queue_clave);
+						}
+
+				if(id_mensaje_coord == 26){ //STORE   REVISARRRRR
+					if(dictionary_has_key(claves_bloqueadas,clave){
+					t_queue * queue_clave = dictionary_get(claves_bloqueadas,clave)
+//					int id_esi_desbloqueado = queue_pop(queue_clave);
+					dictionary_put(claves_bloqueadas, clave, queue_clave);
+					ESI *esi= (ESI*) malloc(sizeof(ESI));
+					tuwea = id_esi_bloqueado;
+					esi = list_remove_by_condition(bloqueados, identificador_ESI);//revisar como concha se hace esto
+				 	list_add(listos, (ESI*)esi);
+					}
+
+				if(id_mensaje_coord == 25){ //SET
+				}
+
+				else{
+				//ERROR
+
+				}
+
+
+
+
+								if diccionario tiene la clave
+								 obtenes el elem del diccionario
+								 te fijas si existe la cola
+								 si exite haces un push esi
+								 si no existe creas y haces push esi
+								else
+								 metes la clave en el diccionario
+								 creas la cola
+								 haces push de la esi
+
+				*/
 		}
 		free(nodo_lista_ejecucion);
 		//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
@@ -96,6 +149,19 @@ void fifo(){
 }
 
 
+
+/*
+bool identificador_ESI(void * data){
+	ESI *esi= (ESI*) data;
+	esi sarasa
+	if(esi->id_ESI == tuwea) {
+	return TRUE;
+	}
+
+
+
+}
+*/
 
 /*
 int main(){

@@ -11,6 +11,7 @@ int main(){
 	esi->id_mensaje = 18;
 	esi->id_ESI = 1;
 	esi->cantidadDeLineas = 50;
+	esi->claveAEjecutar;
 
 	printf("esi mide %d\n",sizeof(ESI));
 

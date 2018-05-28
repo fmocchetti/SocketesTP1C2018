@@ -21,6 +21,19 @@ typedef struct  {
   int cantidadDeLineas;
 }  ESI;
 //__attribute__((packed))
+
+typedef struct  {
+  int socket_esi;
+  int id_mensaje;
+  int id_ESI;
+  int clave_bloqueada;
+}  esi_a_bloquear;
+
+typedef struct {
+    int id_ESI;
+    char claveAEjecutar[40];
+}claves;
+
 typedef struct {
   int id;
   int len;

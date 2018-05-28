@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <commons/collections/list.h>
+#include <commons/collections/dictionary.h>
 #include <semaphore.h>
 #include <pthread.h>
 
@@ -24,9 +25,7 @@ sem_t mutex_listos;
 sem_t mutex_ejecucion;
 //pthread_mutex_t mutex_ejecucionn = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t mutex_ejecucion;
-typedef struct {
-    int ID;
-}t_proceso;
+t_dictionary * claves_bloqueadas;
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();

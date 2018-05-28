@@ -26,6 +26,8 @@ int main (int argc, char *argv[])
 	bloqueados = list_create();
 	ejecucion = list_create();
 	terminados = list_create();
+	//Creo el diccionario de claves bloqueadas
+	claves_bloqueadas = dictionary_create();
 
 
 	//Configuro el log a utilizar
@@ -40,8 +42,6 @@ int main (int argc, char *argv[])
 
 
     getchar();
-	//Creo el server
-	//create_server(32, 3 * 60 * 1000);
 	return 0;
 }
 

@@ -22,6 +22,7 @@ typedef struct  {
   int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;
+  char claveAEjecutar[40];
 }  ESI;
 //__attribute__((packed))
 typedef struct {
