@@ -19,28 +19,38 @@
 #include <strings.h>
 #include <pthread.h>
 #include <commons/log.h>
+#include <unistd.h>
+#include "coordinador.h"
 
 #define TRUE             1
 #define FALSE            0
 
+t_log * logger;
+pthread_mutex_t mutex;
 
 enum mensajes {
-	IDENTIFY
+	IDENTIFY = 10,
+	INICIALIZAR_INSTANCIA = 11,
+	CONEXION_ESI = 18,
+	COORDINADOR_GET = 24,
+	COORDINADOR_SET = 	25,
+	COORDINADOR_STORE = 26
 };
 
-enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 2};
+enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 3};
 
 typedef struct {
 	int socket;
 	int identidad;
 } thread_handle_struct;
 
-enum {	POLL, THREAD_CONNECTION, SELECT };
+enum {POLL, THREAD_CONNECTION, SELECT };
 
 void configure_logger();
 void create_server(int max_connections, int timeout, int server_type, int port);
 void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int listen_sd);
 void connection_thread();
 void thread_on_connection(int listen_sd);
+void exit_gracefully(int return_nr);
 
 #endif /* SOCKET_H_ */

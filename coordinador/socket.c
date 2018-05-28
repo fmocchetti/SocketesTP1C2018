@@ -7,8 +7,6 @@
 
 #include "socket.h"
 
-t_log * logger;
-
 void configure_logger() {
   logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
 }
@@ -80,9 +78,11 @@ void thread_on_connection(int listen_sd) {
 	pthread_t th_receiptMessage;		// hilo para crear receptor de mensajes
 	char * buffer;
 	int rc;
+	unsigned char message = 0;
+    thread_handle_struct * connection_arguments = malloc((thread_handle_struct *)sizeof(thread_handle_struct));
 
 	while(1) {
-		buffer = (char *) malloc(sizeof(char) * 80);
+		buffer = (char *) malloc(sizeof(char));
         log_info(logger,"Waiting new connection...");
 		new_sd = accept(listen_sd, NULL, NULL);
         if (new_sd < 0) {
@@ -93,8 +93,11 @@ void thread_on_connection(int listen_sd) {
         }
 
         log_info(logger,"accept() ok");
+        message = IDENTIFY;
 
-        send(new_sd , "identify", strlen("identify"), 0);
+        printf("%d envie x bytes \n", sizeof(message));
+
+        send(new_sd , &message, sizeof(message), 0);
 
         log_info(logger,"  Waiting for the client to identify\n");
 
@@ -105,12 +108,16 @@ void thread_on_connection(int listen_sd) {
            }
         }
 
-        log_info(logger," The client is an: %s",buffer);
+        log_info(logger," The client is an: %d", *buffer);
+        connection_arguments->socket = new_sd;
+        connection_arguments->identidad = *buffer;
 
+        printf("Mando %d , %d \n",connection_arguments->socket, connection_arguments->identidad);
 
+        pthread_mutex_init(&mutex, NULL);
+        pthread_mutex_lock(&mutex);
 
-
-        if(pthread_create(&th_receiptMessage, NULL, (void *)connection_thread, NULL)) {
+        if(pthread_create(&th_receiptMessage, NULL, (void *)connection_thread, connection_arguments)) {
         	log_error(logger, "Error creating thread");
         }
 
@@ -122,8 +129,37 @@ void thread_on_connection(int listen_sd) {
 	}
 }
 
-void connection_thread() {
+void connection_thread(void * connection_arguments) {
+	thread_handle_struct args = *(thread_handle_struct *) connection_arguments;
+	int rc = 0, close_conn = 0;
+	unsigned char buffer = 0;
+	int socket_local = args.socket, identidad_local = args.identidad;
+	printf("recibo %d , %d \n",socket_local, identidad_local);
 	log_info(logger, "New thread created");
+
+	if(identidad_local == INSTANCIA) {
+		inicializar_instancia(socket_local);
+	}
+
+	while(1) {
+
+		pthread_mutex_lock(&mutex);
+
+        rc = recv(socket_local, &buffer, 1000, 0);
+        if (rc == 0) {
+		 log_error(logger, "  recv() failed");
+		 close_conn = TRUE;
+		 break;
+        }
+
+        pthread_mutex_unlock(&mutex);
+	}
+
+
+	if (close_conn) {
+		shutdown(socket_local, SHUT_RDWR);
+	}
+
 	return;
 }
 
@@ -210,8 +246,7 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
   }
 }
 
-
-/*void * listen_connection() {
-
-	return 0;
-}*/
+void exit_gracefully(int return_nr) {
+	log_destroy(logger);
+	exit(return_nr);
+}

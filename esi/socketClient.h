@@ -23,6 +23,12 @@
 // Definimos algunas variables globales
 t_log * logger;
 
+enum mensajes {
+	IDENTIFY = 10
+};
+
+enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, IDENTIFY_PLANIFICADOR = 3};
+
 int create_client(char*, char *);
 void configure_logger();
 int connect_to_server(char *, char *);
