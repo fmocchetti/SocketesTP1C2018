@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -32,6 +33,9 @@ enum mensajes {
 	IDENTIFY = 10,
 	INICIALIZAR_INSTANCIA = 11,
 	CONEXION_ESI = 18,
+	ESI_GET = 21,
+	ESI_SET = 	22,
+	ESI_STORE = 23,
 	COORDINADOR_GET = 24,
 	COORDINADOR_SET = 	25,
 	COORDINADOR_STORE = 26
