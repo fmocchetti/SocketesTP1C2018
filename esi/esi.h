@@ -14,7 +14,6 @@
 
 
 typedef struct  {
-  int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;
 }  ESI;
@@ -30,7 +29,7 @@ typedef struct {
 void * planificador();
 void * coordinador();
 bool solicitudDeEjecucionPlanificador(int socket);
-bool envioYRespuestaCoordinador(int socket, t_esi_operacion parsed);
+bool envioYRespuestaCoordinador(int socket, ESI* esi, unsigned char mensaje);
 void enviarRespuestaAlPlanificador(int socket, bool respuesta);
 
 

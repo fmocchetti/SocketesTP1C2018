@@ -6,9 +6,9 @@ t_config * config_file;
 int main(int argc, char **argv){
 
 	ESI* esi = (ESI*) malloc(sizeof(ESI));
-	esi->id_mensaje = 18;
+	esi->id_ESI = 0;
 	esi->cantidadDeLineas = 0;
-	//esi->claveAEjecutar;
+	unsigned char mensaje_a_planificador_de_mi_info = 18;
 	pthread_t thread_plani, thread_coordi;
 	int r1, r2;
 	FILE *script;
@@ -53,16 +53,21 @@ int main(int argc, char **argv){
 	while ((read = getline(&line, &len, script)) != -1) {
 		t_esi_operacion parsed = parse(line);
 
-		//envio al coordinador la cantidad de lineas del archivo y espero la solicitud de ejecucion
+
+		//envio al planificador el id y la cantidad de lineas del archivo y espero la solicitud de ejecucion
+
+		send(socket_planificador, &mensaje_a_planificador_de_mi_info, 1, 0);
 		int sd = send(socket_planificador, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 		if (sd < 0){
-			printf("Error en enviar la cantidad de lineas al planificador\n");
+			printf("Error en enviar cantidadDeLineas al planificador\n");
 			exit(EXIT_FAILURE);
 		}
 
+		numeroDeLinea--;
+
 		if(parsed.valido){
 			if(solicitudDeEjecucionPlanificador(socket_planificador)){
-				respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, parsed);
+				respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, esi, mensaje_a_planificador_de_mi_info);
 				enviarRespuestaAlPlanificador(socket_planificador, respuestaCoordinador);
 		    }else{
 		    	printf("El planificador fallo\n");
@@ -102,6 +107,8 @@ void * coordinador () {
 }
 
 
+
+
 bool solicitudDeEjecucionPlanificador(int socket){
 
 	int buffer;
@@ -123,27 +130,46 @@ bool solicitudDeEjecucionPlanificador(int socket){
 		}
 	}
 
-	//Si el buffer es 1 entonces es OK
+	//Si el buffer es 1 entonces es OK (segun el protocolo)
 	free(socket);
 	return true;
 }
 
 
-bool envioYRespuestaCoordinador(int socket, t_esi_operacion parsed){
-
-	//int send(int socket, void * mensaje, int cant, int flags); //retorna cantidad de bytes enviados o -1 en caso de error
-	//int recv(int socket, void * buffer, int cant, int flags); //retorna la cantidad de bytes recibidos, 0 ante desconexión del servidor y -1 ante un error.
-
-	/*char header[1] = ‘\0’;
-	int payloadSize;
-	if (strcmp(header, “0”)) // 0 fallo, 1 exito
-		payloadSize = 64;
-	else
-		payloadSize = 64;
-
-	recv(socket, header, payloadSize, 0);*/ //Y, por último, leemos el contenido de lo que resta del paquete:
+bool envioYRespuestaCoordinador(int socket, ESI* esi, unsigned char mensaje){
 
 
+	int sd;
+	int buffer;
+	int rc;
+
+	sd = send(socket, &esi->id_ESI, sizeof(esi->cantidadDeLineas), 0);
+	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+	send(socket, &mensaje, 1, 0);
+	if (sd < 0){
+		printf("Error en enviar esi al coordinador\n");
+		exit(EXIT_FAILURE);
+	}
+
+
+	//recivo del coordinador la respuesta que debo enviar al planificador
+	rc = recv(socket, buffer, sizeof(buffer), 0);
+
+	if (rc == 0){
+		printf("Desconexion con el Coordinador\n");
+		exit(EXIT_FAILURE);
+	}else if (rc == -1){
+		printf("ERROR\n");
+		exit(EXIT_FAILURE);
+	}else{
+		if(buffer != 7){
+			free(socket);
+			return false;
+		}
+	}
+
+	//Si el buffer es 7 entonces es OK (segun el protocolo)
+	free(socket);
 	return true;
 }
 
@@ -154,7 +180,7 @@ void enviarRespuestaAlPlanificador(int socket, bool respuesta){
 	int sd;
 
 	if(respuesta){ //respuesta del coordinador
-		sd = send(socket, 2, sizeof(int), 0);
+		sd = send(socket, 2, sizeof(int), 0);//Envio el 2, segun el protocolo es un OK
 	}else{
 		sd = send(socket, 9, sizeof(int), 0);
 	}
