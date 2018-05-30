@@ -223,11 +223,12 @@ void create_server(int max_connections, int timeout) {
 
            //-----------	Aca tendria que meter al cliente en la lista que corresponda ---------------------
 
+            unsigned char id_mensaje_esi;
           	ESI *esi= (ESI*) malloc(sizeof(ESI));
           	ESI *esi2= (ESI*) malloc(sizeof(ESI));
 
           	//Recibo ID del mensaje de la ESI
-           	rc = recv(new_sd, &esi->id_mensaje, sizeof(esi->id_mensaje),0);
+           	rc = recv(new_sd, &id_mensaje_esi, 1,0);
 
            	if(rc < 0) {
            		if (errno != EWOULDBLOCK) {
@@ -241,19 +242,13 @@ void create_server(int max_connections, int timeout) {
            	printf("El socket de la ESI es %d\n",esi->socket_esi);
 
            	//Chequeo si el mensaje recibido de la ESI es el correcto
-           	           	if(esi->id_mensaje != 18){
+           	           	if(id_mensaje_esi != 18){
            	           		log_error(logger, "id de mensaje incorrecto");
            	           		close_conn = TRUE;
            	           	    }
 
            	//Si lo es, sigo recibiendo
-           	rc = recv(new_sd, &esi->id_ESI, sizeof(esi->id_ESI),0);
-           	if(rc < 0) {
-           	           		if (errno != EWOULDBLOCK) {
-           	               	   	   log_error(logger, "  recv() failed");
-           	               	   	   close_conn = TRUE;
-           	               	   	   }
-           	           	}
+
            	rc = recv(new_sd, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas),0);
            	if(rc < 0) {
            	           		if (errno != EWOULDBLOCK) {
@@ -269,7 +264,7 @@ void create_server(int max_connections, int timeout) {
            	printf("el nuevo ID de la esi fue mandado\n");
            	n++;
 
-           	esi2->id_mensaje = esi->id_mensaje;
+
 			esi2->socket_esi = esi->socket_esi;
 			esi2->id_ESI = esi->id_ESI;
 			esi2->cantidadDeLineas = esi->cantidadDeLineas;

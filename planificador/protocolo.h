@@ -16,18 +16,11 @@
 
 typedef struct  {
   int socket_esi;
-  int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;
 }  ESI;
 //__attribute__((packed))
 
-typedef struct  {
-  int socket_esi;
-  int id_mensaje;
-  int id_ESI;
-  int clave_bloqueada;
-}  esi_a_bloquear;
 
 typedef struct {
     int id_ESI;

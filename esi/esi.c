@@ -8,7 +8,6 @@ void doUntilFinish(int, ESI*);
 int main(){
 	ESI* esi = (ESI*) malloc(sizeof(ESI));
 	//int contestacion_esi;
-	esi->id_mensaje = 18;
 	esi->id_ESI = 1;
 	esi->cantidadDeLineas = 50;
 	esi->claveAEjecutar;
@@ -57,8 +56,8 @@ void send_hello(int socket, ESI* esi) {
           por lo que no tiene padding y la podemos mandar directamente sin necesidad
           de un buffer y usando el tamaño del tipo Alumno!
   */
-  int resultado = send(socket, &esi->id_mensaje, sizeof(esi->id_mensaje), 0);
-  send(socket, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+  unsigned char id_mensaje_plani = 18;
+  int resultado = send(socket, &id_mensaje_plani, 1, 0);
   send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
   if (resultado <= 0) {
     /*
@@ -74,12 +73,12 @@ void doUntilFinish(int socket, ESI* esi){
 	//recibo permiso de ejecucion
 	printf("%d\n", esi->cantidadDeLineas);
 
-	int permisoDeEjecucion = 0;
-	int resultadoEjecucion = 1; // si es 1 es correcto, si es 2 no
+	unsigned char permisoDeEjecucion = 0;
+	unsigned char resultadoEjecucion = 1; // si es 1 es correcto, si es 2 no
 
 	while(esi->cantidadDeLineas > 0){
 		printf("Haciendo de lo mio \n");
-	recv(socket, &permisoDeEjecucion, sizeof(permisoDeEjecucion),0);
+	recv(socket, &permisoDeEjecucion, 1,0);
 	if(permisoDeEjecucion == 1){
 		esi->cantidadDeLineas --;
 	}
@@ -87,7 +86,7 @@ void doUntilFinish(int socket, ESI* esi){
 		printf("Error!\n");
 	}
 
-	send(socket, &resultadoEjecucion, sizeof(resultadoEjecucion), 0);
+	send(socket, &resultadoEjecucion, 1, 0);
 	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 }
 	printf("Mi ID es %d\n",esi->id_ESI);

@@ -19,7 +19,6 @@ t_log * logger;
 
 typedef struct  {
   int socket_esi;
-  int id_mensaje;
   int id_ESI;
   int cantidadDeLineas;
   char claveAEjecutar[40];

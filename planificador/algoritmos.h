@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
+#include <commons/collections/queue.h>
 #include <semaphore.h>
 #include <pthread.h>
 
@@ -30,5 +31,7 @@ t_dictionary * claves_bloqueadas;
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
 void fifo();
+bool identificador_ESI(void*);
+void element_destroyer(void *);
 
 #endif /* ALGORITMOS_H_ */
