@@ -18,6 +18,7 @@ typedef struct  {
   int socket_esi;
   int id_ESI;
   int cantidadDeLineas;
+  int rafaga;
 }  ESI;
 //__attribute__((packed))
 
