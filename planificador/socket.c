@@ -264,6 +264,7 @@ void create_server(int max_connections, int timeout) {
            	printf("el nuevo ID de la esi fue mandado\n");
            	n++;
 
+           	//calculoProxRafaga(40,esi->cantidadDeLineas,)
 
 			esi2->socket_esi = esi->socket_esi;
 			esi2->id_ESI = esi->id_ESI;
