@@ -10,6 +10,7 @@
 
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
+#include <semaphore.h>
 #include "distribucion.h"
 
 void _instancia(int socket_local);
@@ -23,6 +24,7 @@ int total_instancias;
 
 typedef struct {
     int id;
+    sem_t instance_sem;
 } t_instancia;
 
 static t_instancia *instancia_create(int id) {

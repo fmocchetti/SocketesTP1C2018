@@ -39,10 +39,13 @@ void inicializar_instancia (int socket) {
 void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0;
 	unsigned char buffer = 0;
+	t_instancia * local_struct = instancia_create(total_instancias);
 
 	inicializar_instancia(socket_local);
 
-	list_add(list_instances, instancia_create(total_instancias));
+	sem_init(&(local_struct->instance_sem), 1, 0);
+
+	list_add(list_instances, local_struct);
 
 	log_info(logger, "Cantidad de instancias -> %d", list_size(list_instances));
 
@@ -50,12 +53,14 @@ void _instancia(int socket_local) {
 
 		pthread_mutex_lock(&mutex);
 
-        rc = recv(socket_local, &buffer, 1000, 0);
+		sem_wait(&(local_struct->instance_sem));
+
+        /*rc = recv(socket_local, &buffer, 1000, 0);
         if (rc == 0) {
 		 log_error(logger, "  recv() failed");
 		 close_conn = TRUE;
 		 break;
-        }
+        }*/
 
         pthread_mutex_unlock(&mutex);
 	}
@@ -156,8 +161,6 @@ void _esi(int socket_local) {
         	default:
         		break;
         }
-
-        pthread_mutex_unlock(&mutex);
 	}
 
 
