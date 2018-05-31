@@ -52,7 +52,8 @@ void generate_poll(){
 
 void generate_planning(){
 	printf("Entre al thread de planificacion \n");
-	fifo();
+	//fifo();
+	sjfsd();
 	//while(1);
 	printf("adios mundo cruel \n");
 }

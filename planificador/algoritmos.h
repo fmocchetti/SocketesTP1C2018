@@ -32,6 +32,8 @@ void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
 void fifo();
 bool identificador_ESI(void*);
+
+bool sort_by_estimacion(void*, void*);
 void element_destroyer(void *);
 
 #endif /* ALGORITMOS_H_ */

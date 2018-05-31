@@ -128,7 +128,7 @@ void fifo(){
 	}
 }
 
-void sjfsd(int alpha,int est_inicial){
+void sjfsd(){
 	//sem_init(&mutex_ejecucion, 0, 1);
 	//pthread_mutex_init(&mutex_ejecucion,NULL);
 	//int lista_vacia = list_is_empty(ejecucion);
@@ -146,7 +146,7 @@ void sjfsd(int alpha,int est_inicial){
 		estadoListas();
 
 		//replanifico aca, dependiendo de la rafaga
-		//void list_sort(listos, (void*)sort_by_estimacion);
+		list_sort(listos, (void*)sort_by_estimacion);
 
 		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
 		laWeaReplanificadoraFIFO(ejecucion,listos);
@@ -230,7 +230,7 @@ int calculoProxRafaga(int alpha,int estimacion_rafaga, int rafaga_real){
 bool sort_by_estimacion(void * data1, void * data2){
 	ESI * esi1 = (ESI*) data1;
 	ESI * esi2 = (ESI*) data2;
-	if(esi1->rafaga >= esi2->rafaga) {
+	if(esi1->rafaga <= esi2->rafaga) {
 			return true;
 		}
 		return false;
