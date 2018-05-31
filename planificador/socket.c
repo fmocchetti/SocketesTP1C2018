@@ -266,7 +266,8 @@ void create_server(int max_connections, int timeout) {
 
 
 
-           	esi->rafaga = calculoProxRafaga(40,10,esi->cantidadDeLineas);
+           	esi->rafaga = calculoProxRafaga((float)40,(float)10,(float)esi->cantidadDeLineas);
+           	printf("rafaga de %d\n",esi->rafaga);
 
 			esi2->socket_esi = esi->socket_esi;
 			esi2->id_ESI = esi->id_ESI;

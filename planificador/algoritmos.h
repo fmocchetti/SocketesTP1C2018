@@ -35,5 +35,6 @@ bool identificador_ESI(void*);
 
 bool sort_by_estimacion(void*, void*);
 void element_destroyer(void *);
+float calculoProxRafaga(float ,float, float);
 
 #endif /* ALGORITMOS_H_ */

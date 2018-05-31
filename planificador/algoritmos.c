@@ -138,7 +138,7 @@ void sjfsd(){
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;
-
+		printf("Estas en SJFSD\n");
 		printf("Esperando que haya un nuevo proceso encolado en listos\n");
 		//espero a que me digan que hay algo en la cola de listos
 		sem_wait(&new_process);
@@ -222,10 +222,11 @@ void sjfsd(){
 	}
 }
 
-int calculoProxRafaga(int alpha,int estimacion_rafaga, int rafaga_real){
-	int resultado = (alpha/100)*rafaga_real + (1-(alpha/100))*estimacion_rafaga;
+float calculoProxRafaga(float alpha,float estimacion_rafaga, float rafaga_real){
+	float resultado = ((alpha/100)*rafaga_real + (1-(alpha/100))*estimacion_rafaga);
 	return resultado;
 }
+
 
 bool sort_by_estimacion(void * data1, void * data2){
 	ESI * esi1 = (ESI*) data1;
