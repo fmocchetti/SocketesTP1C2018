@@ -229,26 +229,57 @@ void sjfcd(){
 
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
+	int sem_value = 0;
+	int lista_vacia = 0;
+	int semaforo = 0;
+	int sarasa = 0;
 
 	while(1){
-		ESI *nodo_lista_ejecucion = NULL;
+		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
 		printf("Estas en SJFCD\n");
 		printf("Esperando que haya un nuevo proceso encolado en listos\n");
 		//espero a que me digan que hay algo en la cola de listos
+		printf("SARASA VALOR: %d\n", sarasa);
+		if(sarasa == 1){
+			printf("Entre en flag sarasa\n");
+					sem_post(&new_process);
+					wait(5);
+		}
+		if(sarasa == 2){
+			sem_post(&new_process);
+			wait(5);
+		}
+
+		sem_getvalue(&new_process,&sem_value);
+		printf("SEMAFORO EN %d\n", sem_value);
 		sem_wait(&new_process);
+
+		if(sarasa == 1){
+			printf("Entre en flag sarasa9999999\n");
+				sem_wait(&new_process);
+				sarasa = 0;
+				wait(5);
+				}
+		//sem_post(&new_process);
 		printf("Nuevo elemento en la cola de listos\n");
 		estadoListas();
 
 		//replanifico aca, dependiendo de la rafaga
 		list_sort(listos, (void*)sort_by_estimacion);
+		printf("Replanificando\n");
 
 		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		printf("Nodo de listos movido a Ejecucion\n ");
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+		printf("ID de la ESI a ejecutar %d\n", nodo_lista_ejecucion->id_ESI);
+		sleep(5);
 
+		sem_getvalue(&new_process,&sem_value);
+		printf("SEMAFORO EN %d\n", sem_value);
+		sleep(5);
+		while(sem_value == 0){
 
-		while((int)new_process.__align == 0 && nodo_lista_ejecucion->cantidadDeLineas >0){
 			printf("Entre AL WHILE \n");
 		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		if(nodo_lista_ejecucion->cantidadDeLineas >0){
@@ -271,6 +302,7 @@ void sjfcd(){
 					//agregar a la estructura
 					printf("ESTOY BLOQUEANDO\n");
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+					break;
 				}
 
 				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
@@ -304,11 +336,32 @@ void sjfcd(){
 						//list_clean(ejecucion);
 						//printf("Limpio lista\n");
 		}
+		else{
+			printf("Entre a 1\n");
+			laWeaReplanificadoraFIFO(terminados,ejecucion);
+			estadoListas();
+			break;
+		}
 
-
+		sem_getvalue(&new_process,&sem_value);
 	}
-		laWeaReplanificadoraFIFO(listos,ejecucion);
+		lista_vacia = list_is_empty(ejecucion);
+		printf("lista vacia %d\n",lista_vacia);
+		if(lista_vacia == 1){
+
+			printf("Entre a 2\n");
 				free(nodo_lista_ejecucion);
+				sarasa = 2;
+		}
+		else{
+
+			printf("Entre a 3\n");
+			sarasa = 1;
+			printf("SARASA VALOR: %d\n", sarasa);
+			laWeaReplanificadoraFIFO(listos,ejecucion);
+							free(nodo_lista_ejecucion);
+							sleep(5);
+		}
 }
 }
 
