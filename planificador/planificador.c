@@ -17,6 +17,7 @@ int main (int argc, char *argv[])
 	sem_init(&new_process, 0, 0);
 	sem_init(&give_me_a_new_process, 0, 1);
 	sem_init(&mutex_listos, 0, 1);
+	sem_init(&mutex_ejecucion, 0, 1);
 
 	//creo los threads a utilizar
 	pthread_t thread_poll;
@@ -53,7 +54,8 @@ void generate_poll(){
 void generate_planning(){
 	printf("Entre al thread de planificacion \n");
 	//fifo();
-	sjfsd();
+	//sjfsd();
+	sjfcd();
 	//while(1);
 	printf("adios mundo cruel \n");
 }
