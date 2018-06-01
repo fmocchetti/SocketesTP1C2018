@@ -1,0 +1,6 @@
+[INFO] 18:55:26:996 consola-planificador/(3343:3343): Trying to connect to: 127.0.0.1 : 12345 
+
+[ERROR] 18:55:26:996 consola-planificador/(3343:3343): No me pude conectar al servidor
+[INFO] 20:05:28:299 consola-planificador/(7252:7252): Trying to connect to: 127.0.0.1 : 12345 
+
+[ERROR] 20:05:28:316 consola-planificador/(7252:7252): No me pude conectar al servidor

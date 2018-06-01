@@ -24,9 +24,16 @@
 t_log * logger;
 
 enum mensajes {
-	IDENTIFY = 10
+	IDENTIFY = 10,
+	INICIALIZAR_INSTANCIA = 11,
+	//CONEXION_ESI = 18,
+	//ESI_GET = 21,
+	//ESI_SET = 	22,
+	//ESI_STORE = 23,
+	COORDINADOR_GET = 24,
+	COORDINADOR_SET = 	25,
+	COORDINADOR_STORE = 26
 };
-
 enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, IDENTIFY_PLANIFICADOR = 3};
 
 int create_client(char*, char *);
