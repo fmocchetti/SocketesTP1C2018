@@ -1,3 +1,10 @@
+/*
+ * planificador.c
+ *
+ *  Created on: 12 may. 2018
+ *      Author: pdelucchi
+ */
+
 #include "socket.h"
 #include "protocolo.h"
 #include "algoritmos.h"
@@ -6,18 +13,17 @@
 void generate_poll();
 void generate_planning();
 
-
-
-
 #define IDENTIDAD "planificador"
 
 int main (int argc, char *argv[])
 {
 	//inicializo los semaforos a utilizar
 	sem_init(&new_process, 0, 0);
+	//sem_init(&replanificar, 0, 0);
 	sem_init(&give_me_a_new_process, 0, 1);
 	sem_init(&mutex_listos, 0, 1);
 	sem_init(&mutex_ejecucion, 0, 1);
+
 
 	//creo los threads a utilizar
 	pthread_t thread_poll;

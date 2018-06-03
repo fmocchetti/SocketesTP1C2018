@@ -2,13 +2,15 @@
  * algoritmos.c
  *
  *  Created on: 12 may. 2018
- *      Author: utnso
+ *      Author: pdelucchi
  */
 
 
 #include "algoritmos.h"
 #include "protocolo.h"
 int id_esi_global = 0;
+
+
 
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
@@ -229,59 +231,39 @@ void sjfcd(){
 
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
-	int sem_value = 0;
+	//int sem_value = 0;
 	int lista_vacia = 0;
-	int semaforo = 0;
-	int sarasa = 0;
+
 
 	while(1){
-		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
+		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
 		printf("Estas en SJFCD\n");
 		printf("Esperando que haya un nuevo proceso encolado en listos\n");
-		//espero a que me digan que hay algo en la cola de listos
-		printf("SARASA VALOR: %d\n", sarasa);
-		if(sarasa == 1){
-			printf("Entre en flag sarasa\n");
-					sem_post(&new_process);
-					wait(5);
-		}
-		if(sarasa == 2){
-			sem_post(&new_process);
-			wait(5);
-		}
 
-		sem_getvalue(&new_process,&sem_value);
-		printf("SEMAFORO EN %d\n", sem_value);
+		//espero a que me digan que hay un nuevo proceso en listos
 		sem_wait(&new_process);
 
-		if(sarasa == 1){
-			printf("Entre en flag sarasa9999999\n");
-				sem_wait(&new_process);
-				sarasa = 0;
-				wait(5);
-				}
-		//sem_post(&new_process);
 		printf("Nuevo elemento en la cola de listos\n");
 		estadoListas();
 
-		//replanifico aca, dependiendo de la rafaga
-		list_sort(listos, (void*)sort_by_estimacion);
+		//replanifico dependiendo de la rafaga
+		if(replanificar == 1){
 		printf("Replanificando\n");
+		list_sort(listos, (void*)sort_by_estimacion);
+		replanificar = 0;
+		}
 
 		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		printf("Nodo de listos movido a Ejecucion\n ");
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
 		printf("ID de la ESI a ejecutar %d\n", nodo_lista_ejecucion->id_ESI);
-		sleep(5);
+		sleep(5);//sacar luego de testear
 
-		sem_getvalue(&new_process,&sem_value);
-		printf("SEMAFORO EN %d\n", sem_value);
-		sleep(5);
-		while(sem_value == 0){
-
-			printf("Entre AL WHILE \n");
-		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
+		//sem_getvalue(&new_process,&sem_value);
+		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
+		while(replanificar == 0){
+		//Si la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		if(nodo_lista_ejecucion->cantidadDeLineas >0){
 
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
@@ -289,7 +271,7 @@ void sjfcd(){
 		//Espero que la esi me conteste
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 				//printf("contestacionESI %d\n",contestacionESI);
-		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
+		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene y resto 1 por cada ejecucion de sentencia a la rafaga
 				if(contestacionESI == 1){
 					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
@@ -298,8 +280,8 @@ void sjfcd(){
 				}
 				else{
 					//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
-					//
 					//agregar a la estructura
+					//agrego a bloqueados en caso de recibir otra contestacion de la ESI
 					printf("ESTOY BLOQUEANDO\n");
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 					break;
@@ -336,31 +318,25 @@ void sjfcd(){
 						//list_clean(ejecucion);
 						//printf("Limpio lista\n");
 		}
+		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 		else{
-			printf("Entre a 1\n");
+			//printf("Entre a 1\n");
 			laWeaReplanificadoraFIFO(terminados,ejecucion);
 			estadoListas();
-			break;
+			break;					//
 		}
-
-		sem_getvalue(&new_process,&sem_value);
 	}
+		//si el valor de replanificar cambia, se sale del while y se evalua si la lista de ejecucion no esta vacia
 		lista_vacia = list_is_empty(ejecucion);
 		printf("lista vacia %d\n",lista_vacia);
-		if(lista_vacia == 1){
+		if(lista_vacia != 1){
 
-			printf("Entre a 2\n");
-				free(nodo_lista_ejecucion);
-				sarasa = 2;
-		}
-		else{
-
-			printf("Entre a 3\n");
-			sarasa = 1;
-			printf("SARASA VALOR: %d\n", sarasa);
+		//De ser afirmativo, se mueve la esi que estaba ejecutando a listos para su replanificacion
+			//printf("Entre a 3\n");
 			laWeaReplanificadoraFIFO(listos,ejecucion);
-							free(nodo_lista_ejecucion);
-							sleep(5);
+			replanificar = 1;					//
+			sem_post(&new_process);
+			//free(nodo_lista_ejecucion);
 		}
 }
 }
@@ -432,6 +408,9 @@ void ESI_STORE(char *claveAEjecutar){
 				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
 				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
 				list_add(listos, (ESI*)esi1);
+				//seteo los semaforos para el sjfcd
+				replanificar = 1;
+				sem_post(&new_process);
 				}
 			//Si esta vacia, la esi no existe en la cola de bloqueados
 			else{

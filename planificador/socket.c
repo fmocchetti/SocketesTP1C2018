@@ -2,7 +2,7 @@
  * socketServer.c
  *
  *  Created on: Apr 18, 2018
- *      Author: fmocchetti
+ *      Author: fmocchetti/pdelucchi
  */
 
 #include "socket.h"
@@ -288,7 +288,7 @@ void create_server(int max_connections, int timeout) {
 
             //semaforo para indicar que hay un nuevo proceso listo para su ejecucion
             sem_post(&new_process);
-
+            replanificar = 1;
             //sem_wait(&termino_proceso);
             //free(esi2);
 

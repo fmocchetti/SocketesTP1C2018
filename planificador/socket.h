@@ -2,7 +2,7 @@
  * socketServer.h
  *
  *  Created on: Apr 18, 2018
- *      Author: fmocchetti
+ *      Author: fmocchetti/pdelucchi
  */
 
 #ifndef SOCKETSERVER_H_
