@@ -6,7 +6,7 @@
  */
 
 #include "socket.h"
-#define IDENTIDAD "esi"
+#define IDENTIDAD "Planificador"
 
 t_log * logger;
 
@@ -68,7 +68,8 @@ void create_server(int max_connections, int timeout) {
   memset(&addr, 0, sizeof(addr));
   addr.sin_family      = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  addr.sin_port        = htons(SERVER_PORT);
+  int puerto = atoi(config_get_string_value(config_file, "puerto_de_escucha"));
+  addr.sin_port        = htons(puerto);//SERVER_PORT
   rc = bind(listen_sd, (struct sockaddr *)&addr, sizeof(addr));
   if (rc < 0)
   {

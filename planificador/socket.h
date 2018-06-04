@@ -23,10 +23,13 @@
 #include "algoritmos.h"
 #include <semaphore.h>
 #include <pthread.h>
+#include <commons/config.h>
 
-#define SERVER_PORT  12345
+//#define SERVER_PORT  12345
 #define TRUE             1
 #define FALSE            0
+
+t_config * config_file;
 
 void create_server(int max_connections, int timeout);
 void configure_logger();
