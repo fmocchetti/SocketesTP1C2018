@@ -30,7 +30,8 @@ int main (int argc, char *argv[])
 	sem_init(&mutex_ejecucion, 0, 1);
 
 	config_file = config_create("planificador.conf");
-
+	//Configuro el log a utilizar
+	configure_logger();
 
 	//creo los threads a utilizar
 	pthread_t thread_poll;
@@ -47,8 +48,7 @@ int main (int argc, char *argv[])
 
 	socket_coord = create_client("127.0.0.1","12346");
 
-	//Configuro el log a utilizar
-	configure_logger();
+
 
 	pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
 	pthread_detach(thread_poll);
