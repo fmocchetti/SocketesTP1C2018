@@ -16,6 +16,8 @@
 typedef struct  {
   int id_ESI;
   int cantidadDeLineas;
+  char *clave;
+  char *valor;
 }  ESI;
 //__attribute__((packed))
 typedef struct {
@@ -29,7 +31,7 @@ typedef struct {
 void * planificador();
 void * coordinador();
 bool solicitudDeEjecucionPlanificador(int socket);
-bool envioYRespuestaCoordinador(int socket, ESI* esi, unsigned char mensaje);
+bool envioYRespuestaCoordinador(int socket, ESI* esi);
 void enviarRespuestaAlPlanificador(int socket, bool respuesta);
 
 
