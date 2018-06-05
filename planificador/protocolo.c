@@ -59,7 +59,7 @@ void * wait_content(int socket) {
 }
 
 
-void _exit_with_error(int socket, char* error_msg, void * buffer) {
+void _exit_with_error(int socket, char* error_msg, char * buffer) {
   if (buffer != NULL) {
     free(buffer);
   }

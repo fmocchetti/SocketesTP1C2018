@@ -466,28 +466,24 @@ void send_message(int socket){
 }
 
 void wait_hello(int socket) {
+	unsigned char buffer = 0;
 
-	char * hola = "identify";
+	log_info(logger, "Waiting handshake");
 
-    char * buffer = (char*) calloc(sizeof(char), strlen(hola) + 1);
+    int result_recv = recv(socket, &buffer, 1, MSG_WAITALL); //MSG_WAITALL
 
-    int result_recv = recv(socket, buffer, strlen(hola), MSG_WAITALL); //MSG_WAITALL
-
-	printf("Recibi %s\n",buffer);
+	printf("Recibi %d\n",buffer);
 
     if(result_recv <= 0) {
       _exit_with_error(socket, "No se pudo recibir hola", buffer);
     }
 
-    if (strcmp(buffer, hola) != 0) {
+    if (buffer != IDENTIFY) {
       _exit_with_error(socket, "No es el mensaje que se esperaba", buffer);
     }
 
-    log_info(logger, "Mensaje de hola recibido: '%s'", buffer);
-
-	send(socket, IDENTIDAD, strlen(IDENTIDAD), 0);
-
-    free(buffer);
+    buffer = IDENTIFY_PLANIFICADOR;
+	send(socket, &buffer, sizeof(buffer), 0);
 }
 
 int create_client(char * ip, char * port){

@@ -45,7 +45,7 @@ int main (int argc, char *argv[])
 	claves_bloqueadas = dictionary_create();
 
 
-	//socket_coord = create_client(ip_coordinador,puerto_coordinador);
+	socket_coord = create_client("127.0.0.1","12346");
 
 	//Configuro el log a utilizar
 	configure_logger();

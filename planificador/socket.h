@@ -31,7 +31,17 @@
 
 t_config * config_file;
 
+enum mensajes {
+	IDENTIFY = 10
+};
+
+enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, IDENTIFY_PLANIFICADOR = 3};
+
 void create_server(int max_connections, int timeout);
 void configure_logger();
+int create_client(char * ip, char * port);
+void wait_hello(int socket);
+void send_message(int socket);
+int connect_to_server(char * ip, char * port);
 
 #endif /* SOCKETSERVER_H_ */
