@@ -5,6 +5,8 @@
  *      Author: fmocchetti
  */
 
+#include "coordinador.h"
+
 
 int distribuir(char * clave, char * valor, unsigned char operacion) {
 	t_instancia * instancia;
@@ -20,8 +22,11 @@ int distribuir(char * clave, char * valor, unsigned char operacion) {
 			break;
 	}
 
-	sem_post(&(instancia->instance_sem));
+	instancia->clave = clave;
+	instancia->valor = valor;
+	instancia->operacion = operacion;
     pthread_mutex_unlock(&mutex);
+	sem_post(&(instancia->instance_sem));
 
 	return 0;
 }

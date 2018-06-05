@@ -23,7 +23,7 @@ int main(){
 
 	configure_logger();
 
-	int server = create_client("127.0.0.1","12345");
+	int server = create_client("127.0.0.1","12346");
 
 	log_info(logger, "Estado server %d \n", server);
 

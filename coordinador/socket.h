@@ -27,7 +27,6 @@
 #define FALSE            0
 
 t_log * logger;
-pthread_mutex_t mutex;
 
 enum mensajes {
 	IDENTIFY = 10,

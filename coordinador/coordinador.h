@@ -21,15 +21,22 @@ void inicializar_instancia (int socket);
 t_list* list_instances;
 
 int total_instancias;
+pthread_mutex_t mutex;
 
 typedef struct {
     int id;
     sem_t instance_sem;
+    char * clave;
+    char * valor;
+    unsigned char operacion;
 } t_instancia;
 
 static t_instancia *instancia_create(int id) {
 	t_instancia *new = malloc(sizeof(t_instancia));
     new->id = id;
+    new->clave = 0;
+    new->valor = 0;
+    new->operacion = 0;
     total_instancias++;
     return new;
 }

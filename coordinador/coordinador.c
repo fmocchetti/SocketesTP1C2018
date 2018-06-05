@@ -17,7 +17,7 @@ int main (int argc, char *argv[])
 	list_instances = list_create();
 	diccionario_claves = dictionary_create();
 
-	create_server(32, 20 * 60 * 1000, THREAD_CONNECTION, 12345);
+	create_server(32, 20 * 60 * 1000, THREAD_CONNECTION, 12346);
 
 	exit_gracefully(0);
 }
@@ -49,18 +49,41 @@ void _instancia(int socket_local) {
 
 	log_info(logger, "Cantidad de instancias -> %d", list_size(list_instances));
 
+	local_struct->clave = malloc(strlen("clave"));
+	local_struct->clave = "clave";
+	local_struct->valor = malloc(strlen("valor"));
+	local_struct->valor = "valor";
+	local_struct->operacion = ESI_SET;
+
+	sem_post(&(local_struct->instance_sem));
+	pthread_mutex_unlock(&mutex);
+
 	while(1) {
 
+		sem_wait(&(local_struct->instance_sem));
 		pthread_mutex_lock(&mutex);
 
-		sem_wait(&(local_struct->instance_sem));
+		int size_clave = strlen(local_struct->clave);
+		int size_valor = strlen(local_struct->valor);
+		int messageLength = 5 + size_clave + 4 + size_valor;
 
-        /*rc = recv(socket_local, &buffer, 1000, 0);
+		char * mensajes = (char *) malloc (messageLength);
+		memcpy(mensajes, &(local_struct->operacion), 1);
+		memcpy(mensajes+1, &size_clave, 4);
+		memcpy(mensajes+5, local_struct->clave, size_clave);
+		memcpy(mensajes+size_clave+5, &size_valor, 4);
+		memcpy(mensajes+size_clave+9, local_struct->valor, size_valor);
+
+		log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
+		send(socket_local, mensajes, messageLength, 0);
+		free(mensajes);
+
+        rc = recv(socket_local, &buffer, 1, 0);
         if (rc == 0) {
 		 log_error(logger, "  recv() failed");
 		 close_conn = TRUE;
 		 break;
-        }*/
+        }
 
         pthread_mutex_unlock(&mutex);
 	}
