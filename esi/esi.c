@@ -74,7 +74,7 @@ void doUntilFinish(int socket, ESI* esi){
 	printf("%d\n", esi->cantidadDeLineas);
 
 	unsigned char permisoDeEjecucion = 0;
-	unsigned char resultadoEjecucion = 1; // si es 1 es correcto, si es 2 no
+	unsigned char resultadoEjecucion = 2; // si es 1 es correcto, si es 2 no
 
 	while(esi->cantidadDeLineas > 0){
 		printf("Haciendo de lo mio \n");

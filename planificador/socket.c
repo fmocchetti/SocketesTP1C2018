@@ -26,6 +26,8 @@ void create_server(int max_connections, int timeout) {
   struct pollfd fds[33];
   int    nfds = 1, current_size = 0, i, j;
   int 	 config_plani = 1;
+  int alpha = atoi(config_get_string_value(config_file, "alpha_planificacion"));
+  int estimacion_inicial = atoi(config_get_string_value(config_file, "estimacion_inicial"));
 
   /*************************************************************/
   /* Create an AF_INET stream socket to receive incoming       */
@@ -267,7 +269,7 @@ void create_server(int max_connections, int timeout) {
 
 
 
-           	esi->rafaga = calculoProxRafaga((float)40,(float)10,(float)esi->cantidadDeLineas);
+           	esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
            	printf("rafaga de %d\n",esi->rafaga);
 
 			esi2->socket_esi = esi->socket_esi;

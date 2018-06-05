@@ -30,6 +30,7 @@ sem_t mutex_ejecucion;
 //pthread_mutex_t mutex_ejecucion;
 t_dictionary * claves_bloqueadas;
 int replanificar;
+int socket_coord;
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
@@ -40,5 +41,8 @@ bool sort_by_estimacion(void*, void*);
 void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
 void sjfcd();
+void ESI_GET(char *, int *);
+void ESI_STORE(char *);
+void clave_destroy(t_dictionary *data);
 
 #endif /* ALGORITMOS_H_ */

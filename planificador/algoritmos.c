@@ -9,8 +9,7 @@
 #include "algoritmos.h"
 #include "protocolo.h"
 int id_esi_global = 0;
-
-
+unsigned char id_mensaje_coord = 0;
 
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
@@ -45,6 +44,7 @@ void fifo(){
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
 
+
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;
 
@@ -70,7 +70,7 @@ void fifo(){
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 				//printf("contestacionESI %d\n",contestacionESI);
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
-				if(contestacionESI == 1){
+				if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
@@ -84,43 +84,26 @@ void fifo(){
 				}
 
 				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-				//recv(coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-				//clave *clave1= (clave*) malloc(sizeof(clave)); DEFINO ESTRUCTURA PARA RECIBIR CLAVE
+				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
 				//Recibo del coordinador la clave que la ESI va a ejecutar
-				//recv(coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+				recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
 
-				/*if(id_mensaje_coord == 24){ //GET
-					ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+
+				switch (id_mensaje_coord) {
+					case 24:
+						ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+						break;
+					case 26:
+						ESI_STORE(clave1->claveAEjecutar);
+						break;
+					case 25:
+						printf("Recibi un dato innecesario");
+						break;
+					default:
+						//TODO: Aca hace algo negro
+						break;
 				}
-
-
-
-				if(id_mensaje_coord == 26){ //STORE
-				ESI_STORE(clave1->claveAEjecutar)
-				}
-
-				if(id_mensaje_coord == 25){ //SET hace algo??
-				}
-
-				else{
-				//ERROR
-
-				}
-
-
-
-
-								if diccionario tiene la clave
-								 obtenes el elem del diccionario
-								 te fijas si existe la cola
-								 si exite haces un push esi
-								 si no existe creas y haces push esi
-								else
-								 metes la clave en el diccionario
-								 creas la cola
-								 haces push de la esi
-
-				*/
 		}
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
@@ -164,7 +147,7 @@ void sjfsd(){
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 				//printf("contestacionESI %d\n",contestacionESI);
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
-				if(contestacionESI == 1){
+				if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
@@ -178,43 +161,26 @@ void sjfsd(){
 				}
 
 				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-				//recv(coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-				//clave *clave1= (clave*) malloc(sizeof(clave)); DEFINO ESTRUCTURA PARA RECIBIR CLAVE
+				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
 				//Recibo del coordinador la clave que la ESI va a ejecutar
-				//recv(coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+				recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
 
-				/*if(id_mensaje_coord == 24){ //GET
-					ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+
+				switch (id_mensaje_coord) {
+					case 24:
+						ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+						break;
+					case 26:
+						ESI_STORE(clave1->claveAEjecutar);
+						break;
+					case 25:
+						printf("Recibi un dato innecesario");
+						break;
+					default:
+						//TODO: Aca hace algo negro
+						break;
 				}
-
-
-
-				if(id_mensaje_coord == 26){ //STORE
-				ESI_STORE(clave1->claveAEjecutar)
-				}
-
-				if(id_mensaje_coord == 25){ //SET hace algo??
-				}
-
-				else{
-				//ERROR
-
-				}
-
-
-
-
-								if diccionario tiene la clave
-								 obtenes el elem del diccionario
-								 te fijas si existe la cola
-								 si exite haces un push esi
-								 si no existe creas y haces push esi
-								else
-								 metes la clave en el diccionario
-								 creas la cola
-								 haces push de la esi
-
-				*/
 		}
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
@@ -272,7 +238,7 @@ void sjfcd(){
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 				//printf("contestacionESI %d\n",contestacionESI);
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene y resto 1 por cada ejecucion de sentencia a la rafaga
-				if(contestacionESI == 1){
+				if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
@@ -287,32 +253,26 @@ void sjfcd(){
 					break;
 				}
 
-				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-				//recv(coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-				//clave *clave1= (clave*) malloc(sizeof(clave)); DEFINO ESTRUCTURA PARA RECIBIR CLAVE
+	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
+				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
 				//Recibo del coordinador la clave que la ESI va a ejecutar
-				//recv(coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+				recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
 
-				/*if(id_mensaje_coord == 24){ //GET
-					ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+					switch (id_mensaje_coord) {
+					case 24:
+						ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+						break;
+					case 26:
+						ESI_STORE(clave1->claveAEjecutar);
+						break;
+					case 25:
+						printf("Recibi un dato innecesario");
+						break;
+					default:
+						//TODO: Aca hace algo negro
+						break;
 				}
-
-
-
-				if(id_mensaje_coord == 26){ //STORE
-				ESI_STORE(clave1->claveAEjecutar)
-				}
-
-				if(id_mensaje_coord == 25){ //SET hace algo??
-				}
-
-				else{
-				//ERROR
-
-				}
-				*/
-
-
 						//free(clave1);//REVISAR SI ESTO SE HACE ACA
 						//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
 						//list_clean(ejecucion);
@@ -414,6 +374,7 @@ void ESI_STORE(char *claveAEjecutar){
 				}
 			//Si esta vacia, la esi no existe en la cola de bloqueados
 			else{
+				dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_destroy);
 				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
 				}
 	    	}
@@ -425,6 +386,10 @@ void ESI_STORE(char *claveAEjecutar){
 	else{
 		printf("La clave no existe en el diccionario\n");
 	}
+}
+
+void clave_destroy(t_dictionary *data){
+	free(data);
 }
 /*
 //Si la clave ya existe en el diccionario
