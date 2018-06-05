@@ -77,11 +77,11 @@ int main(int argc, char **argv){
 						esi->clave = parsed.argumentos.GET.clave;
 				        break;
 				    case SET:
-				        esi->clave = parsed.argumentos.GET.clave;
+				        esi->clave = parsed.argumentos.SET.clave;
 				        esi->valor = parsed.argumentos.SET.valor;
 				        break;
 				    case STORE:
-				        esi->clave = parsed.argumentos.GET.clave;
+				        esi->clave = parsed.argumentos.STORE.clave;
 				        break;
 				    default:
 				        fprintf(stderr, "No pude interpretar <%s>\n", line);
