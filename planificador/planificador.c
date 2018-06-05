@@ -8,11 +8,13 @@
 #include "socket.h"
 #include "protocolo.h"
 #include "algoritmos.h"
+#include "consola.h"
 #include <pthread.h>
 
 
 void generate_poll();
 void generate_planning();
+void generate_console();
 
 #define IDENTIDAD "planificador"
 
@@ -20,8 +22,6 @@ void generate_planning();
 
 int main (int argc, char *argv[])
 {
-	//int ip_coordinador = atoi(config_get_string_value(config_file, "ip_coordinador"));
-	//int puerto_coordinador = atoi(config_get_string_value(config_file, "puerto_coordinador"));
 	//inicializo los semaforos a utilizar
 	sem_init(&new_process, 0, 0);
 	//sem_init(&replanificar, 0, 0);
@@ -30,13 +30,15 @@ int main (int argc, char *argv[])
 	sem_init(&mutex_ejecucion, 0, 1);
 
 	config_file = config_create("planificador.conf");
-	//Configuro el log a utilizar
+	//Configuro los logs a utilizar
 	configure_logger();
+	configure_logger_consola();
 
 	//creo los threads a utilizar
 	pthread_t thread_poll;
 	pthread_t thread_planificador;
-	//pthread_t thread_coord_connection;
+	pthread_t thread_consola;
+
 	//Creo las listas a utilizar
 	listos = list_create();
 	bloqueados = list_create();
@@ -45,21 +47,22 @@ int main (int argc, char *argv[])
 	//Creo el diccionario de claves bloqueadas
 	claves_bloqueadas = dictionary_create();
 
+	//creo la conexion con el coord(datos obtenidos desde planificador.conf)
+	//socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
 
-	socket_coord = create_client("127.0.0.1","12346");
-
-
-
-	pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
+	//hago detach de los threads utilizados
+	/*pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
 	pthread_detach(thread_poll);
 	pthread_create(&thread_planificador, NULL, (void*) generate_planning, NULL);
-	pthread_detach(thread_planificador);
+	pthread_detach(thread_planificador);*/
+	pthread_create(&thread_consola, NULL, (void*) generate_console, NULL);
+	pthread_detach(thread_consola);
 
     getchar();
 	return 0;
 }
 
-void generate_poll(){
+/*void generate_poll(){
 	printf("Entre al thread del poll \n");
 	create_server(32, 3 * 60 * 1000);
 }
@@ -85,6 +88,10 @@ void generate_planning(){
 	}
 	//while(1);
 	printf("adios mundo cruel \n");
+}*/
+
+void generate_console(){
+	consola();
 }
 
 /*void generate_coord_connection(){

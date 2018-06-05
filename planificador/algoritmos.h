@@ -40,6 +40,7 @@ bool identificador_ESI(void*);
 bool sort_by_estimacion(void*, void*);
 void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
+void sjfsd();
 void sjfcd();
 void ESI_GET(char *, int *);
 void ESI_STORE(char *);
