@@ -1,12 +1,12 @@
 /*
- * socketClient.h
+ * socket_client.h
  *
- *  Created on: 24 abr. 2018
- *      Author: utnso
+ *  Created on: May 28, 2018
+ *      Author: fmocchetti
  */
 
-#ifndef SOCKETCLIENT_H_
-#define SOCKETCLIENT_H_
+#ifndef SOCKET_CLIENT_H_
+#define SOCKET_CLIENT_H_
 
 #include <stdio.h>
 #include <openssl/md5.h> // Para calcular el MD5
@@ -23,6 +23,19 @@
 // Definimos algunas variables globales
 t_log * logger;
 
+enum mensajes {
+	IDENTIFY = 10,
+	INICIALIZAR_INSTANCIA = 11,
+	//CONEXION_ESI = 18,
+	//ESI_GET = 21,
+	//ESI_SET = 	22,
+	//ESI_STORE = 23,
+	COORDINADOR_GET = 24,
+	COORDINADOR_SET = 	25,
+	COORDINADOR_STORE = 26
+};
+enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, IDENTIFY_PLANIFICADOR = 3};
+
 int create_client(char*, char *);
 void configure_logger();
 int connect_to_server(char *, char *);
@@ -31,5 +44,4 @@ void send_message(int);
 void _exit_with_error(int, char*, void*);
 void exit_gracefully(int);
 
-
-#endif /* SOCKETCLIENT_H_ */
+#endif /* SOCKET_CLIENT_H_ */
