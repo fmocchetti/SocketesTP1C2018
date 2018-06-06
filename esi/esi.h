@@ -18,6 +18,7 @@ typedef struct  {
   int cantidadDeLineas;
   char *clave;
   char *valor;
+  unsigned char operacion;
 }  ESI;
 //__attribute__((packed))
 typedef struct {
