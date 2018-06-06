@@ -1,15 +1,17 @@
 /*
  * consola.h
  *
- *  Created on: 17 abr. 2018
- *      Author: Pablo Delucchi
+ *  Created on: 5 jun. 2018
+ *      Author: utnso
  */
 
 #ifndef CONSOLA_H_
 #define CONSOLA_H_
+
+#define CONSOLA_H_
+#define CONSOLA_H_
 #include <commons/log.h>
 #include <strings.h>
-#include "algoritmos.h"
 
 t_log * logger;
 
@@ -24,5 +26,6 @@ void listar();
 void kill();
 void status();
 void deadlock();
+
 
 #endif /* CONSOLA_H_ */

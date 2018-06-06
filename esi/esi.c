@@ -88,6 +88,7 @@ void doUntilFinish(int socket, ESI* esi){
 
 	send(socket, &resultadoEjecucion, 1, 0);
 	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+	sleep(3);
 }
 	printf("Mi ID es %d\n",esi->id_ESI);
 }

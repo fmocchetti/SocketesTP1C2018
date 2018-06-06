@@ -28,6 +28,8 @@ int main (int argc, char *argv[])
 	sem_init(&give_me_a_new_process, 0, 1);
 	sem_init(&mutex_listos, 0, 1);
 	sem_init(&mutex_ejecucion, 0, 1);
+	sem_init(&sem_pausar_planificacion, 0, 1);
+	sem_init(&sem_pausar_algoritmo, 0, 1);
 
 	config_file = config_create("planificador.conf");
 	//Configuro los logs a utilizar
@@ -51,18 +53,20 @@ int main (int argc, char *argv[])
 	//socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
 
 	//hago detach de los threads utilizados
-	/*pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
+	pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
 	pthread_detach(thread_poll);
 	pthread_create(&thread_planificador, NULL, (void*) generate_planning, NULL);
-	pthread_detach(thread_planificador);*/
+	pthread_detach(thread_planificador);
+	consola();
+/*
 	pthread_create(&thread_consola, NULL, (void*) generate_console, NULL);
-	pthread_detach(thread_consola);
+	pthread_detach(thread_consola);*/
 
     getchar();
 	return 0;
 }
 
-/*void generate_poll(){
+void generate_poll(){
 	printf("Entre al thread del poll \n");
 	create_server(32, 3 * 60 * 1000);
 }
@@ -88,14 +92,11 @@ void generate_planning(){
 	}
 	//while(1);
 	printf("adios mundo cruel \n");
-}*/
+}
 
 void generate_console(){
 	consola();
 }
 
-/*void generate_coord_connection(){
-	printf("Entre al thread del coord \n");
-	int socket_coord = create_client("127.0.0.1","12345");
-}*/
+
 

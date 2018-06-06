@@ -26,6 +26,8 @@ sem_t new_process;
 sem_t give_me_a_new_process;
 sem_t mutex_listos;
 sem_t mutex_ejecucion;
+sem_t sem_pausar_planificacion;
+sem_t sem_pausar_algoritmo;
 //pthread_mutex_t mutex_ejecucionn = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t mutex_ejecucion;
 t_dictionary * claves_bloqueadas;

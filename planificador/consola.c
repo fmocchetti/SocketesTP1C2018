@@ -13,12 +13,18 @@
 void consola(){
 
  char *input = malloc(sizeof(char));
+	//char input[20];
  printf( "----------Bienvenido al planificador-----------\n" );
- opciones();
+
  while(strcmp(input,"salir") != 0){
-	gets(input);
+	 opciones();
+	 //char *input = malloc(sizeof(char));
+	//gets(input);
+
+	 fgets(input, 40, stdin);
+	 printf("HOLAAAA\n");
 	printf("DICE %s\n", input);
-	if(strcmp(input,"pausar")==0){
+	if(strcmp(input,"pausar\0")==0){
 		pausar();
 	}
 	else{
@@ -53,11 +59,12 @@ void consola(){
 					}
 				}
 			}
-		}
+		}/*
 	if(strcmp(input,"salir")!=0){
 	opciones();
-	}
+	}*/
  }
+
 
  printf("Nos vimo perro");
  free(input);
@@ -84,11 +91,35 @@ void opciones(){
 }
 
 void pausar(){
-	log_info(logger,"Planificacion Pausada");
+	int sem_value = 0;
+
+	sem_getvalue(&sem_pausar_planificacion,&sem_value);
+	if(sem_value<1){
+		//log_info(logger,"La planificacion ya se encuentra pausada");
+		printf("La planificacion ya se encuentra pausada\n");
+	}
+	else{
+		sem_wait(&sem_pausar_planificacion);
+		sem_wait(&sem_pausar_algoritmo);
+		//log_info(logger,"Planificacion Pausada");
+		printf("Planificacion Pausada\n");
+	}
+
 }
 
 void continuar(){
-	log_info(logger,"Planificacion Restaurada");
+	int sem_value = 0;
+	sem_getvalue(&sem_pausar_planificacion,&sem_value);
+	if(sem_value>0){
+		//log_info(logger,"La planificacion no se encuentra pausada");
+		printf("La planificacion no se encuentra pausada\n");
+	}
+	else{
+		sem_post(&sem_pausar_planificacion);
+		sem_post(&sem_pausar_algoritmo);
+		//log_info(logger,"Planificacion Restaurada");
+		printf("planificacion restaurada\n");
+	}
 }
 
 void bloquear(){

@@ -47,7 +47,7 @@ void fifo(){
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;
-
+		int sem_value = 0;
 		printf("Esperando que haya un nuevo proceso encolado en listos\n");
 		estadoListas();
 
@@ -63,6 +63,10 @@ void fifo(){
 
 		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		while(nodo_lista_ejecucion->cantidadDeLineas >0){
+			sem_getvalue(&sem_pausar_planificacion,&sem_value);
+			if(sem_value<1){
+			sem_wait(&sem_pausar_algoritmo);
+			}
 
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
@@ -117,6 +121,7 @@ void sjfsd(){
 	//sem_init(&mutex_ejecucion, 0, 1);
 	//pthread_mutex_init(&mutex_ejecucion,NULL);
 	//int lista_vacia = list_is_empty(ejecucion);
+	int sem_value = 0;
 
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
@@ -140,7 +145,14 @@ void sjfsd(){
 
 		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		while(nodo_lista_ejecucion->cantidadDeLineas >0){
-
+			sem_getvalue(&sem_pausar_planificacion,&sem_value);
+			if(sem_value<1){
+			sem_wait(&sem_pausar_algoritmo);
+			}
+			sem_getvalue(&sem_pausar_planificacion,&sem_value);
+			if(sem_value<1){
+			sem_wait(&sem_pausar_algoritmo);
+			}
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 		//Espero que la esi me conteste
@@ -150,7 +162,7 @@ void sjfsd(){
 				if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
 					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
-					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
+					//printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
 				}
 				else{
 					//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
@@ -197,7 +209,7 @@ void sjfcd(){
 
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
-	//int sem_value = 0;
+	int sem_value = 0;
 	int lista_vacia = 0;
 
 
