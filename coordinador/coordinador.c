@@ -115,8 +115,8 @@ void _esi(int socket_local) {
         	case ESI_GET:
         		rc = recv(socket_local, &message_length, 4, 0);
         		clave = malloc(message_length + 1);
-        		rc = recv(socket_local, &clave, message_length, 0);
-        		clave[message_length + 1] = '\0';
+        		rc = recv(socket_local, clave, message_length, 0);
+        		clave[message_length] = '\0';
         		log_info(logger, "La ESI %d me esta pidiendo la clave %s", id_esi, clave);
         		if(dictionary_has_key(diccionario_claves, clave)) {
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
@@ -130,6 +130,8 @@ void _esi(int socket_local) {
         		} else {
         			instancia_destino = distribuir(clave, NULL, ESI_GET);
         			dictionary_put(diccionario_claves, clave, clave_create(id_esi, instancia_destino, true));
+        			identificador = ESI_OK;
+        			send(socket_local, &identificador, 1, 0);
         			//informar esi todo ok
 					//Ver si esto sirve: informar planificador que clave tomo esa esi
         		}
@@ -138,11 +140,11 @@ void _esi(int socket_local) {
         		rc = recv(socket_local, &message_length, 4, 0);
         		clave = malloc(message_length + 1);
         		rc = recv(socket_local, &clave, message_length, 0);
-        		clave[message_length + 1] = '\0';
+        		clave[message_length] = '\0';
         		rc = recv(socket_local, &message_length, 4, 0);
         		valor = malloc(message_length + 1);
 				rc = recv(socket_local, &valor, message_length, 0);
-				valor[message_length + 1] = '\0';
+				valor[message_length] = '\0';
         		log_info(logger, "La ESI %d quiere guardar el valor %s en la clave %s", id_esi, valor, clave);
         		if(dictionary_has_key(diccionario_claves, clave)) {
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
@@ -152,6 +154,8 @@ void _esi(int socket_local) {
         				//informar esi error
         			}else {
         				modificar_valor_clave(clave, valor, clave_diccionario->instancia);
+        				identificador = ESI_OK;
+						send(socket_local, &identificador, 1, 0);
         				//informar esi todo ok
         			}
         		} else {
@@ -163,7 +167,7 @@ void _esi(int socket_local) {
         		rc = recv(socket_local, &message_length, 4, 0);
         		clave = malloc(message_length + 1);
         		rc = recv(socket_local, &clave, message_length, 0);
-        		clave[message_length + 1] = '\0';
+        		clave[message_length] = '\0';
         		log_info(logger, "La ESI %d quiere hacer STORE de la clave %s", id_esi, clave);
         		if(dictionary_has_key(diccionario_claves, clave)) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
@@ -175,6 +179,8 @@ void _esi(int socket_local) {
 						store_clave(clave, clave_diccionario->instancia);
 						//informar esi todo ok
 						//informar planificador que clave se libero (ESI_STORE, clave)
+						identificador = ESI_OK;
+						send(socket_local, &identificador, 1, 0);
 					}
 				} else {
 					//informar esi error

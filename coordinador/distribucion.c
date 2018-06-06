@@ -11,6 +11,8 @@
 int distribuir(char * clave, char * valor, unsigned char operacion) {
 	t_instancia * instancia;
 
+	return rand() % 5;
+
 	switch(algoritmo_elegido) {
 		case EL:
 			ultima_instancia  %= total_instancias;
@@ -33,10 +35,12 @@ int distribuir(char * clave, char * valor, unsigned char operacion) {
 
 int modificar_valor_clave(char * clave, char * valor, int instancia) {
 
-	return 0;
+	return rand() % 5;
+	//return 0;
 }
 
 int store_clave(char * clave, int instancia) {
 
-	return 0;
+	return rand() % 5;
+	//return 0;
 }
