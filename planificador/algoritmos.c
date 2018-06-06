@@ -157,11 +157,12 @@ void sjfsd(){
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 		//Espero que la esi me conteste
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-				//printf("contestacionESI %d\n",contestacionESI);
+				printf("contestacionESI %d\n",contestacionESI);
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
 				if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
-					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+					//recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+					nodo_lista_ejecucion->cantidadDeLineas --;
 					//printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
 				}
 				else{
@@ -171,7 +172,7 @@ void sjfsd(){
 					printf("ESTOY BLOQUEANDO\n");
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 				}
-
+/*
 				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
 				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
 				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
@@ -192,7 +193,7 @@ void sjfsd(){
 					default:
 						//TODO: Aca hace algo negro
 						break;
-				}
+				}*/
 		}
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA

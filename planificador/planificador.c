@@ -50,7 +50,7 @@ int main (int argc, char *argv[])
 	claves_bloqueadas = dictionary_create();
 
 	//creo la conexion con el coord(datos obtenidos desde planificador.conf)
-	//socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
+	socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
 
 	//hago detach de los threads utilizados
 	pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);
@@ -68,7 +68,7 @@ int main (int argc, char *argv[])
 
 void generate_poll(){
 	printf("Entre al thread del poll \n");
-	create_server(32, 3 * 60 * 1000);
+	create_server(32, 3 * 60 * 1000, THREAD_CONNECTION, config_get_int_value(config_file, "puerto_de_escucha"));
 }
 
 void generate_planning(){

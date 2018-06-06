@@ -1,12 +1,12 @@
 /*
- * socketServer.h
+ * socket.h
  *
- *  Created on: Apr 18, 2018
- *      Author: fmocchetti/pdelucchi
+ *  Created on: May 7, 2018
+ *      Author: fmocchetti
  */
 
-#ifndef SOCKETSERVER_H_
-#define SOCKETSERVER_H_
+#ifndef SOCKET_H_
+#define SOCKET_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,23 +25,35 @@
 #include <pthread.h>
 #include <commons/config.h>
 
-//#define SERVER_PORT  12345
 #define TRUE             1
 #define FALSE            0
 
+t_log * logger;
 t_config * config_file;
 
 enum mensajes {
-	IDENTIFY = 10
+	IDENTIFY = 10,
+	INICIALIZAR_INSTANCIA = 11,
+	CONEXION_ESI = 18,
+	COORDINADOR_GET = 24,
+	COORDINADOR_SET = 	25,
+	COORDINADOR_STORE = 26
 };
 
-enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, IDENTIFY_PLANIFICADOR = 3};
+enum { IDENTIFY_ESI = 1, IDENTIFY_INSTANCIA = 2, PLANIFICADOR = 3};
 
-void create_server(int max_connections, int timeout);
+typedef struct {
+	int socket;
+	int identidad;
+} thread_handle_struct;
+
+enum {POLL, THREAD_CONNECTION, SELECT };
+
 void configure_logger();
-int create_client(char * ip, char * port);
-void wait_hello(int socket);
-void send_message(int socket);
-int connect_to_server(char * ip, char * port);
+void create_server(int max_connections, int timeout, int server_type, int port);
+void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int listen_sd);
+void connection_thread();
+void thread_on_connection(int listen_sd);
+void exit_gracefully(int return_nr);
 
-#endif /* SOCKETSERVER_H_ */
+#endif /* SOCKET_H_ */
