@@ -4,3 +4,9 @@
 [INFO] 20:05:28:299 consola-planificador/(7252:7252): Trying to connect to: 127.0.0.1 : 12345 
 
 [ERROR] 20:05:28:316 consola-planificador/(7252:7252): No me pude conectar al servidor
+[INFO] 18:25:33:382 consola-planificador/(7424:7424): Comienza el proceso respaldo de Informacion
+[INFO] 18:27:04:774 consola-planificador/(7494:7494): Comienza el proceso respaldo de Informacion en: 
+[INFO] 18:27:18:227 consola-planificador/(7526:7526): Comienza el proceso respaldo de Informacion en: 
+[INFO] 18:27:49:716 consola-planificador/(7569:7569): Comienza el proceso respaldo de Informacion en: 
+[INFO] 18:29:49:152 consola-planificador/(7649:7649): Comienza el proceso respaldo de Informacion en: 
+[INFO] 18:29:49:156 consola-planificador/(7649:7649): Finaliza el proceso respaldo de Informacion..
