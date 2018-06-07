@@ -161,7 +161,7 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 	int messageLength = 5 + size_clave;
 
 	if(esi->operacion == SET) {
-		int size_valor = strlen(esi->valor);
+		size_valor = strlen(esi->valor);
 		messageLength += 4 + size_valor;
 	}
 
@@ -176,7 +176,7 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 	}
 
 	log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
-	send(socket, mensajes, messageLength, 0);
+	sd = send(socket, mensajes, messageLength, 0);
 	free(mensajes);
 
 	if (sd < 0){
@@ -186,6 +186,8 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 
 	//recivo del coordinador la respuesta que debo enviar al planificador
 	rc = recv(socket, &identificador, 1, 0);
+
+	log_info(logger, "El coordinador me dijo %d", identificador);
 
 	if (rc == 0){
 		printf("Desconexion con el Coordinador\n");
