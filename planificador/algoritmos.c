@@ -90,36 +90,18 @@ void fifo(){
 				printf("ESTOY BLOQUEANDO\n");
 				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 			}
+			//magia con el coord (Recibe si es store/get y realiza acorde)
+			coord_communication(nodo_lista_ejecucion->socket_esi);
 
-			//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-			recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-			claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
-			//Recibo del coordinador la clave que la ESI va a ejecutar
-			recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
-
-
-			switch (id_mensaje_coord) {
-				case 24:
-					ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
-					break;
-				case 26:
-					ESI_STORE(clave1->claveAEjecutar);
-					break;
-				case 25:
-					printf("Recibi un dato innecesario");
-					break;
-				default:
-					//TODO: Aca hace algo negro
-					break;
 			}
-		}
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
 		//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
 		list_clean(ejecucion);
 		printf("Limpio lista\n");
+		}
 	}
-}
+
 
 void sjfsd(){
 	//sem_init(&mutex_ejecucion, 0, 1);
@@ -176,7 +158,12 @@ void sjfsd(){
 					printf("ESTOY BLOQUEANDO\n");
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 				}
-/*
+
+				//magia con el coord (Recibe si es store/get y realiza acorde)
+				coord_communication(nodo_lista_ejecucion->socket_esi);
+
+
+/*BAKCUP NO BORRAR HASTA PROBAR
 				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
 				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
 				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
@@ -278,30 +265,8 @@ void sjfcd(){
 					break;
 				}
 
-	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
-				//Recibo del coordinador la clave que la ESI va a ejecutar
-				recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
-
-					switch (id_mensaje_coord) {
-					case 24:
-						ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
-						break;
-					case 26:
-						ESI_STORE(clave1->claveAEjecutar);
-						break;
-					case 25:
-						printf("Recibi un dato innecesario");
-						break;
-					default:
-						//TODO: Aca hace algo negro
-						break;
-				}
-						//free(clave1);//REVISAR SI ESTO SE HACE ACA
-						//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
-						//list_clean(ejecucion);
-						//printf("Limpio lista\n");
+				//magia con el coord (Recibe si es store/get y realiza acorde)
+				coord_communication(nodo_lista_ejecucion->socket_esi);
 		}
 		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 		else{
@@ -354,7 +319,24 @@ void element_destroyer(void * data){
 	free(data);
 }
 
-void ESI_GET(char * claveAEjecutar, int * id_ESI){
+void ESI_GET(char * claveAEjecutar, int id_ESI){
+	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+	    	printf("Entre en 1\n");
+	    	t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+	    	//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
+	    		queue_push(queue_clave, &id_ESI);
+	    	}
+	    		//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+	    else{
+	    	printf("Entre en 2\n");
+	    	t_queue * queue_clave = queue_create();
+	    	queue_push(queue_clave, &id_ESI);
+	    	dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
+	    }
+}
+
+/*BACKUP - NO BORRAR HASTA TESTEAR
+ * void ESI_GET(char * claveAEjecutar, int * id_ESI){
 	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
 	    	printf("Entre en 1\n");
 	    	t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
@@ -368,7 +350,7 @@ void ESI_GET(char * claveAEjecutar, int * id_ESI){
 	    	queue_push(queue_clave, id_ESI);
 	    	dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
 	    }
-}
+}*/
 
 void ESI_STORE(char *claveAEjecutar){
 	int queue_vacia = 0;
@@ -412,9 +394,76 @@ void ESI_STORE(char *claveAEjecutar){
 		printf("La clave no existe en el diccionario\n");
 	}
 }
+/*BACKUP - NO BORRAR HASTA TESTEAR
+void ESI_STORE(char *claveAEjecutar){
+	int queue_vacia = 0;
+    int list_vacia = 0;
+    int id_esi_desbloqueado = 0;
+    //reviso si la clave existe en el diccionario
+	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+	    queue_vacia = queue_is_empty(queue_clave);
+	//reviso si la queue no esta vacia
+	    if(queue_vacia!=1){
+	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
+			id_esi_desbloqueado = queue_pop(queue_clave);
+			printf("id ESI bloqueado %d\n",id_esi_desbloqueado);
+			ESI* esi1 = (ESI*) malloc(sizeof(ESI));
+			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
+			id_esi_global = id_esi_desbloqueado;
+			t_list * lista_temporal = list_filter(bloqueados,(void*)identificador_ESI);
+			list_vacia = list_is_empty(lista_temporal);
+			//chequeo si la lista no esta vacia, remuevo la esi de bloqueados y la muevo a listos
+			if(list_vacia != 1){
+				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
+				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
+				list_add(listos, (ESI*)esi1);
+				//seteo los semaforos para el sjfcd
+				replanificar = 1;
+				sem_post(&new_process);
+				}
+			//Si esta vacia, la esi no existe en la cola de bloqueados
+			else{
+				dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_destroy);
+				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
+				}
+	    	}
+	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
+	    else{
+	    	printf("la clave no esta tomada\n");
+	    	}
+	    }
+	else{
+		printf("La clave no existe en el diccionario\n");
+	}
+}*/
 
 void clave_destroy(t_dictionary *data){
 	free(data);
+}
+
+void coord_communication(int socket_ESI){
+	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
+	recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+			claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
+			//Recibo del coordinador la clave que la ESI va a ejecutar
+			recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+
+			switch (id_mensaje_coord) {
+				case 24:
+					ESI_GET(clave1->claveAEjecutar,socket_ESI);
+					break;
+				case 26:
+					ESI_STORE(clave1->claveAEjecutar);
+					break;
+				case 25:
+					printf("Recibi un dato innecesario");
+					break;
+				default:
+					//TODO: Aca hace algo negro
+					break;
+			}
+			free(clave1);
 }
 /*
 //Si la clave ya existe en el diccionario

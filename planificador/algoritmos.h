@@ -44,8 +44,9 @@ void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
 void sjfsd();
 void sjfcd();
-void ESI_GET(char *, int *);
+void ESI_GET(char *, int);
 void ESI_STORE(char *);
 void clave_destroy(t_dictionary *data);
+void coord_communication(socket_ESI);
 
 #endif /* ALGORITMOS_H_ */
