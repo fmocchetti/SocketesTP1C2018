@@ -133,34 +133,37 @@ void sjfsd(){
 		while(nodo_lista_ejecucion->cantidadDeLineas >0){
 			sem_getvalue(&sem_pausar_planificacion,&sem_value);
 			if(sem_value<1){
-			sem_wait(&sem_pausar_algoritmo);
+				sem_wait(&sem_pausar_algoritmo);
 			}
-		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
-				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
-		//Espero que la esi me conteste
-				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-				if (result_connection <= 0) {
-					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-					nodo_lista_ejecucion->cantidadDeLineas = 0;
-					}
-				printf("contestacionESI %d\n",contestacionESI);
-		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
-				if(contestacionESI == 2){
-					//recibo de la esi la cantidad de lineas
-					//recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
-					nodo_lista_ejecucion->cantidadDeLineas --;
-					//printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
-				}
-				else{
-					//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
-					//
-					//agregar a la estructura
-					printf("ESTOY BLOQUEANDO\n");
-					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-				}
+
+			//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
+			send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
+
+			//Espero que la esi me conteste
+			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+			if (result_connection <= 0) {
+				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+				nodo_lista_ejecucion->cantidadDeLineas = 0;
+			}
+
+			printf("contestacionESI %d\n",contestacionESI);
+			//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
+			if(contestacionESI == 2){
+				//recibo de la esi la cantidad de lineas
+				//recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+				nodo_lista_ejecucion->cantidadDeLineas --;
+				//printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
+			} else {
+				//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
+				//
+				//agregar a la estructura
+				printf("ESTOY BLOQUEANDO\n");
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+				break;
+			}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				coord_communication(nodo_lista_ejecucion->socket_esi);
+				//coord_communication(nodo_lista_ejecucion->socket_esi);
 
 
 /*BAKCUP NO BORRAR HASTA PROBAR
@@ -321,18 +324,17 @@ void element_destroyer(void * data){
 
 void ESI_GET(char * claveAEjecutar, int id_ESI){
 	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
-	    	printf("Entre en 1\n");
-	    	t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
-	    	//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
-	    		queue_push(queue_clave, &id_ESI);
-	    	}
-	    		//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
-	    else{
-	    	printf("Entre en 2\n");
-	    	t_queue * queue_clave = queue_create();
-	    	queue_push(queue_clave, &id_ESI);
-	    	dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
-	    }
+		printf("Entre en 1\n");
+		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+		//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
+		queue_push(queue_clave, &id_ESI);
+	} else {
+		//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+		printf("Entre en 2\n");
+		t_queue * queue_clave = queue_create();
+		queue_push(queue_clave, &id_ESI);
+		dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
+	}
 }
 
 /*BACKUP - NO BORRAR HASTA TESTEAR
@@ -443,27 +445,33 @@ void clave_destroy(t_dictionary *data){
 }
 
 void coord_communication(int socket_ESI){
+	int size_clave = 0;
+	char * clave = NULL;
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-	recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-			claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
-			//Recibo del coordinador la clave que la ESI va a ejecutar
-			recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+	recv(socket_coord, &id_mensaje_coord,1, 0);
+	if(id_mensaje_coord != 25) {
+		recv(socket_coord, &size_clave, 4, 0);
+		clave = (char *) malloc (size_clave +1);
+		recv(socket_coord, clave, size_clave, 0);
+		clave[size_clave] = '\0';
+	}
 
-			switch (id_mensaje_coord) {
-				case 24:
-					ESI_GET(clave1->claveAEjecutar,socket_ESI);
-					break;
-				case 26:
-					ESI_STORE(clave1->claveAEjecutar);
-					break;
-				case 25:
-					printf("Recibi un dato innecesario");
-					break;
-				default:
-					//TODO: Aca hace algo negro
-					break;
-			}
-			free(clave1);
+	switch (id_mensaje_coord) {
+		case 24:
+			ESI_GET(clave, socket_ESI);
+			break;
+		case 26:
+			ESI_STORE(clave);
+			break;
+		case 25:
+			printf("Recibi un dato innecesario");
+			break;
+		default:
+			//TODO: Aca hace algo negro
+			break;
+	}
+	//TODO: Fijate si esto es necesario o explota
+	free(clave);
 }
 /*
 //Si la clave ya existe en el diccionario
