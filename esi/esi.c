@@ -65,7 +65,7 @@ void send_hello(int socket, ESI* esi) {
     */
     _exit_with_error(socket, "No se pudo enviar el hola", NULL);
   }
-  recv(socket, &esi->id_ESI, sizeof(esi->id_ESI),0);
+  //recv(socket, &esi->id_ESI, sizeof(esi->id_ESI),0);
   //printf("%d\n", esi->id_ESI);
 }
 
@@ -74,7 +74,7 @@ void doUntilFinish(int socket, ESI* esi){
 	printf("%d\n", esi->cantidadDeLineas);
 
 	unsigned char permisoDeEjecucion = 0;
-	unsigned char resultadoEjecucion = 2; // si es 1 es correcto, si es 2 no
+	unsigned char resultadoEjecucion = 2;
 
 	while(esi->cantidadDeLineas > 0){
 		printf("Haciendo de lo mio \n");
@@ -87,7 +87,7 @@ void doUntilFinish(int socket, ESI* esi){
 	}
 
 	send(socket, &resultadoEjecucion, 1, 0);
-	send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+	//send(socket, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 	sleep(3);
 }
 	printf("Mi ID es %d\n",esi->id_ESI);

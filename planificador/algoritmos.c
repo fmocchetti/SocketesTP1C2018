@@ -10,6 +10,7 @@
 #include "protocolo.h"
 int id_esi_global = 0;
 unsigned char id_mensaje_coord = 0;
+result_connection = 0;
 
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
@@ -69,45 +70,48 @@ void fifo(){
 			}
 
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
-				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
+			send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 		//Espero que la esi me conteste
-				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-				//printf("contestacionESI %d\n",contestacionESI);
+			recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+			if (result_connection <= 0) {
+						_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+						nodo_lista_ejecucion->cantidadDeLineas = 0;
+						}
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
-				if(contestacionESI == 2){
-					//recibo de la esi la cantidad de lineas
-					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
-					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
-				}
-				else{
-					//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
-					//
-					//agregar a la estructura
-					printf("ESTOY BLOQUEANDO\n");
-					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-				}
+			if(contestacionESI == 2){
+				//recibo de la esi la cantidad de lineas
+				recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+				printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
+			}
+			else{
+				//nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->claveAEjecutar, sizeof(nodo_lista_ejecucion->claveAEjecutar),0);
+				//
+				//agregar a la estructura
+				printf("ESTOY BLOQUEANDO\n");
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+			}
 
-				//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-				recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
-				claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
-				//Recibo del coordinador la clave que la ESI va a ejecutar
-				recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
+			//primero hago un recv del coordinador, que me indica que operacion voy a realizar
+			recv(socket_coord,&id_mensaje_coord,sizeof(id_mensaje_coord),0);
+			claves *clave1= (claves*) malloc(sizeof(claves)); //DEFINO ESTRUCTURA PARA RECIBIR CLAVE
+			//Recibo del coordinador la clave que la ESI va a ejecutar
+			recv(socket_coord,&clave1->claveAEjecutar,sizeof(clave1->claveAEjecutar),0);
 
 
-				switch (id_mensaje_coord) {
-					case 24:
-						ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
-						break;
-					case 26:
-						ESI_STORE(clave1->claveAEjecutar);
-						break;
-					case 25:
-						printf("Recibi un dato innecesario");
-						break;
-					default:
-						//TODO: Aca hace algo negro
-						break;
-				}
+			switch (id_mensaje_coord) {
+				case 24:
+					ESI_GET(clave1->claveAEjecutar,nodo_lista_ejecucion->socket_esi);
+					break;
+				case 26:
+					ESI_STORE(clave1->claveAEjecutar);
+					break;
+				case 25:
+					printf("Recibi un dato innecesario");
+					break;
+				default:
+					//TODO: Aca hace algo negro
+					break;
+			}
 		}
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
@@ -149,14 +153,14 @@ void sjfsd(){
 			if(sem_value<1){
 			sem_wait(&sem_pausar_algoritmo);
 			}
-			sem_getvalue(&sem_pausar_planificacion,&sem_value);
-			if(sem_value<1){
-			sem_wait(&sem_pausar_algoritmo);
-			}
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 		//Espero que la esi me conteste
 				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+				if (result_connection <= 0) {
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					nodo_lista_ejecucion->cantidadDeLineas = 0;
+					}
 				printf("contestacionESI %d\n",contestacionESI);
 		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene
 				if(contestacionESI == 2){
@@ -212,7 +216,7 @@ void sjfcd(){
 	unsigned char contestacionESI = 0;
 	int sem_value = 0;
 	int lista_vacia = 0;
-
+	int result_connection = 0;
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -237,23 +241,31 @@ void sjfcd(){
 		printf("Nodo de listos movido a Ejecucion\n ");
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
 		printf("ID de la ESI a ejecutar %d\n", nodo_lista_ejecucion->id_ESI);
-		sleep(5);//sacar luego de testear
 
 		//sem_getvalue(&new_process,&sem_value);
 		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
 		while(replanificar == 0){
+			sem_getvalue(&sem_pausar_planificacion,&sem_value);
+			if(sem_value<1){
+				sem_wait(&sem_pausar_algoritmo);
+			}
 		//Si la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		if(nodo_lista_ejecucion->cantidadDeLineas >0){
 
 		//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 		//Espero que la esi me conteste
-				recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+				if (result_connection <= 0) {
+				    _exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+				    nodo_lista_ejecucion->cantidadDeLineas = 0;
+				  }
 				//printf("contestacionESI %d\n",contestacionESI);
-		//Si es 1, entonces espero que me envie la nueva cantidad de Lineas que tiene y resto 1 por cada ejecucion de sentencia a la rafaga
-				if(contestacionESI == 2){
+		//Si es 2, entonces resto 1 a cada linea faltante y resto 1 por cada ejecucion de sentencia a la rafaga
+				else if(contestacionESI == 2){
 					//recibo de la esi la cantidad de lineas
-					recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+					//recv(nodo_lista_ejecucion->socket_esi, &nodo_lista_ejecucion->cantidadDeLineas, sizeof(nodo_lista_ejecucion->cantidadDeLineas),0);
+					nodo_lista_ejecucion->cantidadDeLineas --;
 					printf("Cantidad de lineas por ejecutar: %d\n", nodo_lista_ejecucion->cantidadDeLineas);
 					nodo_lista_ejecucion->rafaga --;
 				}

@@ -62,10 +62,10 @@ void * wait_content(int socket) {
 void _exit_with_error(int socket, char* error_msg, char * buffer) {
   if (buffer != NULL) {
     free(buffer);
+    printf("hago FREE!\n");
   }
   log_error(logger, error_msg);
   close(socket);
-  exit_gracefully(1);
 }
 
 void exit_gracefully(int return_nr) {

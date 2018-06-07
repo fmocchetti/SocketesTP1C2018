@@ -50,7 +50,7 @@ int main (int argc, char *argv[])
 	claves_bloqueadas = dictionary_create();
 
 	//creo la conexion con el coord(datos obtenidos desde planificador.conf)
-	socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
+	//socket_coord = create_client(config_get_string_value(config_file, "ip_coordinador"),config_get_string_value(config_file, "puerto_coordinador"));
 
 	//hago detach de los threads utilizados
 	pthread_create(&thread_poll, NULL, (void*) generate_poll, NULL);

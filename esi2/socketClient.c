@@ -1,15 +1,14 @@
+
 /*
- * SocketClient.c
+ * socket_client.c
  *
- *  Created on: 24 abr. 2018
- *      Author: Pablo Delucchi
+ *  Created on: May 28, 2018
+ *      Author: fmocchetti
  */
 
 #include "socketClient.h"
 #include <stdlib.h>
 #include <errno.h>
-#define IDENTIDAD "esi"
-
 
 int connect_to_server(char * ip, char * port) {
 	struct addrinfo hints;
@@ -19,14 +18,14 @@ int connect_to_server(char * ip, char * port) {
 	hints.ai_family = AF_UNSPEC;    // Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
 	hints.ai_socktype = SOCK_STREAM;  // Indica que usaremos el protocolo TCP
 
-	printf("Trying to connect to: %s : %s \n", ip, port);
+	log_info(logger, "Trying to connect to: %s : %s \n", ip, port);
 
 	getaddrinfo(ip, port, &hints, &server_info);  // Carga en server_info los datos de la conexion
 
 	int server_socket = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
 	if(server_socket < 0) {
-		printf("Failed creating socket %d\n", errno);
+		log_error(logger, "Failed creating socket %d\n", errno);
 		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
 	}
 
@@ -56,32 +55,28 @@ void exit_gracefully(int return_nr) {
 }
 
 void configure_logger() {
-	logger = log_create("consola-planificador.log", "consola-planificador", true, LOG_LEVEL_INFO);
+	logger = log_create("esi.log", "esi", true, LOG_LEVEL_INFO);
 }
 
 void wait_hello(int socket) {
+	unsigned char buffer = 0;
 
-	char * hola = "identify";
+	log_info(logger, "Waiting handshake");
 
-    char * buffer = (char*) calloc(sizeof(char), strlen(hola) + 1);
+    int result_recv = recv(socket, &buffer, 1, MSG_WAITALL); //MSG_WAITALL
 
-    int result_recv = recv(socket, buffer, strlen(hola), MSG_WAITALL); //MSG_WAITALL
-
-	printf("Recibi %s\n",buffer);
+	//printf("Recibi %d\n",buffer);
 
     if(result_recv <= 0) {
       _exit_with_error(socket, "No se pudo recibir hola", buffer);
     }
 
-    if (strcmp(buffer, hola) != 0) {
+    if (buffer != IDENTIFY) {
       _exit_with_error(socket, "No es el mensaje que se esperaba", buffer);
     }
 
-    log_info(logger, "Mensaje de hola recibido: '%s'", buffer);
-
-	send(socket, IDENTIDAD, strlen(IDENTIDAD), 0);
-
-    free(buffer);
+    buffer = IDENTIFY_ESI;
+	send(socket, &buffer, sizeof(buffer), 0);
 }
 
 void send_message(int socket){

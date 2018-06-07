@@ -103,7 +103,7 @@ void thread_on_connection(int listen_sd) {
         send(new_sd , &message, sizeof(message), 0);
 
         log_info(logger,"  Waiting for the client to identify\n");
-
+        //sleep(10);
         rc = recv(new_sd, buffer, sizeof(buffer), 0);
         if (rc < 0) {
            if (errno != EWOULDBLOCK) {
@@ -124,16 +124,20 @@ void thread_on_connection(int listen_sd) {
 		esi->socket_esi = new_sd;
 
 		printf("El socket de la ESI es %d\n",esi->socket_esi);
+		printf("El mensaje es %u\n",id_mensaje_esi);
 
 		//Chequeo si el mensaje recibido de la ESI es el correcto
 		if(id_mensaje_esi != 18){
-			log_error(logger, "id de mensaje incorrecto");
-			close_conn = TRUE;
+			 _exit_with_error(socket, "id de mensaje incorrecto", NULL);
 		}
+
 
 		//Si lo es, sigo recibiendo
 
 		rc = recv(new_sd, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas),0);
+		if (rc <= 0) {
+			_exit_with_error(new_sd, "El socket murio", NULL);
+		}
 		// Le indico a la nueva ESI el ID que le corresponde
 
 		esi->id_ESI = n;
@@ -299,7 +303,6 @@ void wait_hello(int socket) {
 	unsigned char buffer = 0;
 
 	log_info(logger, "Waiting handshake");
-
     int result_recv = recv(socket, &buffer, 1, MSG_WAITALL); //MSG_WAITALL
 
 	//printf("Recibi %d\n",buffer);
