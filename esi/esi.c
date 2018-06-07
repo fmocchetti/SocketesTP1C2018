@@ -67,13 +67,17 @@ int main(int argc, char **argv){
 				switch(parsed.keyword){
 					case GET:
 						esi->clave = parsed.argumentos.GET.clave;
+						log_info(logger, "GET Clave: %s", esi->clave);
 				        break;
 				    case SET:
 				        esi->clave = parsed.argumentos.SET.clave;
+				        log_info(logger, "SET Clave: %s", esi->clave);
 				        esi->valor = parsed.argumentos.SET.valor;
+				        log_info(logger, "SET Valor: %s", esi->valor);
 				        break;
 				    case STORE:
 				        esi->clave = parsed.argumentos.STORE.clave;
+				        log_info(logger, "STORE Clave: %s", esi->clave);
 				        break;
 				    default:
 				        fprintf(stderr, "No pude interpretar <%s>\n", line);
@@ -161,14 +165,14 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 		messageLength += 4 + size_valor;
 	}
 
-	esi->operacion += 21;
+	identificador = esi->operacion + 21;
 	char * mensajes = (char *) malloc (messageLength);
-	memcpy(mensajes, &(esi->operacion), 1);
+	memcpy(mensajes, &(identificador), 1);
 	memcpy(mensajes+1, &size_clave, 4);
 	memcpy(mensajes+5, esi->clave, size_clave);
 	if(esi->operacion == SET) {
-		memcpy(mensajes+size_clave+5, &size_valor, 4);
-		memcpy(mensajes+size_clave+9, esi->valor, size_valor);
+		memcpy(mensajes+5+size_clave, &size_valor, 4);
+		memcpy(mensajes+9+size_clave, esi->valor, size_valor);
 	}
 
 	log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
@@ -204,12 +208,11 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 void enviarRespuestaAlPlanificador(int socket, bool respuesta){
 	unsigned char message;
 	int sd;
-	respuesta = 1;
 
 	if(respuesta){ //respuesta del coordinador
 		message = 2;
 		sd =send(socket, &message, 1, 0);//Envio el 2, segun el protocolo es un OK
-	}else{
+	} else {
 		message = 9;
 		sd = send(socket, &message, 1, 0);
 	}
