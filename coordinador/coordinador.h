@@ -22,6 +22,7 @@ t_list* list_instances;
 
 int total_instancias;
 pthread_mutex_t mutex;
+pthread_mutex_t mutex_planificador;
 
 typedef struct {
     int id;
@@ -30,6 +31,26 @@ typedef struct {
     char * valor;
     unsigned char operacion;
 } t_instancia;
+
+typedef struct {
+    unsigned char status;
+    char * clave;
+} t_planificador;
+
+t_planificador * thread_planificador;
+
+static t_planificador *planificador_create(void) {
+	t_planificador *new = malloc(sizeof(t_planificador));
+    new->status = 0;
+    new->clave = 0;
+    return new;
+}
+
+static void planificador_destroy(t_planificador *self) {
+	free(self->clave);
+    free(self);
+}
+
 
 static t_instancia *instancia_create(int id) {
 	t_instancia *new = malloc(sizeof(t_instancia));

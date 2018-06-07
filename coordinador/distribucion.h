@@ -12,6 +12,7 @@ enum {EL , KE, LSU};
 int algoritmo_elegido;
 int ultima_instancia;
 
+int informar_planificador(char * clave, unsigned char status);
 int distribuir(char *, char *, unsigned char);
 int modificar_valor_clave(char *, char *, int);
 int store_clave(char *, int);
