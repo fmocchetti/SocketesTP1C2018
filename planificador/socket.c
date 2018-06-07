@@ -315,7 +315,7 @@ void wait_hello(int socket) {
       _exit_with_error(socket, "No es el mensaje que se esperaba", buffer);
     }
 
-    buffer = IDENTIFY_ESI;
+    buffer = PLANIFICADOR;
 	send(socket, &buffer, sizeof(buffer), 0);
 }
 
