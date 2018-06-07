@@ -10,7 +10,7 @@
 int informar_planificador(char * clave, unsigned char status) {
 	thread_planificador->clave = clave;
 	thread_planificador->status = status;
-    pthread_mutex_unlock(&mutex_planificador);
+    sem_post(&mutex_planificador);
 	return 0;
 }
 

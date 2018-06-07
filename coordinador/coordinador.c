@@ -95,7 +95,7 @@ void _instancia(int socket_local) {
 }
 
 void _esi(int socket_local) {
-	int rc = 0, close_conn = 0, id_esi = 1, instancia_destino = -1;
+	int rc = 0, close_conn = 0, id_esi = rand() % 5, instancia_destino = -1;
 	int message_length = 0;
 	unsigned char identificador = 0;
 	char * clave = NULL;
@@ -104,6 +104,7 @@ void _esi(int socket_local) {
 
 	while(1) {
 
+		log_info(logger, "Esta esi es la %d", id_esi);
         rc = recv(socket_local, &identificador, 1, 0);
         if (rc == 0) {
         	log_error(logger, "  recv() failed");
@@ -155,10 +156,12 @@ void _esi(int socket_local) {
         		if(dictionary_has_key(diccionario_claves, clave)) {
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
         			if(clave_diccionario->tomada && clave_diccionario->esi != id_esi) {
+        				log_info(logger, "Esta clave esta tomada por la esi %d", clave_diccionario->esi);
         				identificador = ESI_ERROR;
     					send(socket_local, &identificador, 1, 0);
         				//informar esi error
         			} else if (!(clave_diccionario->tomada)) {
+        				log_info(logger, "Esta clave no estaba tomada");
         				identificador = ESI_ERROR;
     					send(socket_local, &identificador, 1, 0);
         				//informar esi error
@@ -199,6 +202,7 @@ void _esi(int socket_local) {
 						//informar planificador que clave se libero (ESI_STORE, clave)
 						identificador = ESI_OK;
 						send(socket_local, &identificador, 1, 0);
+						clave_diccionario->tomada = false;
 					}
 				} else {
 					//informar esi error
@@ -232,7 +236,7 @@ void _planificador(int socket_local) {
 
 	while(1) {
 
-		pthread_mutex_lock(&mutex_planificador);
+		sem_wait(&mutex_planificador);
 		int size_clave = strlen(thread_planificador->clave);
 		int messageLength = 5 + size_clave;
 
@@ -247,12 +251,12 @@ void _planificador(int socket_local) {
 		send(socket, mensajes, messageLength, 0);
 		free(mensajes);
 
-        rc = recv(socket_local, &identificador, 1, 0);
+        /*rc = recv(socket_local, &identificador, 1, 0);
         if (rc == 0) {
         	log_error(logger, "  recv() failed");
         	close_conn = TRUE;
         	break;
-        }
+        }*/
 	}
 
 	if (close_conn) {

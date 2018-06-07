@@ -22,7 +22,7 @@ t_list* list_instances;
 
 int total_instancias;
 pthread_mutex_t mutex;
-pthread_mutex_t mutex_planificador;
+sem_t mutex_planificador;
 
 typedef struct {
     int id;
@@ -76,7 +76,7 @@ t_dictionary * diccionario_claves;
 
 static t_clave *clave_create(int esi, int instancia, bool tomada){
 	t_clave *new = malloc( sizeof(t_clave) );
-	new->esi = instancia;
+	new->esi = esi;
 	new->instancia = instancia;
 	new->tomada = tomada;
 	return new;
