@@ -5,7 +5,7 @@ void* buscar(t_list *tabla,char* claveBuscada){
 
 	bool elemento_buscado(struct Dato* unDato) {
 
-	     return ((unDato->clave) == claveBuscada);
+	     return (/*(*unDato->clave) == *claveBuscada*/!strcmp(unDato->clave,claveBuscada));
 
 	}
 	struct Dato* dato = (struct Dato*)list_find(tabla, elemento_buscado);

@@ -10,3 +10,9 @@
 [INFO] 18:27:49:716 consola-planificador/(7569:7569): Comienza el proceso respaldo de Informacion en: 
 [INFO] 18:29:49:152 consola-planificador/(7649:7649): Comienza el proceso respaldo de Informacion en: 
 [INFO] 18:29:49:156 consola-planificador/(7649:7649): Finaliza el proceso respaldo de Informacion..
+[INFO] 20:09:42:176 consola-planificador/(4704:4704): No se encontro la Clave en STORE: K2888
+[INFO] 20:18:14:963 consola-planificador/(5035:5035): No se encontro la Clave en STORE: K2888
+[INFO] 20:23:38:967 consola-planificador/(5175:5175): No se encontro la Clave en STORE: K2888
+[INFO] 20:32:46:121 consola-planificador/(5862:5862): Se guardara el archivo en ruta: K2888
+[INFO] 20:32:48:964 consola-planificador/(5862:5862): Se crea el archivo: 4
+[INFO] 20:32:48:966 consola-planificador/(5862:5862): Se cierra el archivo
