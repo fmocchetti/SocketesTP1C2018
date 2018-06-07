@@ -61,7 +61,7 @@ int main () {
 	t_list* tabla = list_create();
 
 	//creo thread dump
-
+/*
 	log_info(logger, "Cree el thread Dump");
 	pthread_t threadDumpeador;
 
@@ -79,7 +79,7 @@ int main () {
     }
 
 
-
+*/
 
 	//recibo operacion
 
@@ -99,55 +99,62 @@ int main () {
 	clave[size_clave] = '\0';
 
 	log_info(logger, "Clave %s", clave);
+	
+	if(identificador == 25){//SET
 	//TODO: Si es un get aca no tiene que recibir nada
 
-	recv(server, &size_valor, 4, 0);
-	valor = malloc(size_valor + 1);
-	recv(server, valor, size_valor, 0);
-	valor[size_valor] = '\0';
-	log_info(logger, "Valor %s", valor);
+		recv(server, &size_valor, 4, 0);
+		valor = malloc(size_valor + 1);
+		recv(server, valor, size_valor, 0);
+		valor[size_valor] = '\0';
+		log_info(logger, "Valor %s", valor);
 
-	//lleno estructura que le paso al set_cicular
-	struct ClaveValor claveValor;
+		//lleno estructura que le paso al set_cicular
+		struct ClaveValor claveValor;
 
-	claveValor.tamanioEntrada = init.tamanioEntrada;
+		claveValor.tamanioEntrada = init.tamanioEntrada;
 
-	int tamanioClave,tmananioValor;
+		int tamanioClave,tmananioValor;
 
-	//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
+		//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
 
-	tamanioClave = (int) size_clave;
+		tamanioClave = (int) size_clave;
 
-	log_info(logger, "Asigne tamanioClave %d" , size_clave);
-	//memcpy(&(claveValor.clave), clave, size_clave);
-	strcpy(claveValor.clave,clave);
+		log_info(logger, "Asigne tamanioClave %d" , size_clave);
+		//memcpy(&(claveValor.clave), clave, size_clave);
+		strcpy(claveValor.clave,clave);
 
 
-	log_info(logger, "Asigne claveValor.clave");
-	tmananioValor = (int) size_clave;
+		log_info(logger, "Asigne claveValor.clave");
+		tmananioValor = (int) size_clave;
 
-	log_info(logger, "Asigne tmananioValor");
-	claveValor.valor = malloc(size_valor);
-	//memcpy(&(claveValor.valor), valor, size_valor);
-	claveValor.valor=valor;
+		log_info(logger, "Asigne tmananioValor");
+		claveValor.valor = malloc(size_valor);
+		//memcpy(&(claveValor.valor), valor, size_valor);
+		claveValor.valor=valor;
 
-	log_info(logger, "Asigne claveValor.valor");
+		log_info(logger, "Asigne claveValor.valor");
 
-	log_info(logger, "Asigne las estructuras");
+		log_info(logger, "Asigne las estructuras");
 
-	//memcpy(&init.retardo, message+12+tamanioClave+tmananioValor, 4);
+		//memcpy(&init.retardo, message+12+tamanioClave+tmananioValor, 4);
 
-	log_info(logger, "Valores iniciales %s, %s, %d", clave, valor, init.retardo);
+		log_info(logger, "Valores iniciales %s, %s, %d", clave, valor, init.retardo);
 
-	log_info(logger, "Recibi clave y valor");
+		log_info(logger, "Recibi clave y valor");
 
-	pthread_mutex_lock (& ​​lock);
-	//inserto en memoria
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
-	pthread_mutex_unlock (& ​​lock);
 
-	//vemos que se guardo
-	puts(storage);
+		//inserto en memoria
+		SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+		//vemos que se guardo
+		puts(storage);
+
+	}
+	else if(identificador == 26){//STORE
+		
+		STORE()
+	}
+
 
 	//libero memoria
     free(storage);free(parametros);
