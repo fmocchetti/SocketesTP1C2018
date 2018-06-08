@@ -170,9 +170,11 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 	memcpy(mensajes, &(identificador), 1);
 	memcpy(mensajes+1, &size_clave, 4);
 	memcpy(mensajes+5, esi->clave, size_clave);
+	printf("Clave: %.*s %d %s\n", size_clave, mensajes+5,size_clave, esi->clave);
 	if(esi->operacion == SET) {
 		memcpy(mensajes+5+size_clave, &size_valor, 4);
 		memcpy(mensajes+9+size_clave, esi->valor, size_valor);
+		printf("Valor: %.*s %d %s\n", size_valor, mensajes+9+size_clave, size_valor, esi->valor);
 	}
 
 	log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
