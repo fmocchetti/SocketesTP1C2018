@@ -130,6 +130,7 @@ void sjfsd(){
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		printf("Nodo de listos movido a Ejecucion\n ");
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+		id_esi_global = nodo_lista_ejecucion->id_ESI;
 
 		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 		while(nodo_lista_ejecucion->cantidadDeLineas >0){
@@ -145,15 +146,19 @@ void sjfsd(){
 			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 			if (result_connection <= 0) {
 				//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+				printf("------RECIBI MENOS DE 0\n");
 				claves* clave_temporal = (claves*) malloc(sizeof(claves));
 				clave_temporal = list_remove_by_condition(claves_tomadas,identificador_ESI);
 				ESI_STORE(clave_temporal->claveAEjecutar);
+				//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_ESI,(void*)clave_destroy);
 				free(clave_temporal);
 				//////////
 				//hago close del socket
 				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+				break;
 				nodo_lista_ejecucion->cantidadDeLineas = 0;
 
+				printf("------RECIBI MENOS DE 123123132\n");
 			}
 
 			printf("contestacionESI %d\n",contestacionESI);
@@ -201,14 +206,17 @@ void sjfsd(){
 		}
 		//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		claves* clave_temporal = (claves*) malloc(sizeof(claves));
-		id_esi_global = nodo_lista_ejecucion->id_ESI;
 
-		clave_temporal = (claves *)list_remove_by_condition(claves_tomadas,(void*)identificador_ESI);
+
+		clave_temporal = list_remove_by_condition(claves_tomadas,(void*)identificador_ESI);
 
 		printf("ENTRO ACAAAAAAAA\n");
 		ESI_STORE(clave_temporal->claveAEjecutar);
+
 		free(clave_temporal);
+
 		//////////
+
 
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
@@ -412,9 +420,10 @@ void ESI_STORE(char *claveAEjecutar){
 	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
 		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
 	    queue_vacia = queue_is_empty(queue_clave);
+	    printf("Estado QUEUE: %d\n",queue_vacia);
 	//reviso si la queue no esta vacia
 	    if(!queue_vacia){
-	    	printf("Entre a queue vacia\n",id_esi_desbloqueado);
+	    	printf("Entre a queue vacia\n");
 	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
 			id_esi_desbloqueado = (int)queue_pop(queue_clave);
 			printf("id ESI bloqueado %d\n",id_esi_desbloqueado);
