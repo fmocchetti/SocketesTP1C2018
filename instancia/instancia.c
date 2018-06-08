@@ -23,19 +23,27 @@ int main () {
 
 		configure_logger();
 
-		int server = create_client("127.0.0.1","12345");
+		int server = create_client("127.0.0.1","12346");
 
 		log_info(logger,"Estado server %d \n", server);
 
 		recv(server, &identificador, 1, 0);
-		size_t messageLength;
+		int messageLength;
+		log_info(logger,"Recibi %d \n", identificador);
 		recv(server, &messageLength, 4, 0);
-		void *message = malloc(messageLength);
-		recv(server, message, messageLength, 0);
+		log_info(logger,"Recibi %d \n", messageLength);
+		void * message = malloc(messageLength);
+		int rec =recv(server, message, messageLength, 0);
+		log_info(logger,"Recibi %d bytes", rec);
 
 		memcpy(&init.cantidad_entradas, message, 4);
+		log_info(logger,"Cantidad entradas: %d", init.cantidad_entradas);
+
 		memcpy(&init.tamanioEntrada, message+4, 4);
+		log_info(logger,"Tamanio entradas: %d", init.tamanioEntrada);
+
 		memcpy(&init.retardo, message+8, 4);
+		log_info(logger,"Retardo: %d", init.retardo);
 
 		free(message);
 
@@ -105,7 +113,7 @@ int main () {
 
 
 		//TODO: Si es un get aca no tiene que recibir nada
-		if(identificador==1){
+		if(identificador == 22){
 
 			//lleno estructura que le paso al set_cicular
 			struct ClaveValor claveValor;
@@ -129,7 +137,6 @@ int main () {
 			log_info(logger, "Asigne tmananioValor");
 			claveValor.valor = malloc(size_valor);
 			//memcpy(&(claveValor.valor), valor, size_valor);
-			claveValor.valor=valor;
 			log_info(logger, "Asigne claveValor.valor");
 
 			log_info(logger, "Asigne las estructuras");
@@ -140,6 +147,7 @@ int main () {
 			valor[size_valor] = '\0';
 			log_info(logger, "Valor %s", valor);
 
+			claveValor.valor=valor;
 
 			//memcpy(&init.retardo, message+12+tamanioClave+tmananioValor, 4);
 
@@ -148,7 +156,7 @@ int main () {
 			log_info(logger, "Recibi clave y valor");
 
 
-		//	pthread_mutex_lock (& ​​lock);
+		//	pthread_mutex_unlock (& ​​lock);
 			//inserto en memoria
 			SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 		//	pthread_mutex_unlock (& ​​lock);
@@ -156,14 +164,12 @@ int main () {
 
 			//vemos que se guardo
 			puts(storage);
-		}
-		else if(identificador==2){//store
-
+		} else if(identificador==23) {//store
 			recv(server, &size_ruta, 4, 0);
 			ruta = malloc(size_ruta + 1);
 			recv(server, valor, size_ruta, 0);
 			ruta[size_ruta] = '\0';
-			log_info(logger, "Valor %s", valor);
+			log_info(logger, "Valor %s", ruta);
 
 			STORE(tabla,clave,ruta,logger);
 		}
