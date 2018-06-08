@@ -21,6 +21,7 @@ t_list * listos;
 t_list * bloqueados;
 t_list * ejecucion;
 t_list * terminados;
+t_list * claves_tomadas;
 sem_t new_process;
 //sem_t replanificar;
 sem_t give_me_a_new_process;
@@ -44,9 +45,11 @@ void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
 void sjfsd();
 void sjfcd();
-void ESI_GET(char *, int);
+void ESI_GET(char *, int, unsigned char);
 void ESI_STORE(char *);
-void clave_destroy(t_dictionary *data);
-void coord_communication(socket_ESI);
+void clave_dictionary_destroy(t_dictionary *data);
+void clave_destroy(claves *);
+void coord_communication(int,unsigned char);
+bool identificador_clave(void *);
 
 #endif /* ALGORITMOS_H_ */

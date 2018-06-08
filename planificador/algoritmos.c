@@ -7,10 +7,12 @@
 
 
 #include "algoritmos.h"
-#include "protocolo.h"
+
 int id_esi_global = 0;
+char clave_bloqueada_global[40];
 unsigned char id_mensaje_coord = 0;
-result_connection = 0;
+int result_connection = 0;
+bool result_satisfy =false;
 
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
@@ -91,7 +93,7 @@ void fifo(){
 				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 			}
 			//magia con el coord (Recibe si es store/get y realiza acorde)
-			coord_communication(nodo_lista_ejecucion->socket_esi);
+			coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
 
 			}
 		free(nodo_lista_ejecucion);
@@ -142,8 +144,16 @@ void sjfsd(){
 			//Espero que la esi me conteste
 			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 			if (result_connection <= 0) {
+				//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+				claves* clave_temporal = (claves*) malloc(sizeof(claves));
+				clave_temporal = list_remove_by_condition(claves_tomadas,identificador_ESI);
+				ESI_STORE(clave_temporal->claveAEjecutar);
+				free(clave_temporal);
+				//////////
+				//hago close del socket
 				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 				nodo_lista_ejecucion->cantidadDeLineas = 0;
+
 			}
 
 			printf("contestacionESI %d\n",contestacionESI);
@@ -163,7 +173,7 @@ void sjfsd(){
 			}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				//coord_communication(nodo_lista_ejecucion->socket_esi);
+				coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
 
 
 /*BAKCUP NO BORRAR HASTA PROBAR
@@ -189,6 +199,13 @@ void sjfsd(){
 						break;
 				}*/
 		}
+		//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+		claves* clave_temporal = (claves*) malloc(sizeof(claves));
+		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_ESI);
+		ESI_STORE(clave_temporal->claveAEjecutar);
+		free(clave_temporal);
+		//////////
+
 		free(nodo_lista_ejecucion);
 		//free(clave1);//REVISAR SI ESTO SE HACE ACA
 		//limpio la lista de ejecucion una vez que termino de ejecutar la ESI
@@ -269,7 +286,7 @@ void sjfcd(){
 				}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				coord_communication(nodo_lista_ejecucion->socket_esi);
+				coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
 		}
 		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 		else{
@@ -318,12 +335,40 @@ bool identificador_ESI(void * data){
 	return false;
 }
 
+bool identificador_clave(void * data){
+	claves *clave1= (claves*) data; //recibo estructura de la lista?
+	printf("Clave Bloqueada: %s\n",clave1->claveAEjecutar);
+	if(strcmp(clave1->claveAEjecutar,clave_bloqueada_global)==0) {
+		return true;
+	}
+	return false;
+}
+
 void element_destroyer(void * data){
 	free(data);
 }
 
-void ESI_GET(char * claveAEjecutar, int id_ESI){
-	if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
+	/*
+	//si la clave no esta en la lista, la agrego y continuo
+	strcpy(clave_bloqueada_global,claveAEjecutar);
+	claves* clave1 = (claves*) malloc(sizeof(claves));
+	strcpy(clave1->claveAEjecutar,claveAEjecutar);
+	clave1->id_ESI = id_ESI;
+
+	result_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+	if(!result_satisfy){
+		list_add(listos, (claves*)clave1);
+		//hacer un get para testear
+	} else */
+	claves* clave1 = (claves*) malloc(sizeof(claves));
+	strcpy(clave1->claveAEjecutar,claveAEjecutar);
+	clave1->id_ESI = id_ESI;
+
+	if(respuesta_ESI==2){
+		list_add(claves_tomadas, (claves*)clave1);
+	}
+	else if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
 		printf("Entre en 1\n");
 		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
 		//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
@@ -363,9 +408,9 @@ void ESI_STORE(char *claveAEjecutar){
 		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
 	    queue_vacia = queue_is_empty(queue_clave);
 	//reviso si la queue no esta vacia
-	    if(queue_vacia!=1){
+	    if(!queue_vacia){
 	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
-			id_esi_desbloqueado = queue_pop(queue_clave);
+			id_esi_desbloqueado = (int)queue_pop(queue_clave);
 			printf("id ESI bloqueado %d\n",id_esi_desbloqueado);
 			ESI* esi1 = (ESI*) malloc(sizeof(ESI));
 			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
@@ -383,7 +428,7 @@ void ESI_STORE(char *claveAEjecutar){
 				}
 			//Si esta vacia, la esi no existe en la cola de bloqueados
 			else{
-				dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_destroy);
+				dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
 				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
 				}
 	    	}
@@ -440,11 +485,16 @@ void ESI_STORE(char *claveAEjecutar){
 	}
 }*/
 
-void clave_destroy(t_dictionary *data){
+void clave_dictionary_destroy(t_dictionary *data){
 	free(data);
 }
 
-void coord_communication(int socket_ESI){
+void clave_destroy(claves *self) {
+    free(self->claveAEjecutar);
+    free(self);
+}
+
+void coord_communication(int socket_ESI, unsigned char estado_esi){
 	int size_clave = 0;
 	char * clave = NULL;
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
@@ -458,7 +508,7 @@ void coord_communication(int socket_ESI){
 
 	switch (id_mensaje_coord) {
 		case 24:
-			ESI_GET(clave, socket_ESI);
+			ESI_GET(clave, socket_ESI, estado_esi);
 			break;
 		case 26:
 			ESI_STORE(clave);
@@ -472,6 +522,11 @@ void coord_communication(int socket_ESI){
 	}
 	//TODO: Fijate si esto es necesario o explota
 	free(clave);
+}
+
+void get_keys_bloqueadas_de_entrada(){
+	char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
+
 }
 /*
 //Si la clave ya existe en el diccionario
