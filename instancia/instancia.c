@@ -110,7 +110,7 @@ int main () {
 
 		log_info(logger, "Clave %s", clave);
 
-
+		log_info(logger, "Identificador %d", identificador);
 
 		//TODO: Si es un get aca no tiene que recibir nada
 		if(identificador == 22){
@@ -165,12 +165,24 @@ int main () {
 			//vemos que se guardo
 			puts(storage);
 		} else if(identificador==23) {//store
-			recv(server, &size_ruta, 4, 0);
+			/*recv(server, &size_ruta, 4, 0);
+			log_info(logger, "Size Valor %s", size_ruta);
 			ruta = malloc(size_ruta + 1);
-			recv(server, valor, size_ruta, 0);
+			recv(server, ruta, size_ruta, 0);
 			ruta[size_ruta] = '\0';
-			log_info(logger, "Valor %s", ruta);
+			log_info(logger, "Valor %s", ruta);*/
 
+			ruta = malloc(strlen(""));
+			strcpy(ruta, "");
+			struct ClaveValor claveValor;
+			claveValor.tamanioEntrada = init.tamanioEntrada;
+			strcpy(claveValor.clave, clave);
+
+			valor = malloc(strlen("pabloPuto"));
+			strcpy(valor,"pabloPuto");
+			claveValor.valor = valor;
+
+			SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 			STORE(tabla,clave,ruta,logger);
 		}
 

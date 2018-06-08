@@ -12,7 +12,7 @@
 struct ClaveValor{
 
 	char clave[40];
-	char* valor;
+	char * valor;
 	int tamanioEntrada;
 
 };
