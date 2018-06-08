@@ -49,7 +49,7 @@ void ESI_GET(char *, int, unsigned char);
 void ESI_STORE(char *);
 void clave_dictionary_destroy(t_dictionary *data);
 void clave_destroy(claves *);
-void coord_communication(int,unsigned char);
+void coord_communication(int,unsigned char,unsigned char);
 bool identificador_clave(void *);
 
 #endif /* ALGORITMOS_H_ */

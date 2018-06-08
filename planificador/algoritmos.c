@@ -93,7 +93,7 @@ void fifo(){
 				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 			}
 			//magia con el coord (Recibe si es store/get y realiza acorde)
-			coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
+			coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 
 			}
 		free(nodo_lista_ejecucion);
@@ -173,7 +173,7 @@ void sjfsd(){
 			}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
+				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 
 
 /*BAKCUP NO BORRAR HASTA PROBAR
@@ -201,7 +201,11 @@ void sjfsd(){
 		}
 		//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		claves* clave_temporal = (claves*) malloc(sizeof(claves));
-		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_ESI);
+		id_esi_global = nodo_lista_ejecucion->id_ESI;
+
+		clave_temporal = (claves *)list_remove_by_condition(claves_tomadas,(void*)identificador_ESI);
+
+		printf("ENTRO ACAAAAAAAA\n");
 		ESI_STORE(clave_temporal->claveAEjecutar);
 		free(clave_temporal);
 		//////////
@@ -286,7 +290,7 @@ void sjfcd(){
 				}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				coord_communication(nodo_lista_ejecucion->socket_esi,contestacionESI);
+				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 		}
 		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 		else{
@@ -327,6 +331,7 @@ bool sort_by_estimacion(void * data1, void * data2){
 }
 
 bool identificador_ESI(void * data){
+	printf("Entre a identificador_ESI\n");
 	claves *esi1= (claves*) data; //recibo estructura de la lista?
 	printf("ID de la ESI: %d\n",esi1->id_ESI);
 	if(esi1->id_ESI == id_esi_global) {
@@ -409,6 +414,7 @@ void ESI_STORE(char *claveAEjecutar){
 	    queue_vacia = queue_is_empty(queue_clave);
 	//reviso si la queue no esta vacia
 	    if(!queue_vacia){
+	    	printf("Entre a queue vacia\n",id_esi_desbloqueado);
 	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
 			id_esi_desbloqueado = (int)queue_pop(queue_clave);
 			printf("id ESI bloqueado %d\n",id_esi_desbloqueado);
@@ -419,6 +425,7 @@ void ESI_STORE(char *claveAEjecutar){
 			list_vacia = list_is_empty(lista_temporal);
 			//chequeo si la lista no esta vacia, remuevo la esi de bloqueados y la muevo a listos
 			if(list_vacia != 1){
+				//printf("Entre a queue vacia\n",id_esi_desbloqueado);
 				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
 				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
 				list_add(listos, (ESI*)esi1);
@@ -494,7 +501,7 @@ void clave_destroy(claves *self) {
     free(self);
 }
 
-void coord_communication(int socket_ESI, unsigned char estado_esi){
+void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char estado_esi){
 	int size_clave = 0;
 	char * clave = NULL;
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
@@ -508,7 +515,7 @@ void coord_communication(int socket_ESI, unsigned char estado_esi){
 
 	switch (id_mensaje_coord) {
 		case 24:
-			ESI_GET(clave, socket_ESI, estado_esi);
+			ESI_GET(clave, id_ESI, estado_esi);
 			break;
 		case 26:
 			ESI_STORE(clave);
@@ -524,10 +531,11 @@ void coord_communication(int socket_ESI, unsigned char estado_esi){
 	free(clave);
 }
 
+/*
 void get_keys_bloqueadas_de_entrada(){
 	char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
 
-}
+}*/
 /*
 //Si la clave ya existe en el diccionario
 					if(dictionary_has_key(claves_bloqueadas,clave){

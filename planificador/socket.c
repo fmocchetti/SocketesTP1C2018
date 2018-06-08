@@ -150,6 +150,7 @@ void thread_on_connection(int listen_sd) {
 
 		esi2->socket_esi = esi->socket_esi;
 		esi2->id_ESI = esi->id_ESI;
+		printf("id esi %d\n",esi2->id_ESI);
 		esi2->cantidadDeLineas = esi->cantidadDeLineas;
 		esi2->rafaga = esi->rafaga;
 		//free(esi);
