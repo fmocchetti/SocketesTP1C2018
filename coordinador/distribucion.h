@@ -13,8 +13,8 @@ int algoritmo_elegido;
 int ultima_instancia;
 
 int informar_planificador(char * clave, unsigned char status);
-int distribuir(char *, char *, unsigned char);
-int modificar_valor_clave(char *, char *, int);
-int store_clave(char *, int);
+int distribuir(char *, char *);
+int modificar_valor_clave(char * clave, char * valor, int instancia);
+int store_clave(char * clave, int instancia);
 
 #endif /* DISTRIBUCION_H_ */

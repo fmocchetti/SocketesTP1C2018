@@ -11,6 +11,7 @@
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <semaphore.h>
+#include <commons/log.h>
 #include "distribucion.h"
 
 void _instancia(int socket_local);
@@ -20,9 +21,12 @@ void inicializar_instancia (int socket);
 
 t_list* list_instances;
 
+t_log * logger;
+
 int total_instancias;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
+sem_t mutex_instancia;
 
 typedef struct {
     int id;

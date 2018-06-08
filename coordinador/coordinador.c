@@ -13,6 +13,9 @@ int main (int argc, char *argv[])
 
 	printf("%s\n",IDENTIDAD);
 
+	pthread_mutex_init(&mutex, NULL);
+	sem_init(&mutex_planificador, 1, 0);
+	sem_init(&mutex_instancia, 1, 0);
 	total_instancias = 0;
 	list_instances = list_create();
 	diccionario_claves = dictionary_create();
@@ -23,8 +26,8 @@ int main (int argc, char *argv[])
 }
 
 void inicializar_instancia (int socket) {
-	char identificador = INICIALIZAR_INSTANCIA;
-	size_t messageLength = sizeof(int) * 3;
+	unsigned char identificador = INICIALIZAR_INSTANCIA;
+	int messageLength = sizeof(int) * 3;
 	void * buffer = malloc (messageLength + 6);
 	memcpy(buffer, &identificador, 1);
 	memcpy(buffer+1, &messageLength, 4);
@@ -35,10 +38,11 @@ void inicializar_instancia (int socket) {
 	log_info(logger, "Inicializacion enviada correctamente");
 }
 
-
 void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0;
+	int size_clave = 0, size_valor = 0, messageLength = 0;
 	unsigned char buffer = 0;
+	char * mensajes = NULL;
 	t_instancia * local_struct = instancia_create(total_instancias);
 
 	inicializar_instancia(socket_local);
@@ -49,30 +53,32 @@ void _instancia(int socket_local) {
 
 	log_info(logger, "Cantidad de instancias -> %d", list_size(list_instances));
 
-	local_struct->clave = malloc(strlen("clave"));
-	local_struct->clave = "clave";
-	local_struct->valor = malloc(strlen("valor"));
-	local_struct->valor = "valor";
-	local_struct->operacion = ESI_SET;
-
-	sem_post(&(local_struct->instance_sem));
-	pthread_mutex_unlock(&mutex);
-
 	while(1) {
 
 		sem_wait(&(local_struct->instance_sem));
-		pthread_mutex_lock(&mutex);
 
-		int size_clave = strlen(local_struct->clave);
-		int size_valor = strlen(local_struct->valor);
-		int messageLength = 5 + size_clave + 4 + size_valor;
+		log_info(logger, "Pase el semaforo de la instancia %d", local_struct->id);
+		pthread_mutex_unlock(&mutex);
+		log_info(logger, "Pase el Mutex de la instancia");
 
-		char * mensajes = (char *) malloc (messageLength);
+		size_clave = strlen(local_struct->clave);
+		messageLength = 5 + size_clave;
+		if(local_struct->operacion == ESI_SET) {
+			size_valor = strlen(local_struct->valor);
+			messageLength += 4 + size_valor;
+		}
+
+		mensajes = (char *) malloc (messageLength);
 		memcpy(mensajes, &(local_struct->operacion), 1);
 		memcpy(mensajes+1, &size_clave, 4);
+
+		log_info(logger,"Clave a mandar %s", local_struct->clave);
 		memcpy(mensajes+5, local_struct->clave, size_clave);
-		memcpy(mensajes+size_clave+5, &size_valor, 4);
-		memcpy(mensajes+size_clave+9, local_struct->valor, size_valor);
+		if(local_struct->operacion == ESI_SET) {
+			memcpy(mensajes+size_clave+5, &size_valor, 4);
+			log_info(logger,"Valor a mandar %s", local_struct->valor);
+			memcpy(mensajes+size_clave+9, local_struct->valor, size_valor);
+		}
 
 		log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
 		send(socket_local, mensajes, messageLength, 0);
@@ -84,8 +90,10 @@ void _instancia(int socket_local) {
 		 close_conn = TRUE;
 		 break;
         }
+        log_info(logger, "La instancia termino de procesar");
+        sem_post(&mutex_instancia);
 
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_lock(&mutex);
 	}
 
 
@@ -112,6 +120,7 @@ void _esi(int socket_local) {
         	break;
         }
 
+        log_info(logger, "La ESI %d quiere realizar un: %d", id_esi, identificador);
         switch(identificador) {
         	case ESI_GET:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -124,22 +133,18 @@ void _esi(int socket_local) {
         			if(clave_diccionario->tomada) {
         				identificador = ESI_ERROR;
     					send(socket_local, &identificador, 1, 0);
-        				//informar esi error
-
-        				//informar planificador que clave esta esperando esa esi (ESI_GET, clave)
         			} else {
             			identificador = ESI_OK;
             			send(socket_local, &identificador, 1, 0);
-        				//informar esi todo ok
-        				//Ver si esto sirve: informar planificador que clave tomo esa esi (esi_tomo_clave, clave)
+            			instancia_destino = distribuir(clave, NULL);
+            			clave_diccionario->tomada = true;
+            			clave_diccionario->esi = id_esi;
         			}
         		} else {
-        			instancia_destino = distribuir(clave, NULL, ESI_GET);
+        			instancia_destino = distribuir(clave, NULL);
         			dictionary_put(diccionario_claves, clave, clave_create(id_esi, instancia_destino, true));
         			identificador = ESI_OK;
         			send(socket_local, &identificador, 1, 0);
-        			//informar esi todo ok
-					//Ver si esto sirve: informar planificador que clave tomo esa esi
         		}
         		informar_planificador(clave, COORDINADOR_GET);
         		break;
@@ -203,6 +208,7 @@ void _esi(int socket_local) {
 						identificador = ESI_OK;
 						send(socket_local, &identificador, 1, 0);
 						clave_diccionario->tomada = false;
+						clave_diccionario->esi = -1;
 					}
 				} else {
 					//informar esi error
@@ -230,15 +236,17 @@ void _planificador(int socket_local) {
 	unsigned char identificador = 0;
 	char * clave = NULL;
 
-	sem_init(&mutex_planificador, 1, 0);
-
 	thread_planificador = planificador_create();
 
 	while(1) {
-
 		sem_wait(&mutex_planificador);
+		sem_wait(&mutex_instancia);
+
+		int messageLength = 1;
 		int size_clave = strlen(thread_planificador->clave);
-		int messageLength = 5 + size_clave;
+		if(thread_planificador->status != COORDINADOR_SET) {
+			messageLength += 5 + size_clave;
+		}
 
 		char * mensajes = (char *) malloc (messageLength);
 		memcpy(mensajes, &(thread_planificador->status), 1);
@@ -248,7 +256,7 @@ void _planificador(int socket_local) {
 		}
 
 		log_info(logger, "Enviandole al planificador %d bytes", messageLength);
-		send(socket, mensajes, messageLength, 0);
+		send(socket_local, mensajes, messageLength, 0);
 		free(mensajes);
 
         /*rc = recv(socket_local, &identificador, 1, 0);

@@ -26,8 +26,6 @@
 #define TRUE             1
 #define FALSE            0
 
-t_log * logger;
-
 enum mensajes {
 	ESI_OK = 7,
 	ESI_ERROR = 8,
