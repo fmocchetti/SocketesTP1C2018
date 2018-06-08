@@ -1,14 +1,3 @@
-#include "consola.h"
-#include <commons/log.h>
-t_log * logger;
-
-int main(){
-configure_logger_consola();
-consola();
-
-
-}
-
 /*
  * consola.c
  *
@@ -23,52 +12,35 @@ consola();
 
 void consola(){
 
- char *input = malloc(sizeof(char));
+ char input[100];
  printf( "----------Bienvenido al planificador-----------\n" );
- opciones();
+
  while(strcmp(input,"salir") != 0){
-	gets(input);
-	printf("DICE %s\n", input);
-	if(strcmp(input,"pausar")==0){
-		pausar();
-	}
-	else{
-		if(strcmp(input,"continuar")==0){
-			continuar();
-		}
-		else{
-			if(strcmp(input,"bloquear")==0){
-				bloquear();
-			}
-			else{
-				if(strcmp(input,"desbloquear")==0){
-					desbloquear();
-				}
-				else{
-					if(strcmp(input,"listar")==0){
-						listar();
-					}
-					else{
-						if(strcmp(input,"kill")==0){
-							kill();
-							}
-						else{
-							if(strcmp(input,"status")==0){
-								status();
-							}
-							if(strcmp(input,"deadlock")==0){
-								deadlock();
-							}
-							}
-						}
-					}
-				}
-			}
-		}
-	if(strcmp(input,"salir")!=0){
-	opciones();
-	}
- }
+ 	opciones();
+ 	//char *input = malloc(sizeof(char));
+ 	//gets(input);
+ 	fgets(input, sizeof(input), stdin);
+ 	printf("HOLAAAA\n");
+ 	printf("DICE %s\n", input);
+ 	if(!strncmp(input,"pausar", 6)){
+ 		pausar();
+ 	} else if(!strncmp(input,"continuar", 9)){
+ 		continuar();
+ 	} else if(!strncmp(input,"bloquear", 8)){
+ 		bloquear();
+ 	} else if(!strncmp(input,"desbloquear", 11)){
+ 		desbloquear();
+ 	} else if(!strncmp(input,"listar", 6)){
+ 		listar();
+ 	}else if(!strncmp(input,"kill", 4)){
+ 		kill();
+ 	} else if(!strncmp(input,"status", 6)){
+ 		status();
+ 	} else if(!strncmp(input,"deadlock",8)){
+ 		deadlock();
+ 	}
+  }
+
 
  printf("Nos vimo perro");
  free(input);
@@ -95,11 +67,34 @@ void opciones(){
 }
 
 void pausar(){
-	log_info(logger,"Planificacion Pausada");
+	int sem_value = 0;
+	log_info(logger,"Entre a Pausa");
+	sem_getvalue(&sem_pausar_planificacion,&sem_value);
+	if(sem_value<1){
+		log_info(logger,"La planificacion ya se encuentra pausada");
+		printf("La planificacion ya se encuentra pausada\n");
+	}
+	else{
+		sem_wait(&sem_pausar_planificacion);
+		sem_wait(&sem_pausar_algoritmo);
+		log_info(logger,"Planificacion Pausada");
+	}
+
 }
 
 void continuar(){
-	log_info(logger,"Planificacion Restaurada");
+	int sem_value = 0;
+	log_info(logger,"Entre a Continuar");
+	sem_getvalue(&sem_pausar_planificacion,&sem_value);
+	if(sem_value>0){
+		log_info(logger,"La planificacion no se encuentra pausada");
+	}
+	else{
+		sem_post(&sem_pausar_planificacion);
+		sem_post(&sem_pausar_algoritmo);
+		sem_post(&sem_pausar_algoritmo);
+		log_info(logger,"Planificacion Restaurada");
+	}
 }
 
 void bloquear(){
@@ -160,3 +155,6 @@ void status(){
 void deadlock(){
 	printf("deadlocks del sistema");
 }
+
+
+
