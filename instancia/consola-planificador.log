@@ -84,3 +84,6 @@
 [INFO] 23:37:10:185 consola-planificador/(7611:7611): Valor TraemeLaCopa
 [INFO] 23:37:16:845 consola-planificador/(7611:7611): Valores iniciales futbol:messi, TraemeLaCopa, 300
 [INFO] 23:37:21:927 consola-planificador/(7611:7611): Recibi clave y valor
+[INFO] 16:41:40:837 consola-planificador/(17042:17042): Trying to connect to: 127.0.0.1 : 12346 
+
+[ERROR] 16:41:40:837 consola-planificador/(17042:17042): No me pude conectar al servidor
