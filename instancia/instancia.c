@@ -39,31 +39,32 @@ int main () {
 		t_list* tabla = list_create();
 
 
+		recv(server, &identificador, 1, 0);
+		int messageLength;
+		log_info(logger,"Recibi %d \n", identificador);
+		recv(server, &messageLength, 4, 0);
+		log_info(logger,"Recibi %d \n", messageLength);
+		void * message = malloc(messageLength);
+		int rec =recv(server, message, messageLength, 0);
+		log_info(logger,"Recibi %d bytes", rec);
+
+		memcpy(&init.cantidad_entradas, message, 4);
+		log_info(logger,"Cantidad entradas: %d", init.cantidad_entradas);
+
+		memcpy(&init.tamanioEntrada, message+4, 4);
+		log_info(logger,"Tamanio entradas: %d", init.tamanioEntrada);
+
+		memcpy(&init.retardo, message+8, 4);
+		log_info(logger,"Retardo: %d", init.retardo);
+
+		free(message);
+
+		log_info(logger, "Valores iniciales %d, %d, %d", init.cantidad_entradas, init.tamanioEntrada, init.retardo);
+
+		log_info(logger, "Recibi la inicializacion");
+
+
 		while(1){
-
-				recv(server, &identificador, 1, 0);
-				int messageLength;
-				log_info(logger,"Recibi %d \n", identificador);
-				recv(server, &messageLength, 4, 0);
-				log_info(logger,"Recibi %d \n", messageLength);
-				void * message = malloc(messageLength);
-				int rec =recv(server, message, messageLength, 0);
-				log_info(logger,"Recibi %d bytes", rec);
-
-				memcpy(&init.cantidad_entradas, message, 4);
-				log_info(logger,"Cantidad entradas: %d", init.cantidad_entradas);
-
-				memcpy(&init.tamanioEntrada, message+4, 4);
-				log_info(logger,"Tamanio entradas: %d", init.tamanioEntrada);
-
-				memcpy(&init.retardo, message+8, 4);
-				log_info(logger,"Retardo: %d", init.retardo);
-
-				free(message);
-
-				log_info(logger, "Valores iniciales %d, %d, %d", init.cantidad_entradas, init.tamanioEntrada, init.retardo);
-
-				log_info(logger, "Recibi la inicializacion");
 
 			/******************************************************************************************************************/
 
@@ -196,7 +197,9 @@ int main () {
 					*/
 					STORE(tabla,clave,ruta,logger);
 				}
-
+				usleep(init.retardo * 1000);
+				identificador = 1;
+				send(server, &identificador, 1, 0);
 		}
 		//libero memoria
 	    //free(storage);//free(parametros);
