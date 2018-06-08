@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -19,16 +20,40 @@
 #include <strings.h>
 #include <pthread.h>
 #include <commons/log.h>
+#include <unistd.h>
+#include "coordinador.h"
 
 #define TRUE             1
 #define FALSE            0
 
-enum {	POOL, THREAD_CONNECTION, SELECT };
+enum mensajes {
+	ESI_OK = 7,
+	ESI_ERROR = 8,
+	IDENTIFY = 10,
+	INICIALIZAR_INSTANCIA = 11,
+	CONEXION_ESI = 18,
+	ESI_GET = 21,
+	ESI_SET = 	22,
+	ESI_STORE = 23,
+	COORDINADOR_GET = 24,
+	COORDINADOR_SET = 	25,
+	COORDINADOR_STORE = 26
+};
+
+enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 3};
+
+typedef struct {
+	int socket;
+	int identidad;
+} thread_handle_struct;
+
+enum {POLL, THREAD_CONNECTION, SELECT };
 
 void configure_logger();
 void create_server(int max_connections, int timeout, int server_type, int port);
 void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int listen_sd);
 void connection_thread();
 void thread_on_connection(int listen_sd);
+void exit_gracefully(int return_nr);
 
 #endif /* SOCKET_H_ */

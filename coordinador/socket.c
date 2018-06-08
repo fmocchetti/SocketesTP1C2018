@@ -7,8 +7,6 @@
 
 #include "socket.h"
 
-t_log * logger;
-
 void configure_logger() {
   logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
 }
@@ -16,11 +14,9 @@ void configure_logger() {
 
 void create_server(int max_connections, int timeout, int server_type, int port) {
   int    rc, on = 1;
-  int    listen_sd = -1, new_sd = -1;
-  int    end_server = FALSE, compress_array = FALSE;
+  int    listen_sd = -1;
   struct sockaddr_in addr;
   struct pollfd fds[33];
-  int    nfds = 1, current_size = 0, i, j;
 
   listen_sd = socket(AF_INET, SOCK_STREAM, 0);
   if (listen_sd < 0) {
@@ -78,9 +74,14 @@ void create_server(int max_connections, int timeout, int server_type, int port) 
 void thread_on_connection(int listen_sd) {
 	int new_sd = -1;					// Escuchar sobre socket_client, nuevas conexiones sobre newConnection
 	pthread_t th_receiptMessage;		// hilo para crear receptor de mensajes
+	char * buffer;
+	int rc;
+	unsigned char message = 0;
+    thread_handle_struct * connection_arguments = malloc(sizeof(thread_handle_struct));
 
-	printf("listen_sd: %d \n", listen_sd);
 	while(1) {
+		buffer = (char *) malloc(sizeof(char));
+        log_info(logger,"Waiting new connection...");
 		new_sd = accept(listen_sd, NULL, NULL);
         if (new_sd < 0) {
           if (errno != EWOULDBLOCK) {
@@ -90,17 +91,41 @@ void thread_on_connection(int listen_sd) {
         }
 
         log_info(logger,"accept() ok");
+        message = IDENTIFY;
 
-		pthread_create(&th_receiptMessage, NULL, (void*) connection_thread, NULL);
-		pthread_detach(th_receiptMessage);
+        printf("%d envie x bytes \n", (int) sizeof(message));
+
+        send(new_sd , &message, sizeof(message), 0);
+
+        log_info(logger,"  Waiting for the client to identify\n");
+
+        rc = recv(new_sd, buffer, sizeof(buffer), 0);
+        if (rc < 0) {
+           if (errno != EWOULDBLOCK) {
+             log_error(logger, "  recv() failed");
+           }
+        }
+
+        log_info(logger," The client is an: %d", *buffer);
+        connection_arguments->socket = new_sd;
+        connection_arguments->identidad = *buffer;
+
+        //printf("Mando %d , %d \n",connection_arguments->socket, connection_arguments->identidad);
+
+        pthread_mutex_init(&mutex, NULL);
+        pthread_mutex_lock(&mutex);
+
+        if(pthread_create(&th_receiptMessage, NULL, (void *)connection_thread, connection_arguments)) {
+        	log_error(logger, "Error creating thread");
+        }
+
+        if(pthread_detach(th_receiptMessage)) {
+        	log_error(logger, "Error deataching thread");
+        }
+
+        free(buffer);
 	}
 }
-
-void connection_thread() {
-	printf("Hola soy un thread");
-	return;
-}
-
 
 
 void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int listen_sd) {
@@ -184,8 +209,23 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
   }
 }
 
+void exit_gracefully(int return_nr) {
+	log_destroy(logger);
+	exit(return_nr);
+}
 
-/*void * listen_connection() {
+void connection_thread(void * connection_arguments) {
+	thread_handle_struct args = *(thread_handle_struct *) connection_arguments;
+	int socket_local = args.socket, identidad_local = args.identidad;
+	log_info(logger, "New thread created");
 
-	return 0;
-}*/
+	if(identidad_local == INSTANCIA) {
+		_instancia(socket_local);
+	} else if(identidad_local == ESI) {
+		_esi(socket_local);
+	} else if(identidad_local == PLANIFICADOR) {
+		_planificador(socket_local);
+	}
+
+	return;
+}
