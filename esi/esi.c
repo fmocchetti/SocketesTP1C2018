@@ -35,6 +35,7 @@ int main(int argc, char **argv){
 		exit(EXIT_FAILURE);
 	}
 
+	log_info(logger, "Abri el archivo, voy a leer sus lineas");
 	//Cuento cuantas lineas tiene mi archivo
 	while ((read = getline(&line, &len, script)) != -1) {
 		numeroDeLinea++;
@@ -52,6 +53,8 @@ int main(int argc, char **argv){
 		exit(EXIT_FAILURE);
 	}
 
+	log_info(logger, "Le envie la cantidad de lineas al planificador");
+
 	while ((read = getline(&line, &len, script)) != -1) {
 		t_esi_operacion parsed = parse(line); //leo y parseo la primer linea del archivo
 
@@ -62,6 +65,7 @@ int main(int argc, char **argv){
 			//esi->id_ESI = recv(socket_planificador, &esi->id_ESI , sizeof(esi->id_ESI), 0);
 
 			if(solicitudDeEjecucionPlanificador(socket_planificador)){
+				log_info(logger, "Puedo ejecutar");
 				//si el planificador me da el ok, primero guardo clave y valor en la estructura de la esi
 				esi->operacion = parsed.keyword;
 				switch(parsed.keyword){
@@ -85,7 +89,9 @@ int main(int argc, char **argv){
 				}
 				//envio la esi y recivo la respuesta del coordinador
 				respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, esi);
+				log_info(logger, "Coordinador me informo el estado: %d", respuestaCoordinador);
 				enviarRespuestaAlPlanificador(socket_planificador, respuestaCoordinador);
+				log_info(logger, "Informe al planificador");
 		    }else{
 		    	printf("El planificador fallo\n");
 		    	exit(EXIT_FAILURE);
@@ -177,7 +183,7 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 		printf("Valor: %.*s %d %s\n", size_valor, mensajes+9+size_clave, size_valor, esi->valor);
 	}
 
-	log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
+	log_info(logger, "Enviandole al coordinador %d bytes", messageLength);
 	sd = send(socket, mensajes, messageLength, 0);
 	free(mensajes);
 
