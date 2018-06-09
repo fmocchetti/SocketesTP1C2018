@@ -5,8 +5,13 @@
  *      Author: Pablo Monti
  */
 #include "STORE.h"
+/*
 
 int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
+
+
+
+	//pthread_mutex_unlock(&lock_dump);
 
 	struct Dato* claveBuscada = buscar(tabla,clave);
 
@@ -46,5 +51,7 @@ int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
 	free(rutaArmada);
 	log_info(logger,"Se cierra el archivo");
 
+	//pthread_mutex_lock(&lock_dump);
+
 return 0;
-}
+}*/

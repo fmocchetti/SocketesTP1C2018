@@ -1,12 +1,20 @@
 /*
- * Dump.h
+ * instancia.h
  *
- *  Created on: 3 jun. 2018
- *      Author: PabloSMonti
+ *  Created on: 8 jun. 2018
+ *      Author: Pablo Monti
  */
 
-#ifndef DUMP_H_
-#define DUMP_H_
+#ifndef INSTANCIA_H_
+#define INSTANCIA_H_
+
+
+#include "tabla.h"
+#include "socket_client.h"
+
+#include <pthread.h>
+#include "ClaveValor.h"
+#include <stdbool.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -30,8 +38,6 @@ typedef struct{
 	int intervaloDeDump;
 }parametros_dump;
 
-int respaldar_informacion(t_list* tabla,char* storage,char* puntoDeMontaje,t_log* logger);
+pthread_mutex_t lock_dump;
 
-int respaldar_informacion_thread(parametros_dump* paramtros);
-
-#endif /* DUMP_H_ */
+#endif /* INSTANCIA_H_ */

@@ -16,6 +16,7 @@
 #include <commons/collections/list.h>
 #include "tabla.h"
 #include "ClaveValor.h"
+#include <pthread.h>
 
 
 

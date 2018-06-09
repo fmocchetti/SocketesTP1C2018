@@ -1,18 +1,210 @@
-#include "circular.h"
-#include "tabla.h"
-#include "socket_client.h"
-#include "Dump.h"
-#include <pthread.h>
-#include "STORE.h"
+#include "instancia.h"
 typedef struct {
 	int cantidad_entradas;
 	int tamanioEntrada;
 	int retardo;
 } valores_iniciales;
 
-pthread_mutex_t lock;
+pthread_mutex_t lock_dump;
+
+
+int respaldar_informacion_thread(parametros_dump* parametros){
+
+	while(1){
+
+		sleep(parametros->intervaloDeDump);
+		pthread_mutex_unlock(&lock_dump);
+
+		log_info(parametros->logger,"Comienza el proceso respaldo de Informacion en: %s",parametros->puntoDeMontaje);
+
+		int tamanioTabla = list_size(parametros->tabla);
+		if(tamanioTabla <= 0){
+			log_error(parametros->logger,"La tabla se encontro vacia, o error al obtener dimension de tabla");
+			return(-1);
+		}
+
+		struct Dato* unDato;
+
+		int j =0;
+
+		for(int i = 0 ; i < tamanioTabla ; i++){
+
+			unDato = list_get( parametros->tabla, i );
+			//char* ruta = puntoDeMontaje;
+			//const char* clave =(char*) unDato->clave;
+			//ruta = strcat(ruta,clave);
+			char* ruta = unDato->clave;
+			int fd = open(ruta, O_RDWR | O_CREAT, (mode_t)0600);
+			lseek(fd, unDato->cantidadDeBytes-1, SEEK_SET);
+			write(fd, "", 1);
+			char *map = mmap(0, unDato->cantidadDeBytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+			memcpy(map, unDato->posicionMemoria, unDato->cantidadDeBytes);
+			msync(map, unDato->cantidadDeBytes, MS_SYNC);
+			munmap(map, unDato->cantidadDeBytes);
+			close(fd);
+			log_info(parametros->logger,"Se guardo un valor en archivo: %s",ruta);
+			j++;
+
+		}
+		log_info(parametros->logger,"Finaliza el proceso respaldo de Informacion..");
+		log_info(parametros->logger,"Se crearon %d archivos",j);
+
+		pthread_mutex_lock(&lock_dump);
+
+	}
+
+return EXIT_SUCCESS;
+}
+
+int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
+
+
+
+	pthread_mutex_unlock(&lock_dump);
+
+	struct Dato* claveBuscada = buscar(tabla,clave);
+
+	if(claveBuscada == NULL){
+
+		log_info(logger,"No se encontro la Clave en STORE: %s", clave);
+		return (1);
+
+	}
+
+	//char* ruta = puntoDeMontaje;
+	//const char* clave =(char*) unDato->clave;
+	//ruta = strcat(ruta,clave);
+
+
+	char* rutaArmada = malloc(sizeof(ruta)+sizeof(clave)+1);
+
+	//memcpy(rutaArmada,ruta,sizeof(ruta));
+	//memcpy(rutaArmada+sizeof(ruta),'/',1);
+	//memcpy(rutaArmada+sizeof(clave)+1,clave,sizeof(clave));
+	strcpy(rutaArmada,ruta);
+	strcpy(rutaArmada,"/");
+	strcpy(rutaArmada,clave);
+
+	log_info(logger,"Se guardara el archivo en ruta: %s",rutaArmada);
+
+
+	int fd = open(rutaArmada, O_RDWR | O_CREAT, (mode_t)0600);
+	log_info(logger,"Se crea el archivo: %d",fd);
+	lseek(fd, claveBuscada->cantidadDeBytes-1, SEEK_SET);
+	write(fd, "", 1);
+	char *map = mmap(0, claveBuscada->cantidadDeBytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	memcpy(map, claveBuscada->posicionMemoria, claveBuscada->cantidadDeBytes);
+	msync(map, claveBuscada->cantidadDeBytes, MS_SYNC);
+	munmap(map, claveBuscada->cantidadDeBytes);
+	close(fd);
+	free(rutaArmada);
+	log_info(logger,"Se cierra el archivo");
+
+	pthread_mutex_lock(&lock_dump);
+
+return 0;
+}
+
+
+
+
+//ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
+int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
+
+	pthread_mutex_unlock(&lock_dump);
+	struct Dato unDato;
+
+	int longitudS = strlen(claveValor->valor);
+	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
+	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
+	//si se termino la memoria vuelvo al principio
+	if(*posicionDeLectura==posicionFinalMemoria){
+
+		*posicionDeLectura=primeraPosicionMemoria;
+
+	}
+	//si no hay lugar para todo el string lo parto y coloco lo que entra y el resto al principio
+	//de la memoria
+	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
+
+		int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
+
+		memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
+
+		cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+
+		actualizarTabla(tabla,longitudS - espacioRestante);
+
+		registrar_dato_en_tabla(tabla,&unDato);
+
+		*posicionDeLectura=primeraPosicionMemoria;
+
+		memcpy(*posicionDeLectura,((claveValor->valor)+espacioRestante),espacioAOcupar-espacioRestante);
+
+		*posicionDeLectura += (espacioAOcupar-espacioRestante);
+
+		return 0;
+
+	}
+	//guardo el dato entero en memoria si no entro en los if anteriores
+	memcpy(*posicionDeLectura,claveValor->valor,espacioAOcupar);
+
+	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*/,claveValor);
+	registrar_dato_en_tabla(tabla,&unDato);
+
+	*posicionDeLectura += espacioAOcupar;
+
+	pthread_mutex_lock(&lock_dump);
+
+}
+
+// chequeo si el espacio libre es menor al tamaño requerido
+int no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria){
+
+return ((posicionFinalMemoria - posicionDeLectura)<tamanio);
+}
+
+int calcular_cantidad_entradas(int longitudS,int tamEntrada){
+
+	int resto = longitudS % tamEntrada;
+	int resultado = longitudS / tamEntrada;
+	if(tamEntrada > longitudS){
+
+		return 1;
+	}
+	else if(resto > 0){
+
+		return resultado + 1;
+	}
+return resultado;
+}
+
+void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
+
+	int longitudS = strlen(claveValor->valor);
+
+	(unDato)->posicionMemoria = posicionDeLectura;
+	(unDato)->cantidadDeBytes = longitudS;
+	(unDato)->frecuenciaUso = 0;
+	strcpy((char*)(unDato->clave),claveValor->clave);
+	//memcpy((unDato->clave),claveValor->clave,40);
+}
 
 int main () {
+
+
+	pthread_mutex_init(&lock_dump, NULL);
+/*
+	t_config * config_file = config_create("instancia.conf");
+
+	char* intervaloDump = config_get_string_value(config_file, "Intervalo de dump: ");
+	char* puntoMontaje = config_get_string_value(config_file, "Montaje: ");
+
+*/
+
+
+
+
 
 
 
@@ -37,6 +229,30 @@ int main () {
 		*storage =0;
 
 		t_list* tabla = list_create();
+
+
+
+
+		//creo thread dump
+
+		log_info(logger, "Cree el thread Dump");
+
+		pthread_t threadDumpeador;
+
+		parametros_dump* parametros = malloc(sizeof(parametros_dump));
+
+		parametros->logger = logger;
+		parametros->puntoDeMontaje = "";
+		parametros->storage = storage;
+		parametros->tabla = tabla;
+		parametros->intervaloDeDump = 10;//intervaloDump; //tomar del recv
+
+
+		if( pthread_create(&threadDumpeador, NULL, (void *)respaldar_informacion_thread,parametros)) {
+			log_error(logger, "Error creating thread Dump");
+		}
+
+		//fin creo thread
 
 
 		recv(server, &identificador, 1, 0);
@@ -225,3 +441,9 @@ int main () {
 
 	return EXIT_SUCCESS;
 }
+
+
+
+
+
+

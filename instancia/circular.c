@@ -1,5 +1,6 @@
 #include "circular.h"
 
+/*
 
 // chequeo si el espacio libre es menor al tamaño requerido
 bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria){
@@ -36,6 +37,7 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
 int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
+	//pthread_mutex_unlock(&lock_dump);
 	struct Dato unDato;
 
 	int longitudS = strlen(claveValor->valor);
@@ -73,10 +75,13 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 	//guardo el dato entero en memoria si no entro en los if anteriores
 	memcpy(*posicionDeLectura,claveValor->valor,espacioAOcupar);
 
-	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*/,claveValor);
-	registrar_dato_en_tabla(tabla,&unDato);
+	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*///,claveValor);
+/*	registrar_dato_en_tabla(tabla,&unDato);
 
 	*posicionDeLectura += espacioAOcupar;
+*/
+//	pthread_mutex_lock(&lock_dump);
 
-}
+//}
+
 

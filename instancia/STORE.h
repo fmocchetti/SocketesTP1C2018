@@ -10,6 +10,7 @@
 
 #include "tabla.h"
 #include "Dump.h"
+#include <pthread.h>
 
 int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger);
 

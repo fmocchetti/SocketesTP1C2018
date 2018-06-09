@@ -43,12 +43,14 @@ int respaldar_informacion(t_list* tabla,char* storage,char* puntoDeMontaje,t_log
 
 return EXIT_SUCCESS;
 }
+/*
 
 int respaldar_informacion_thread(parametros_dump* parametros){
 
 	while(1){
 
 		sleep(parametros->intervaloDeDump);
+		//pthread_mutex_unlock(&lock_dump);
 
 		log_info(parametros->logger,"Comienza el proceso respaldo de Informacion en: %s",parametros->puntoDeMontaje);
 
@@ -81,8 +83,10 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 		}
 		log_info(parametros->logger,"Finaliza el proceso respaldo de Informacion..");
 
+	//	pthread_mutex_lock(&lock_dump);
+
 	}
 
 return EXIT_SUCCESS;
-}
+}*/
 
