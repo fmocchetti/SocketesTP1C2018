@@ -13,14 +13,20 @@ int main (int argc, char *argv[])
 
 	printf("%s\n",IDENTIDAD);
 
+	config_file = config_create("coordinador.conf");
+
 	pthread_mutex_init(&mutex, NULL);
 	sem_init(&mutex_planificador, 1, 0);
 	sem_init(&mutex_instancia, 1, 0);
 	total_instancias = 0;
 	list_instances = list_create();
 	diccionario_claves = dictionary_create();
+	cantidad_entradas = config_get_int_value(config_file, "cantidad_entradas");
+	size_key = config_get_int_value(config_file, "size_entrada");
+	retardo = config_get_int_value(config_file, "retardo");
+	algoritmo_elegido =  config_get_int_value(config_file, "algoritmo_distribucion");
 
-	create_server(32, 20 * 60 * 1000, THREAD_CONNECTION, 12346);
+	create_server(32, 20 * 60 * 1000, THREAD_CONNECTION, config_get_int_value(config_file, "listening_port"));
 
 	exit_gracefully(0);
 }
@@ -139,6 +145,7 @@ void _esi(int socket_local) {
             			instancia_destino = distribuir(clave, NULL);
             			clave_diccionario->tomada = true;
             			clave_diccionario->esi = id_esi;
+            			clave_diccionario->instancia = instancia_destino;
         			}
         		} else {
         			instancia_destino = distribuir(clave, NULL);
@@ -248,6 +255,7 @@ void _planificador(int socket_local) {
 			messageLength += 5 + size_clave;
 		}
 
+		log_info(logger, "Le voy a mandar al planificador un %d", thread_planificador->status);
 		char * mensajes = (char *) malloc (messageLength);
 		memcpy(mensajes, &(thread_planificador->status), 1);
 		if(thread_planificador->status != COORDINADOR_SET) {

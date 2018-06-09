@@ -511,10 +511,12 @@ void clave_destroy(claves *self) {
 }
 
 void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char estado_esi){
-	int size_clave = 0;
+	int size_clave = 0, rc = 0;
 	char * clave = NULL;
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
-	recv(socket_coord, &id_mensaje_coord,1, 0);
+	rc = recv(socket_coord, &id_mensaje_coord,1, 0);
+	printf("Recibi %d bytes del coordinador \n", rc);
+	printf("Recibi del coordinador %d \n", id_mensaje_coord);
 	if(id_mensaje_coord != 25) {
 		recv(socket_coord, &size_clave, 4, 0);
 		clave = (char *) malloc (size_clave +1);

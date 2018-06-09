@@ -12,6 +12,7 @@
 #include <commons/collections/dictionary.h>
 #include <semaphore.h>
 #include <commons/log.h>
+#include <commons/config.h>
 #include "distribucion.h"
 
 void _instancia(int socket_local);
@@ -20,7 +21,7 @@ void _esi(int socket_local);
 void inicializar_instancia (int socket);
 
 t_list* list_instances;
-
+t_config * config_file;
 t_log * logger;
 
 int total_instancias;
