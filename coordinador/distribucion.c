@@ -23,6 +23,7 @@ int distribuir(char * clave, char * valor) {
 		case EL:
 			ultima_instancia  %= total_instancias;
 			instancia = list_get(list_instances, ultima_instancia);
+			ultima_instancia++;
 			break;
 		case KE:
 			break;

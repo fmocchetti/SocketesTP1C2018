@@ -10,7 +10,6 @@
 
 int id_esi_global = 0;
 char clave_bloqueada_global[40];
-unsigned char id_mensaje_coord = 0;
 int result_connection = 0;
 bool result_satisfy =false;
 
@@ -513,6 +512,7 @@ void clave_destroy(claves *self) {
 void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char estado_esi){
 	int size_clave = 0, rc = 0;
 	char * clave = NULL;
+	unsigned char id_mensaje_coord = 0;
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
 	rc = recv(socket_coord, &id_mensaje_coord,1, 0);
 	printf("Recibi %d bytes del coordinador \n", rc);
@@ -522,17 +522,20 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 		clave = (char *) malloc (size_clave +1);
 		recv(socket_coord, clave, size_clave, 0);
 		clave[size_clave] = '\0';
+		printf("Recibi la clave %s \n", clave);
 	}
 
 	switch (id_mensaje_coord) {
 		case 24:
+			printf("Entre al get \n");
 			ESI_GET(clave, id_ESI, estado_esi);
 			break;
 		case 26:
+			printf("Entre al store \n");
 			ESI_STORE(clave);
 			break;
 		case 25:
-			printf("Recibi un dato innecesario");
+			printf("Entre al set \n");
 			break;
 		default:
 			//TODO: Aca hace algo negro

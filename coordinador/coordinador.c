@@ -189,7 +189,7 @@ void _esi(int socket_local) {
 					send(socket_local, &identificador, 1, 0);
         			log_error(logger, "Intentando hacer un SET a una clave inexistente");
         		}
-        		informar_planificador(clave, COORDINADOR_GET);
+        		informar_planificador(clave, COORDINADOR_SET);
         	    break;
         	case ESI_STORE:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -261,6 +261,7 @@ void _planificador(int socket_local) {
 		if(thread_planificador->status != COORDINADOR_SET) {
 			memcpy(mensajes+1, &size_clave, 4);
 			memcpy(mensajes+5, thread_planificador->clave, size_clave);
+			messageLength -= 1;
 		}
 
 		log_info(logger, "Enviandole al planificador %d bytes", messageLength);
