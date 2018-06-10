@@ -29,16 +29,6 @@ int main () {
 
 		log_info(logger,"Estado server %d \n", server);
 
-		// creo el storage y la tabla
-		char* storage = (char*)malloc(init.cantidad_entradas*init.tamanioEntrada);
-
-		log_info(logger, "Cree el storage");
-
-		*storage =0;
-
-		t_list* tabla = list_create();
-
-
 		recv(server, &identificador, 1, 0);
 		int messageLength;
 		log_info(logger,"Recibi %d \n", identificador);
@@ -62,6 +52,20 @@ int main () {
 		log_info(logger, "Valores iniciales %d, %d, %d", init.cantidad_entradas, init.tamanioEntrada, init.retardo);
 
 		log_info(logger, "Recibi la inicializacion");
+
+
+		// creo el storage y la tabla
+		char* storage = (char*)malloc(init.cantidad_entradas*init.tamanioEntrada);
+		if(storage==NULL) {
+			_exit_with_error(server, "No pude alocar la memoria", NULL);
+
+		}
+
+		log_info(logger, "Cree el storage");
+
+		*storage =0;
+
+		t_list* tabla = list_create();
 
 
 		while(1){
@@ -181,9 +185,6 @@ int main () {
 					recv(server, ruta, size_ruta, 0);
 					ruta[size_ruta] = '\0';
 					log_info(logger, "Valor %s", ruta);*/
-
-					ruta = malloc(strlen(""));
-					strcpy(ruta, "");
 					/*
 					struct ClaveValor claveValor;
 					claveValor.tamanioEntrada = init.tamanioEntrada;
@@ -195,7 +196,7 @@ int main () {
 
 					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 					*/
-					STORE(tabla,clave,ruta,logger);
+					STORE(tabla,clave, "",logger);
 				}
 				usleep(init.retardo * 1000);
 				identificador = 1;

@@ -22,7 +22,7 @@ int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
 	//ruta = strcat(ruta,clave);
 
 
-	char* rutaArmada = malloc(sizeof(ruta)+sizeof(clave)+1);
+	char* rutaArmada = malloc(strlen(ruta)+strlen(clave)+1);
 
 	//memcpy(rutaArmada,ruta,sizeof(ruta));
 	//memcpy(rutaArmada+sizeof(ruta),'/',1);
