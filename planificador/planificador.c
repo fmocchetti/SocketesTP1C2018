@@ -76,10 +76,10 @@ void generate_planning(){
 	printf("Entre al thread de planificacion \n");
 	char *config_plani = malloc(sizeof(char));
 	strcpy(config_plani, config_get_string_value(config_file, "algoritmo_de_planificacion"));
-	if(strcmp(config_plani,"fifo")==0){
+	/*if(strcmp(config_plani,"fifo")==0){
 		printf("FIFO\n");
 		fifo();
-	}
+	}*/
 	if(strcmp(config_plani,"sjfsd")==0){
 		printf("SJFSD\n");
 		sjfsd();
