@@ -170,6 +170,7 @@ void sjfcd(){
 	int sem_value = 0;
 	int lista_vacia = 0;
 	int result_connection = 0;
+	int evitar_replanificacion = 0;
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -220,6 +221,8 @@ void sjfcd(){
 				//!!!!!!!revisar como hacer esto pero con un while aca!!!!!!!!///////////////////////////////!!!!!!!
 
 				if (result_connection <= 0) {
+/*
+				while(list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI)){
 				//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 				printf("------RECIBI MENOS DE 0\n");
 				claves* clave_temporal = (claves*) malloc(sizeof(claves));
@@ -227,12 +230,13 @@ void sjfcd(){
 				ESI_STORE(clave_temporal->claveAEjecutar);
 				//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_ESI,(void*)clave_destroy);
 				free(clave_temporal);
+				}
 				//////////
 
-				t_list * claves_tomadas_a_eliminar =
+				//t_list * claves_tomadas_a_eliminar =
 
 
-
+*/
 
 
 
@@ -261,6 +265,7 @@ void sjfcd(){
 				}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
+				//revisar si el store deberia liberarme de a lista la clave que tiene tomada!!!!!!
 				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 		}
 		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
@@ -269,14 +274,24 @@ void sjfcd(){
 			laWeaReplanificadoraFIFO(terminados,ejecucion);
 			estadoListas();
 			//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-
+			while(list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI)){
 			printf("ENTRO ACAAAAAAAA\n");
 			claves* clave_temporal = (claves*) malloc(sizeof(claves));
 			clave_temporal = list_remove_by_condition(claves_tomadas,identificador_ESI);
 			ESI_STORE(clave_temporal->claveAEjecutar);
+			//list_remove_and_destroy_by_condition(claves_tomadas, (void*)identificador_ESI, (void*)nodo_lista_claves_destroyer);
 			//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_ESI,(void*)clave_destroy);
 			printf("Clave removida de la lista %s\n",clave_temporal->claveAEjecutar);
 			free(clave_temporal);
+			}
+
+			/////borrar
+			claves* clave_temporal2 = (claves*) malloc(sizeof(claves));
+			clave_temporal2=list_get(claves_tomadas,0);
+			printf("La clave en la posicion 0 es: %s\n", clave_temporal2->claveAEjecutar);
+			int hola = list_is_empty(claves_tomadas);
+			printf("Quedan Claves tomadas?: %d\n", hola);
+			/////borrar
 
 			//ESI_STORE(claveGlobal);
 			//free(clave_temporal);
@@ -434,7 +449,22 @@ bool identificador_clave(void * data){
 	return false;
 }
 
+bool identificador_clave_por_idESI(void * data){
+	claves *clave1= (claves*) data; //recibo estructura de la lista?
+	printf("Clave liberada: %s\n",clave1->claveAEjecutar);
+	if(clave1->id_ESI == id_esi_global==0) {
+		return true;
+	}
+	return false;
+}
+
 void element_destroyer(void * data){
+	free(data);
+}
+
+void nodo_lista_claves_destroyer(claves * data){
+	free(data->claveAEjecutar);
+	free(data->id_ESI);
 	free(data);
 }
 

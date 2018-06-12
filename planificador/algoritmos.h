@@ -51,5 +51,7 @@ void clave_dictionary_destroy(t_dictionary *data);
 void clave_destroy(claves *);
 void coord_communication(int,unsigned char,unsigned char);
 bool identificador_clave(void *);
+bool identificador_clave_por_idESI(void * data);
+void nodo_lista_claves_destroyer(claves * data);
 
 #endif /* ALGORITMOS_H_ */
