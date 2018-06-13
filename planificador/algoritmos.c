@@ -668,11 +668,23 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 	free(clave);
 }
 
-/*
-void get_keys_bloqueadas_de_entrada(){
-	char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
 
-}*/
+void get_keys_bloqueadas_de_entrada(){
+	char* string = (char*) malloc(sizeof(config_get_string_value(config_file, "claves_bloqueadas")));
+	//char token[40];
+	char *token;
+	const char comma[2] = ",";
+	//char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
+	string = config_get_string_value(config_file, "claves_bloqueadas");
+
+	token = strtok(string, comma);
+	while( token != NULL ) {
+	printf( " %s\n", token );
+
+	token = strtok(NULL, comma);
+	   }
+}
+
 /*
 //Si la clave ya existe en el diccionario
 					if(dictionary_has_key(claves_bloqueadas,clave){

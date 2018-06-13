@@ -86,6 +86,7 @@ void generate_planning(){
 	}
 	if(strcmp(config_plani,"sjfcd")==0){
 		printf("SJFCD\n");
+		get_keys_bloqueadas_de_entrada();
 		sjfcd();
 	}
 	else{
