@@ -27,7 +27,9 @@ void consola(){
  	} else if(!strncmp(input,"continuar", 9)){
  		continuar();
  	} else if(!strncmp(input,"bloquear", 8)){
+ 		esi_bloqueada_de_entrada = 1;
  		bloquear();
+ 		esi_bloqueada_de_entrada = 0;
  	} else if(!strncmp(input,"desbloquear", 11)){
  		desbloquear();
  	} else if(!strncmp(input,"listar", 6)){
@@ -98,33 +100,27 @@ void continuar(){
 }
 
 void bloquear(){
-	char *key = malloc(sizeof(char));
-	char *id = malloc(sizeof(char));
+	char key[40];
+	int id = 0;
 
 	printf("inserte clave\n");
-	gets(key);
+	//gets(key);
+	fgets(key, sizeof(key), stdin);
 	printf("inserte id\n");
-	gets(id);
-	log_info(logger, "Proceso Bloqueado key:%s, id:%s\n", key, id);
-
-	free(key);
-	free(id);
+	//gets(id);
+	//fgets(id, sizeof(id), stdin);
+	scanf("%d",&id);
+	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
+	ESI_GET(key,id,0);
 
 }
 
 void desbloquear(){
-	char *key = malloc(sizeof(char));
-	char *id = malloc(sizeof(char));
-
+	char key[40];
 	printf("inserte clave\n");
-	gets(key);
-	printf("inserte id\n");
-	gets(id);
-	log_info(logger, "Proceso Desbloqueado key:%s, id:%s\n", key, id);
-
-	free(key);
-	free(id);
-
+	fgets(key, sizeof(key), stdin);
+	ESI_STORE(key);
+	log_info(logger, "Proceso Desbloqueado key:%s\n", key);
 }
 
 void listar(){

@@ -13,8 +13,6 @@ char clave_bloqueada_global[40];
 int result_connection = 0;
 bool result_satisfy =false;
 char claveGlobal[100];
-int esi_bloqueada_de_entrada = 0;
-
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
     t_list * tempList = list_create();
@@ -435,7 +433,6 @@ bool identificador_ESI(void * data){
 
 bool identificador_clave(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
-	printf("Clave Bloqueada: %s\n",clave1->claveAEjecutar);
 	if(strcmp(clave1->claveAEjecutar,clave_bloqueada_global)==0) {
 		return true;
 	}
@@ -473,12 +470,25 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 		list_add(listos, (claves*)clave1);
 		//hacer un get para testear
 	} else */
+	int resultado_lista_satisfy = 0;
+
 	claves* clave1 = (claves*) malloc(sizeof(claves));
 	strcpy(clave1->claveAEjecutar,claveAEjecutar);
 	clave1->id_ESI = id_ESI;
 
 	if(esi_bloqueada_de_entrada==1){
-		list_add(claves_tomadas, (claves*)clave1);
+		strcpy(clave_bloqueada_global,claveAEjecutar);
+		printf("CLAVE GLOBAL ES %s\n",clave_bloqueada_global);
+		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+		   if(resultado_lista_satisfy==1){
+			   log_info(logger,"La clave ya se encuentra bloqueada");
+		   }
+
+		   else{
+
+			   list_add(claves_tomadas, (claves*)clave1);
+			   log_info(logger,"Clave bloqueada correctamente\n");
+		   }
 	}
 
 	else{
@@ -535,6 +545,7 @@ void ESI_STORE(char *claveAEjecutar){
     			list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave,(void*)clave_destroy);
     			//printf("Clave removida de la lista %s\n",clave_temporal->claveAEjecutar);
     			//free(clave_temporal);
+    			log_info(logger,"Clave eliminada correctamente de la lista de tomados\n");
     }
 
     //reviso si la clave existe en el diccionario
@@ -668,7 +679,7 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 	free(clave);
 }
 
-
+//Falta Terminar
 void get_keys_bloqueadas_de_entrada(){
 	char* string = (char*) malloc(sizeof(config_get_string_value(config_file, "claves_bloqueadas")));
 	//char token[40];

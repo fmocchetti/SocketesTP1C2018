@@ -17,7 +17,11 @@
 #include <pthread.h>
 #include "protocolo.h"
 #include <commons/config.h>
+#include <commons/log.h>
 
+
+
+t_log * logger;
 t_config * config_file;
 t_list * listos;
 t_list * bloqueados;
@@ -36,6 +40,7 @@ sem_t sem_pausar_algoritmo;
 t_dictionary * claves_bloqueadas;
 int replanificar;
 int socket_coord;
+int esi_bloqueada_de_entrada;
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
