@@ -64,7 +64,7 @@ void _instancia(int socket_local) {
 		sem_wait(&(local_struct->instance_sem));
 
 		log_info(logger, "Pase el semaforo de la instancia %d", local_struct->id);
-		pthread_mutex_unlock(&mutex);
+		//pthread_mutex_lock(&mutex);
 		log_info(logger, "Pase el Mutex de la instancia");
 
 		size_clave = strlen(local_struct->clave);
@@ -99,7 +99,7 @@ void _instancia(int socket_local) {
         log_info(logger, "La instancia termino de procesar");
         sem_post(&mutex_instancia);
 
-        pthread_mutex_lock(&mutex);
+        //pthread_mutex_unlock(&mutex);
 	}
 
 
@@ -247,7 +247,6 @@ void _planificador(int socket_local) {
 
 	while(1) {
 		sem_wait(&mutex_planificador);
-		sem_wait(&mutex_instancia);
 
 		int messageLength = 1;
 		int size_clave = strlen(thread_planificador->clave);

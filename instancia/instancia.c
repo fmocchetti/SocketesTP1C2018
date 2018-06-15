@@ -199,6 +199,7 @@ int main () {
 					STORE(tabla,clave, "",logger);
 				}
 				usleep(init.retardo * 1000);
+				log_info(logger, "Ya termine de ejecutar esa instruccion");
 				identificador = 1;
 				send(server, &identificador, 1, 0);
 		}
