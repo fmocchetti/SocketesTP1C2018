@@ -27,6 +27,7 @@ t_list * listos;
 t_list * bloqueados;
 t_list * ejecucion;
 t_list * terminados;
+t_list * muertos;
 t_list * claves_tomadas;
 sem_t new_process;
 //sem_t replanificar;

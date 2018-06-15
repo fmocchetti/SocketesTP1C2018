@@ -46,6 +46,7 @@ int main (int argc, char *argv[])
 	bloqueados = list_create();
 	ejecucion = list_create();
 	terminados = list_create();
+	muertos = list_create();
 	claves_tomadas = list_create();
 	//Creo el diccionario de claves bloqueadas
 	claves_bloqueadas = dictionary_create();

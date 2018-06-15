@@ -27,14 +27,17 @@ void estadoListas(){
     int cantidadEjecucion = 0;
     int cantidadBloqueados = 0;
     int cantidadTerminados = 0;
+    int cantidadMuertos = 0;
     cantidadEjecucion = list_size(ejecucion);
     cantidadListos = list_size(listos);
     cantidadBloqueados = list_size(bloqueados);
     cantidadTerminados = list_size(terminados);
+    cantidadMuertos = list_size(muertos);
     printf("Procesos en la cola de listos %d\n",cantidadListos);
     printf("Procesos en la cola de ejecucion %d\n",cantidadEjecucion);
     printf("Procesos en la cola de bloqueados %d\n",cantidadBloqueados);
     printf("Procesos en la cola de terminados %d\n",cantidadTerminados);
+    printf("Procesos en la cola de muertos %d\n",cantidadMuertos);
 
 }
 
@@ -239,6 +242,7 @@ void sjfcd(){
 				//////////
 
 				//hago close del socket
+				laWeaReplanificadoraFIFO(muertos,ejecucion);
 				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 				nodo_lista_ejecucion->cantidadDeLineas = 0;
 				break;
@@ -458,6 +462,8 @@ void nodo_lista_claves_destroyer(claves * data){
 }
 
 void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
+	int queue_vacia = 0;
+	int id_esi_desbloqueado = 0;
 	/*
 	//si la clave no esta en la lista, la agrego y continuo
 	strcpy(clave_bloqueada_global,claveAEjecutar);
@@ -479,8 +485,8 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 	if(esi_bloqueada_de_entrada==1){
 		strcpy(clave_bloqueada_global,claveAEjecutar);
 		printf("CLAVE GLOBAL ES %s\n",clave_bloqueada_global);
-		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
-		   if(resultado_lista_satisfy==1){
+		/*resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+		   if(resultado_lista_satisfy==1 || dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
 			   log_info(logger,"La clave ya se encuentra bloqueada");
 		   }
 
@@ -488,11 +494,45 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 
 			   list_add(claves_tomadas, (claves*)clave1);
 			   log_info(logger,"Clave bloqueada correctamente\n");
-		   }
+		   }*/
+		if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+				printf("Entre en 1\n");
+				t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+				//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
+				queue_push(queue_clave, &id_ESI);
+		} else {
+				//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+				printf("Entre en 2\n");
+				t_queue * queue_clave = queue_create();
+				queue_push(queue_clave, &id_ESI);
+				dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
+		}
+
 	}
 
 	else{
-	if(respuesta_ESI==2){
+	if(respuesta_ESI==2){/*
+		if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+			t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+			t_queue * queue_temporal;
+			queue_vacia = queue_is_empty(queue_clave);
+			while(!queue_vacia){
+				id_esi_desbloqueado = (int)queue_pop(queue_clave);
+				if(id_esi_desbloqueado == id_ESI){
+					log_info(logger,"La clave ya se encuentra bloqueada");
+					queue_push(queue_temporal,id_esi_desbloqueado);
+				}
+				else{
+					queue_push(queue_temporal,id_esi_desbloqueado);
+				}
+				queue_vacia = queue_is_empty(queue_clave);
+			}
+			queue_clave = queue_temporal;
+		}
+		else{
+		printf("Entre en 3\n");
+		list_add(claves_tomadas, (claves*)clave1);
+		}*/
 		printf("Entre en 3\n");
 		list_add(claves_tomadas, (claves*)clave1);
 	}
