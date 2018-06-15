@@ -46,6 +46,7 @@ int main (int argc, char *argv[])
 	bloqueados = list_create();
 	ejecucion = list_create();
 	terminados = list_create();
+	muertos = list_create();
 	claves_tomadas = list_create();
 	//Creo el diccionario de claves bloqueadas
 	claves_bloqueadas = dictionary_create();
@@ -76,16 +77,17 @@ void generate_planning(){
 	printf("Entre al thread de planificacion \n");
 	char *config_plani = malloc(sizeof(char));
 	strcpy(config_plani, config_get_string_value(config_file, "algoritmo_de_planificacion"));
-	if(strcmp(config_plani,"fifo")==0){
+	/*if(strcmp(config_plani,"fifo")==0){
 		printf("FIFO\n");
 		fifo();
-	}
+	}*/
 	if(strcmp(config_plani,"sjfsd")==0){
 		printf("SJFSD\n");
 		sjfsd();
 	}
 	if(strcmp(config_plani,"sjfcd")==0){
 		printf("SJFCD\n");
+		get_keys_bloqueadas_de_entrada();
 		sjfcd();
 	}
 	else{

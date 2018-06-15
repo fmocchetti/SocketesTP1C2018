@@ -18,18 +18,15 @@
 #include <netdb.h>
 #include <errno.h>
 #include <strings.h>
-#include <commons/log.h>
 #include "protocolo.h"
 #include "algoritmos.h"
 #include <semaphore.h>
 #include <pthread.h>
-#include <commons/config.h>
+
 
 #define TRUE             1
 #define FALSE            0
 
-t_log * logger;
-t_config * config_file;
 
 enum mensajes {
 	IDENTIFY = 10,
