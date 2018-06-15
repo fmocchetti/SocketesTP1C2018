@@ -14008,3 +14008,71 @@
 [INFO] 19:30:11:622 consola-planificador/(11784:11784): Valor TraemeLaCopa
 [INFO] 19:30:11:622 consola-planificador/(11784:11784): Valores iniciales futbol:messi, TraemeLaCopa, 300
 [INFO] 19:30:11:622 consola-planificador/(11784:11784): Recibi clave y valor
+[INFO] 20:24:01:779 consola-planificador/(12630:12630): Trying to connect to: 127.0.0.1 : 12346 
+
+[INFO] 20:24:01:779 consola-planificador/(12630:12630): Conectado!
+[INFO] 20:24:01:779 consola-planificador/(12630:12630): Waiting handshake
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Estado server 4 
+
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Recibi 11 
+
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Recibi 12 
+
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Recibi 12 bytes
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Cantidad entradas: 20
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Tamanio entradas: 100
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Retardo: 300
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Valores iniciales 20, 100, 300
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Recibi la inicializacion
+[INFO] 20:24:01:780 consola-planificador/(12630:12630): Cree el storage
+[INFO] 20:39:05:173 consola-planificador/(14239:14239): Trying to connect to: 127.0.0.1 : 12346 
+
+[INFO] 20:39:05:174 consola-planificador/(14239:14239): Conectado!
+[INFO] 20:39:05:174 consola-planificador/(14239:14239): Waiting handshake
+[INFO] 20:39:05:174 consola-planificador/(14239:14239): Estado server 4 
+
+[INFO] 20:39:05:174 consola-planificador/(14239:14239): Recibi 11 
+
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Recibi 12 
+
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Recibi 12 bytes
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Cantidad entradas: 20
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Tamanio entradas: 100
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Retardo: 300
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Valores iniciales 20, 100, 300
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Recibi la inicializacion
+[INFO] 20:39:05:175 consola-planificador/(14239:14239): Cree el storage
+[INFO] 20:39:14:204 consola-planificador/(14239:14239): Identificador 22
+[INFO] 20:39:14:204 consola-planificador/(14239:14239): size_clave 12 4
+[INFO] 20:39:14:204 consola-planificador/(14239:14239): Clave 12
+[INFO] 20:39:14:204 consola-planificador/(14239:14239): Clave futbol:messi
+[INFO] 20:39:14:204 consola-planificador/(14239:14239): Identificador 22
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Asigne tamanioClave 12
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Asigne claveValor.clave
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Asigne tmananioValor
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Asigne claveValor.valor
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Asigne las estructuras
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Valor TraemeLaCopa
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Valores iniciales futbol:messi, TraemeLaCopa, 300
+[INFO] 20:39:14:205 consola-planificador/(14239:14239): Recibi clave y valor
+[INFO] 20:39:14:506 consola-planificador/(14239:14239): Identificador 23
+[INFO] 20:39:14:506 consola-planificador/(14239:14239): size_clave 12 4
+[INFO] 20:39:14:506 consola-planificador/(14239:14239): Clave 12
+[INFO] 20:39:14:506 consola-planificador/(14239:14239): Clave futbol:messi
+[INFO] 20:39:14:506 consola-planificador/(14239:14239): Identificador 23
+[INFO] 20:39:14:507 consola-planificador/(14239:14239): Se guardara el archivo en ruta: futbol:messi
+[INFO] 20:39:14:507 consola-planificador/(14239:14239): Se crea el archivo: 5
+[INFO] 20:39:14:508 consola-planificador/(14239:14239): Se cierra el archivo
+[INFO] 20:39:14:811 consola-planificador/(14239:14239): Identificador 22
+[INFO] 20:39:14:811 consola-planificador/(14239:14239): size_clave 12 4
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Clave 12
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Clave futbol:messi
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Identificador 22
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Asigne tamanioClave 12
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Asigne claveValor.clave
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Asigne tmananioValor
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Asigne claveValor.valor
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Asigne las estructuras
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Valor TraemeLaCo
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Valores iniciales futbol:messi, TraemeLaCo, 300
+[INFO] 20:39:14:812 consola-planificador/(14239:14239): Recibi clave y valor

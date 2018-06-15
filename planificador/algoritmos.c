@@ -572,7 +572,8 @@ void ESI_STORE(char *claveAEjecutar){
 	int queue_vacia = 0;
     int list_vacia = 0;
     int id_esi_desbloqueado = 0;
-    int resultado_lista_satisfy;
+    int key_existente = 1;
+    int resultado_lista_satisfy = 0;
     strcpy(clave_bloqueada_global,claveAEjecutar);
     resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
     if(resultado_lista_satisfy==1){
@@ -602,24 +603,31 @@ void ESI_STORE(char *claveAEjecutar){
 			ESI* esi1 = (ESI*) malloc(sizeof(ESI));
 			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
 			id_esi_global = id_esi_desbloqueado;
-			t_list * lista_temporal = list_filter(bloqueados,(void*)identificador_ESI);
-			list_vacia = list_is_empty(lista_temporal);
+
+			//t_list * lista_temporal = list_filter(bloqueados,(void*)identificador_ESI);
+			//list_vacia = list_is_empty(lista_temporal);
+			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
+
 			//chequeo si la lista no esta vacia, remuevo la esi de bloqueados y la muevo a listos
-			if(list_vacia != 1){
+			while(key_existente!=1){
+			if(resultado_lista_satisfy){
 				//printf("Entre a queue vacia\n",id_esi_desbloqueado);
 				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
+
 				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
 				list_add(listos, (ESI*)esi1);
 				//seteo los semaforos para el sjfcd
+				key_existente=1;
 				replanificar = 1;
 				sem_post(&new_process);
 				}
 			//Si esta vacia, la esi no existe en la cola de bloqueados
 			else{
-				dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
+				//dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
 				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
 				}
 	    	}
+	    }
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
 	    	printf("la clave no esta tomada\n");
