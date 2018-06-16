@@ -293,7 +293,7 @@ void sjfcd(){
 			//free(clave_temporal);
 			//break;
 		}
-	}
+
 		//si el valor de replanificar cambia, se sale del while y se evalua si la lista de ejecucion no esta vacia
 		lista_vacia = list_is_empty(ejecucion);
 		printf("lista vacia %d\n",lista_vacia);
@@ -306,6 +306,7 @@ void sjfcd(){
 			sem_post(&new_process);
 			//free(nodo_lista_ejecucion);
 		}
+	}
 }
 
 
