@@ -124,12 +124,7 @@ void desbloquear(){
 }
 
 void listar(){
-	char *resource = malloc(sizeof(char));
-
-	printf("inserte recurso a consultar\n");
-	gets(resource);
-	log_info(logger, "Los procesos encolados son\n");
-	free(resource);
+	estadoListas();
 }
 
 void kill(){
