@@ -8,7 +8,7 @@
 
 #include "algoritmos.h"
 
-int id_esi_global = 0;
+
 
 int result_connection = 0;
 bool result_satisfy =false;
@@ -451,6 +451,8 @@ bool identificador_clave(void * data){
 bool identificador_clave_por_idESI(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
 	printf("Clave liberada: %s\n",clave1->claveAEjecutar);
+	log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
+	log_info(logger, "El id a comparar es '%d'", id_esi_global);
 	if(clave1->id_ESI == id_esi_global) {
 		return true;
 	}

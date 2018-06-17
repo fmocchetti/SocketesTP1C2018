@@ -185,11 +185,53 @@ void listar(){
 }//PENSAR SI TENGO QUE LIBERAR LAS QUEUES EN ALGUN MOMENTO
 
 void kill(){
-	char *id = malloc(sizeof(char));
-	printf("Inserte ID del proceso\n");
-	gets(id);
-	printf("El proceso %s murio viejo\n", id);
-	free(id);
+	int id = 0;
+	int resultado_satisfy = 0;
+	printf("Inserte ID de la ESI a matar\n");
+	scanf("%d", &id);
+
+	id_esi_global = id;
+	printf("------RECIBI MENOS DE 1\n");
+	resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+	printf("------RECIBI MENOS DE 2\n");
+	while(resultado_satisfy == 1){
+	//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+		printf("------RECIBI MENOS DE 0\n");
+		claves* clave_temporal = (claves*) malloc(sizeof(claves));
+		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+		ESI_STORE(clave_temporal->claveAEjecutar);
+		free(clave_temporal);
+		//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+
+		}
+		//hago close del socket
+	resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI);
+	if(resultado_satisfy==1){
+		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
+		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+		nodo_lista_ejecucion->cantidadDeLineas = 0;
+		free(nodo_lista_ejecucion);
+	printf("1- El proceso %s murio viejo\n", id);
+	}
+	else{
+		printf("NO ESTA EN EJECUCION\n");
+	}
+	resultado_satisfy = list_any_satisfy(listos, (void*)identificador_ESI);
+	if(resultado_satisfy==1){
+		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
+		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+		nodo_lista_ejecucion->cantidadDeLineas = 0;
+		free(nodo_lista_ejecucion);
+		printf("2- El proceso %s murio viejo\n", id);
+	}
+	else{
+		printf("NO ESTA EN LISTOS\n");
+	}
 }
 
 void status(){
