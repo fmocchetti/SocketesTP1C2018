@@ -13,15 +13,16 @@
 void consola(){
 
  char input[100];
- printf( "----------Bienvenido al planificador-----------\n" );
 
- while(strcmp(input,"salir") != 0){
- 	opciones();
+ printf( "----------Bienvenido al planificador-----------\n" );
+ opciones();
+
+ while(strncmp(input,"salir",5) != 0){
  	//char *input = malloc(sizeof(char));
  	//gets(input);
- 	fgets(input, sizeof(input), stdin);
- 	printf("HOLAAAA\n");
- 	printf("DICE %s\n", input);
+ 	//fgets(input, sizeof(input), stdin);
+	 scanf("%s", input);
+
  	if(!strncmp(input,"pausar", 6)){
  		pausar();
  	} else if(!strncmp(input,"continuar", 9)){
@@ -34,18 +35,19 @@ void consola(){
  		desbloquear();
  	} else if(!strncmp(input,"listar", 6)){
  		listar();
- 	}else if(!strncmp(input,"kill", 4)){
+ 	} else if(!strncmp(input,"kill", 4)){
  		kill();
  	} else if(!strncmp(input,"status", 6)){
  		status();
  	} else if(!strncmp(input,"deadlock",8)){
  		deadlock();
  	}
+ 	opciones();
+ 	printf("LLegue al final!\n");
   }
 
 
  printf("Nos vimo perro");
- free(input);
  }
 
 void configure_logger_consola() { //Configuracion del log del planificador
@@ -105,7 +107,8 @@ void bloquear(){
 
 	printf("inserte clave\n");
 	//gets(key);
-	fgets(key, sizeof(key), stdin);
+	//fgets(key, sizeof(key), stdin);
+	scanf("%s", key);
 	printf("inserte id\n");
 	//gets(id);
 	//fgets(id, sizeof(id), stdin);
@@ -118,14 +121,68 @@ void bloquear(){
 void desbloquear(){
 	char key[40];
 	printf("inserte clave\n");
-	fgets(key, sizeof(key), stdin);
-	ESI_STORE(key);
+	//fgets(key, sizeof(key), stdin);
+	scanf("%s", key);
+	desbloquear_del_diccionario(key);
 	log_info(logger, "Proceso Desbloqueado key:%s\n", key);
 }
 
 void listar(){
-	estadoListas();
-}
+	char key[40];
+	int id = 0;
+	int dicc_size = 0;
+	int queue_vacia = 0;
+	int id_esi_bloqueado = 0;
+	int resultado_lista_satisfy = 0;
+	printf("inserte clave\n");
+	//fgets(key, sizeof(key), stdin);
+	scanf("%s", key);
+	t_queue * queue_clave;
+	t_queue * queue_temporal;
+
+
+	if(!list_is_empty(claves_tomadas)) {
+		strcpy(clave_bloqueada_global,key);
+		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+
+		printf("Satisface la lista? %d\n\n",resultado_lista_satisfy);
+
+		id = list_size(claves_tomadas);
+		printf("Size de la lista de claves tomadas %d\n\n",id);
+		claves* clave_temporal = (claves*) malloc(sizeof(claves));
+		clave_temporal = list_get(claves_tomadas, 0);
+		printf("La CLAVE tomada es %s\n\n",clave_temporal->claveAEjecutar);
+
+
+		if(resultado_lista_satisfy){
+			claves* clave_temporal = (claves*) malloc(sizeof(claves));
+			clave_temporal = list_find(claves_tomadas, (void*)identificador_clave);
+			log_info(logger,"El recurso se encuentra tomado actualmente por la ESI %d\n",clave_temporal->id_ESI);
+		}
+		else{
+			log_info(logger,"El recurso no se encuentra tomado actualmente por una ESI\n");
+		}
+	}
+
+	if(dictionary_has_key(claves_bloqueadas,key)){
+	queue_clave = dictionary_get(claves_bloqueadas,key);
+	queue_temporal = queue_create();
+
+	queue_vacia = queue_is_empty(queue_clave);
+	while(!queue_vacia){
+		id_esi_bloqueado = (int)queue_pop(queue_clave);
+		log_info(logger,"La ESI del ID %d se encuentra bloqueada esperando al recurso %s",id_esi_bloqueado,key);
+		queue_push(queue_temporal,(int)id_esi_bloqueado);
+		queue_vacia = queue_is_empty(queue_clave);
+		}
+	queue_clean(queue_clave);
+	dictionary_remove_and_destroy(claves_bloqueadas, key, (void*)clave_dictionary_destroy);
+	dictionary_put(claves_bloqueadas, key, queue_temporal);
+	}
+	else{
+		log_info(logger,"No hay ESIs bloqueadas esperando al rescurso %s",key);
+	}
+}//PENSAR SI TENGO QUE LIBERAR LAS QUEUES EN ALGUN MOMENTO
 
 void kill(){
 	char *id = malloc(sizeof(char));

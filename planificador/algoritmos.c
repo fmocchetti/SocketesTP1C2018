@@ -9,7 +9,7 @@
 #include "algoritmos.h"
 
 int id_esi_global = 0;
-char clave_bloqueada_global[40];
+
 int result_connection = 0;
 bool result_satisfy =false;
 char claveGlobal[100];
@@ -438,6 +438,10 @@ bool identificador_ESI(void * data){
 
 bool identificador_clave(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
+	log_info(logger, "La clave a ejecutar es '%s'", clave1->claveAEjecutar);
+	log_info(logger, "La clave a comparar es '%s'", clave_bloqueada_global);
+
+
 	if(strcmp(clave1->claveAEjecutar,clave_bloqueada_global)==0) {
 		return true;
 	}
@@ -496,60 +500,63 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			   list_add(claves_tomadas, (claves*)clave1);
 			   log_info(logger,"Clave bloqueada correctamente\n");
 		   }*/
-		if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
 				printf("Entre en 1\n");
-				t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+				t_queue * queue_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
 				//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
-				queue_push(queue_clave, &id_ESI);
+				queue_push(queue_clave, id_ESI);
+				log_info(logger, "Inserte la esi %d en la que de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+				//dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
 		} else {
 				//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
 				printf("Entre en 2\n");
 				t_queue * queue_clave = queue_create();
-				queue_push(queue_clave, &id_ESI);
+				queue_push(queue_clave, id_ESI);
 				dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
+				log_info(logger, "Inserte la esi %d en la que de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
 		}
 
 	}
 
 	else{
-	if(respuesta_ESI==2){/*
-		if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
-			t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
-			t_queue * queue_temporal;
-			queue_vacia = queue_is_empty(queue_clave);
-			while(!queue_vacia){
-				id_esi_desbloqueado = (int)queue_pop(queue_clave);
-				if(id_esi_desbloqueado == id_ESI){
-					log_info(logger,"La clave ya se encuentra bloqueada");
-					queue_push(queue_temporal,id_esi_desbloqueado);
-				}
-				else{
-					queue_push(queue_temporal,id_esi_desbloqueado);
-				}
+		if(respuesta_ESI==2){/*
+			if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+				t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+				t_queue * queue_temporal;
 				queue_vacia = queue_is_empty(queue_clave);
+				while(!queue_vacia){
+					id_esi_desbloqueado = (int)queue_pop(queue_clave);
+					if(id_esi_desbloqueado == id_ESI){
+						log_info(logger,"La clave ya se encuentra bloqueada");
+						queue_push(queue_temporal,id_esi_desbloqueado);
+					}
+					else{
+						queue_push(queue_temporal,id_esi_desbloqueado);
+					}
+					queue_vacia = queue_is_empty(queue_clave);
+				}
+				queue_clave = queue_temporal;
 			}
-			queue_clave = queue_temporal;
+			else{
+			printf("Entre en 3\n");
+			list_add(claves_tomadas, (claves*)clave1);
+			}*/
+			printf("Entre en 3\n");
+			list_add(claves_tomadas, (claves*)clave1);
 		}
-		else{
-		printf("Entre en 3\n");
-		list_add(claves_tomadas, (claves*)clave1);
-		}*/
-		printf("Entre en 3\n");
-		list_add(claves_tomadas, (claves*)clave1);
+		else if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+			printf("Entre en 1\n");
+			t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+			//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
+			queue_push(queue_clave, &id_ESI);
+		} else {
+			//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+			printf("Entre en 2\n");
+			t_queue * queue_clave = queue_create();
+			queue_push(queue_clave, &id_ESI);
+			dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
+		}
 	}
-	else if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
-		printf("Entre en 1\n");
-		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
-		//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
-		queue_push(queue_clave, &id_ESI);
-	} else {
-		//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
-		printf("Entre en 2\n");
-		t_queue * queue_clave = queue_create();
-		queue_push(queue_clave, &id_ESI);
-		dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
-	}
-}
 }
 
 /*BACKUP - NO BORRAR HASTA TESTEAR
@@ -589,6 +596,64 @@ void ESI_STORE(char *claveAEjecutar){
     			//free(clave_temporal);
     			log_info(logger,"Clave eliminada correctamente de la lista de tomados\n");
     }
+
+    //reviso si la clave existe en el diccionario
+    if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+		t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+	    queue_vacia = queue_is_empty(queue_clave);
+	    printf("Estado QUEUE: %d\n",queue_vacia);
+	//reviso si la queue no esta vacia
+	    if(!queue_vacia){
+	    	printf("Entre a queue NO vacia\n");
+	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
+			id_esi_desbloqueado = (int)queue_pop(queue_clave);
+			printf("id ESI desbloqueado %d\n",id_esi_desbloqueado);
+			ESI* esi1 = (ESI*) malloc(sizeof(ESI));
+			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
+			id_esi_global = id_esi_desbloqueado;
+
+			//t_list * lista_temporal = list_filter(bloqueados,(void*)identificador_ESI);
+			//list_vacia = list_is_empty(lista_temporal);
+			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
+
+			//chequeo si la lista no esta vacia, remuevo la esi de bloqueados y la muevo a listos
+			while(key_existente!=1){
+			if(resultado_lista_satisfy){
+				//printf("Entre a queue vacia\n",id_esi_desbloqueado);
+				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
+
+				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
+				list_add(listos, (ESI*)esi1);
+				//seteo los semaforos para el sjfcd
+				key_existente=1;
+				replanificar = 1;
+				sem_post(&new_process);
+				}
+			//Si esta vacia, la esi no existe en la cola de bloqueados
+			else{
+				//dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
+				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
+				}
+	    	}
+	    }
+	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
+	    else{
+	    	printf("la clave no esta tomada\n");
+	    	}
+	    }
+	else{
+		printf("La clave no existe en el diccionario, nada que desbloquear\n");
+	}
+}
+
+
+void desbloquear_del_diccionario(char *claveAEjecutar){
+	int queue_vacia = 0;
+    int id_esi_desbloqueado = 0;
+    int key_existente = 1;
+    int resultado_lista_satisfy = 0;
+    strcpy(clave_bloqueada_global,claveAEjecutar);
+    resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
 
     //reviso si la clave existe en el diccionario
     if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
