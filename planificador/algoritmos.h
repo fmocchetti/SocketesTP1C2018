@@ -64,6 +64,6 @@ bool identificador_clave(void *);
 bool identificador_clave_por_idESI(void * data);
 void nodo_lista_claves_destroyer(claves * data);
 void get_keys_bloqueadas_de_entrada(int);
-void desbloquear_del_diccionario(char *);
+void desbloquear_del_diccionario(char *,int);
 
 #endif /* ALGORITMOS_H_ */

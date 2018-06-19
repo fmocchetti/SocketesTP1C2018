@@ -132,7 +132,7 @@ void desbloquear(){
 	printf("inserte clave\n");
 	//fgets(key, sizeof(key), stdin);
 	scanf("%s", key);
-	desbloquear_del_diccionario(key);
+	desbloquear_del_diccionario(key,socket_coord);
 	log_info(logger, "Proceso Desbloqueado key:%s\n", key);
 }
 
