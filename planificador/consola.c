@@ -29,7 +29,7 @@ void consola(){
  		continuar();
  	} else if(!strncmp(input,"bloquear", 8)){
  		esi_bloqueada_de_entrada = 1;
- 		bloquear();
+ 		bloquear(socket_coord);
  		esi_bloqueada_de_entrada = 0;
  	} else if(!strncmp(input,"desbloquear", 11)){
  		desbloquear();
@@ -101,14 +101,27 @@ void continuar(){
 	}
 }
 
-void bloquear(){
+void bloquear(int socket){
 	char key[40];
 	int id = 0;
+	unsigned char mensaje_coord = 33;
+	int cantidad_bloqueados = 1;
+	int tamanio_clave = 0;
 
 	printf("inserte clave\n");
 	scanf("%s", key);
 	printf("inserte id\n");
 	scanf("%d",&id);
+
+	send(socket,&mensaje_coord,1,0);
+	send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
+
+	tamanio_clave = strlen(key);
+	printf("largo de la clave %d\n", tamanio_clave);
+	send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+	send(socket,&key,tamanio_clave,0);
+
+
 	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
 	ESI_GET(key,id,0);
 

@@ -471,6 +471,7 @@ void nodo_lista_claves_destroyer(claves * data){
 void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 	int queue_vacia = 0;
 	int id_esi_desbloqueado = 0;
+	int resultado_lista_satisfy = 0;
 	/*
 	//si la clave no esta en la lista, la agrego y continuo
 	strcpy(clave_bloqueada_global,claveAEjecutar);
@@ -483,7 +484,6 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 		list_add(listos, (claves*)clave1);
 		//hacer un get para testear
 	} else */
-	int resultado_lista_satisfy = 0;
 
 	claves* clave1 = (claves*) malloc(sizeof(claves));
 	strcpy(clave1->claveAEjecutar,claveAEjecutar);
@@ -502,6 +502,15 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			   list_add(claves_tomadas, (claves*)clave1);
 			   log_info(logger,"Clave bloqueada correctamente\n");
 		   }*/
+
+		//testear si funca/////////////////////////////
+		id_esi_global = id_ESI;
+		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+		if(resultado_lista_satisfy){
+			list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+		}
+		//testear si funca////////////////////////////
+
 		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
 				printf("Entre en 1\n");
 				t_queue * queue_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
@@ -649,7 +658,7 @@ void ESI_STORE(char *claveAEjecutar){
 }
 
 
-void desbloquear_del_diccionario(char *claveAEjecutar){
+void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	int queue_vacia = 0;
     int id_esi_desbloqueado = 0;
     int key_existente = 1;
@@ -693,6 +702,7 @@ void desbloquear_del_diccionario(char *claveAEjecutar){
 			else{
 				//dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
 				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
+				key_existente=1;
 				}
 	    	}
 	    }
@@ -762,7 +772,8 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 	printf("Entre a Coord Comm \n");
 	int size_clave = 0, rc = 0;
 	char * clave = NULL;
-	unsigned char id_mensaje_coord = 0;
+	unsigned char id_mensaje_coord = 32;
+	send(socket_coord, &id_mensaje_coord,1,0);
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
 	rc = recv(socket_coord, &id_mensaje_coord,1, 0);
 	printf("Recibi %d bytes del coordinador \n", rc);
@@ -801,12 +812,13 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	t_queue * queue_clave_inicio = queue_create();
 	int tamanio_queue = 0;
 	int tamanio_clave = 0;
-	printf("CASI LO LOGRO!\n");
+	unsigned char mensaje_coord = 33;
 	char* string = (char*) malloc(sizeof(config_get_string_value(config_file, "claves_bloqueadas")));
 	//char token[40];
 	char *token;
 	const char comma[2] = ",";
 	//char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
+	esi_bloqueada_de_entrada = 1;
 	string = config_get_string_value(config_file, "claves_bloqueadas");
 
 	token = strtok(string, comma);
@@ -815,7 +827,10 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	queue_push(queue_clave_inicio,token);
 	token = strtok(NULL, comma);
 	   }
+
 	tamanio_queue = queue_size(queue_clave_inicio);
+	send(socket,&mensaje_coord,1,0);
+	send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
 	//mandar al coord aca la cantidad de claves que tiene que bloquear
 
 	printf("Tamanio de la queue %d\n", tamanio_queue);
@@ -823,11 +838,14 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	while(!queue_is_empty(queue_clave_inicio)){
 		token = queue_pop(queue_clave_inicio);
 		tamanio_clave = strlen(token);
+		send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+		send(socket,&token,tamanio_clave,0);
 		printf("saque de la cola '%s'\n", token);
 		printf("el tamanio de la clave a enviar es %d\n", tamanio_clave);
 	}
 	//free(token);
 	queue_destroy(queue_clave_inicio);
+	esi_bloqueada_de_entrada = 0;
 }
 /*
 //Si la clave ya existe en el diccionario
