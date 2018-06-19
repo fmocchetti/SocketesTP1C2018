@@ -80,7 +80,7 @@ typedef struct {
 t_dictionary * diccionario_claves;
 
 static t_clave *clave_create(int esi, int instancia, bool tomada){
-	t_clave *new = malloc( sizeof(t_clave) );
+	t_clave * new = malloc (sizeof(t_clave));
 	new->esi = esi;
 	new->instancia = instancia;
 	new->tomada = tomada;

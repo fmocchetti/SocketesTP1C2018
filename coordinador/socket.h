@@ -26,6 +26,8 @@
 #define TRUE             1
 #define FALSE            0
 
+// Quien decidio este protocolo? Un hechicero lo hizo
+
 enum mensajes {
 	ESI_OK = 7,
 	ESI_ERROR = 8,
@@ -37,7 +39,10 @@ enum mensajes {
 	ESI_STORE = 23,
 	COORDINADOR_GET = 24,
 	COORDINADOR_SET = 	25,
-	COORDINADOR_STORE = 26
+	COORDINADOR_STORE = 26,
+	PLANIFICADOR_CLAVE = 32,
+	PLANIFICADOR_BLOQUEAR = 33,
+	PLANIFICADOR_DESBLOQUEAR = 34
 };
 
 enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 3};
