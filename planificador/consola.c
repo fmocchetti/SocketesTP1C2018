@@ -106,12 +106,8 @@ void bloquear(){
 	int id = 0;
 
 	printf("inserte clave\n");
-	//gets(key);
-	//fgets(key, sizeof(key), stdin);
 	scanf("%s", key);
 	printf("inserte id\n");
-	//gets(id);
-	//fgets(id, sizeof(id), stdin);
 	scanf("%d",&id);
 	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
 	ESI_GET(key,id,0);

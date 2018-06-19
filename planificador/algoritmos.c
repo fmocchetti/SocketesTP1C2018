@@ -796,7 +796,7 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 }
 
 //Falta Terminar
-void get_keys_bloqueadas_de_entrada(){
+void get_keys_bloqueadas_de_entrada(int socket){
 
 	t_queue * queue_clave_inicio = queue_create();
 	int tamanio_queue = 0;

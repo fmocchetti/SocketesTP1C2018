@@ -63,7 +63,7 @@ void coord_communication(int,unsigned char,unsigned char);
 bool identificador_clave(void *);
 bool identificador_clave_por_idESI(void * data);
 void nodo_lista_claves_destroyer(claves * data);
-void get_keys_bloqueadas_de_entrada();
+void get_keys_bloqueadas_de_entrada(int);
 void desbloquear_del_diccionario(char *);
 
 #endif /* ALGORITMOS_H_ */
