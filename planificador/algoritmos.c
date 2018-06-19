@@ -797,6 +797,11 @@ void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char est
 
 //Falta Terminar
 void get_keys_bloqueadas_de_entrada(){
+
+	t_queue * queue_clave_inicio = queue_create();
+	int tamanio_queue = 0;
+	int tamanio_clave = 0;
+	printf("CASI LO LOGRO!\n");
 	char* string = (char*) malloc(sizeof(config_get_string_value(config_file, "claves_bloqueadas")));
 	//char token[40];
 	char *token;
@@ -806,12 +811,24 @@ void get_keys_bloqueadas_de_entrada(){
 
 	token = strtok(string, comma);
 	while( token != NULL ) {
-	printf( " %s\n", token );
-
+	//printf( " %s\n", token );
+	queue_push(queue_clave_inicio,token);
 	token = strtok(NULL, comma);
 	   }
-}
+	tamanio_queue = queue_size(queue_clave_inicio);
+	//mandar al coord aca la cantidad de claves que tiene que bloquear
 
+	printf("Tamanio de la queue %d\n", tamanio_queue);
+
+	while(!queue_is_empty(queue_clave_inicio)){
+		token = queue_pop(queue_clave_inicio);
+		tamanio_clave = strlen(token);
+		printf("saque de la cola '%s'\n", token);
+		printf("el tamanio de la clave a enviar es %d\n", tamanio_clave);
+	}
+	//free(token);
+	queue_destroy(queue_clave_inicio);
+}
 /*
 //Si la clave ya existe en el diccionario
 					if(dictionary_has_key(claves_bloqueadas,clave){
