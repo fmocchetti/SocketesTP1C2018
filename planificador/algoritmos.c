@@ -690,7 +690,6 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	    printf("Estado QUEUE: %d\n",queue_vacia);
 	//reviso si la queue no esta vacia
 	    if(!queue_vacia){
-	    	while(!queue_vacia){
 	    	printf("Entre a queue NO vacia\n");
 	    	//hago un pop de la queue, que sera la proxima esi a salir de bloqueados
 			id_esi_desbloqueado = (int)queue_pop(queue_clave);
@@ -723,20 +722,16 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 				key_existente=1;
 				}
 			}
-	    	}
-
-	    	send(socket,&mensaje_coord,1,0);
-	    	send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
-	    	tamanio_clave = strlen(claveAEjecutar);
-			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-			send(socket,&claveAEjecutar,tamanio_clave,0);
-
-
 
 	    }
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
 	    	printf("la clave no esta tomada\n");
+	    	send(socket,&mensaje_coord,1,0);
+			send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+			tamanio_clave = strlen(claveAEjecutar);
+			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+			send(socket,&claveAEjecutar,tamanio_clave,0);
 	    	}
 	    }
 	else{
@@ -865,8 +860,8 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	while(!queue_is_empty(queue_clave_inicio)){
 		token = queue_pop(queue_clave_inicio);
 		tamanio_clave = strlen(token);
-		send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-		send(socket,&token,tamanio_clave,0);
+		send(socket,&tamanio_clave,sizeof(int),0);
+		send(socket,token,tamanio_clave,0);
 		printf("saque de la cola '%s'\n", token);
 		printf("el tamanio de la clave a enviar es %d\n", tamanio_clave);
 	}

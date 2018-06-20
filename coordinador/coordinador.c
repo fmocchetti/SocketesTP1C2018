@@ -287,6 +287,7 @@ void _planificador(int socket_local) {
 					clave[size_clave] = '\0';
 
 					log_info(logger, "Voy a bloquear la clave %s", clave);
+					printf("%s\n",clave);
 	        		if(dictionary_has_key(diccionario_claves, clave)) {
 	        			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 	        			if(!clave_diccionario->tomada) {
