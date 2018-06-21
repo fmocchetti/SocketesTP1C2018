@@ -119,7 +119,7 @@ void bloquear(int socket){
 	tamanio_clave = strlen(key);
 	printf("largo de la clave %d\n", tamanio_clave);
 	send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-	send(socket,&key,tamanio_clave,0);
+	send(socket,key,tamanio_clave,0);
 
 
 	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);

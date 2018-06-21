@@ -262,11 +262,14 @@ void sjfcd(){
 					//agrego a bloqueados en caso de recibir otra contestacion de la ESI
 					printf("ESTOY BLOQUEANDO\n");
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-					break;
+					replanificar = 1;
+
 				}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
 				//revisar si el store deberia liberarme de a lista la clave que tiene tomada!!!!!!
+				printf("ESTOY BLOQUEANDO %d\n",nodo_lista_ejecucion->id_ESI);
+
 				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 
 		}
@@ -428,8 +431,10 @@ bool sort_by_estimacion(void * data1, void * data2){
 
 bool identificador_ESI(void * data){
 	printf("Entre a identificador_ESI\n");
-	claves *esi1= (claves*) data; //recibo estructura de la lista?
-	printf("ID de la ESI: %d\n",esi1->id_ESI);
+	//claves *esi1= (claves*) data; //recibo estructura de la lista?
+	ESI *esi1= (ESI*) data;
+	printf("ID de la ESI1: %d\n",esi1->id_ESI);
+	printf("ID de la ESI2: %d\n",id_esi_global);
 	if(esi1->id_ESI == id_esi_global) {
 		return true;
 	}
@@ -503,6 +508,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			   log_info(logger,"Clave bloqueada correctamente\n");
 		   }*/
 
+		/*
 		//testear si funca/////////////////////////////
 		id_esi_global = id_ESI;
 		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
@@ -510,6 +516,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
 		}
 		//testear si funca////////////////////////////
+		 */
 
 		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
 				printf("Entre en 1\n");
@@ -559,12 +566,12 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			printf("Entre en 1\n");
 			t_queue * queue_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
 			//Si la queue ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
-			queue_push(queue_clave, &id_ESI);
+			queue_push(queue_clave, id_ESI);
 		} else {
 			//Si no existe la clave, creo la cola asociada, pusheo el id_ESI y agrego la clave con su cola asociada
 			printf("Entre en 2\n");
 			t_queue * queue_clave = queue_create();
-			queue_push(queue_clave, &id_ESI);
+			queue_push(queue_clave, id_ESI);
 			dictionary_put(claves_bloqueadas, claveAEjecutar, queue_clave);
 		}
 	}
@@ -663,7 +670,7 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	int queue_vacia = 0;
 	int list_vacia = 0;
 	int id_esi_desbloqueado = 0;
-	int key_existente = 1;
+	int key_existente = 0;
 	int resultado_lista_satisfy = 0;
 	unsigned char mensaje_coord = 34;
 	int tamanio_queue = 1;
@@ -704,8 +711,9 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 
 			//chequeo si la lista no esta vacia, remuevo la esi de bloqueados y la muevo a listos
 			while(key_existente!=1){
-			if(resultado_lista_satisfy){
-				//printf("Entre a queue vacia\n",id_esi_desbloqueado);
+
+			if(resultado_lista_satisfy ==1){
+				printf("ENTRE A DONDE TENIA QUE ENTRAR\n");
 				esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
 
 				printf("Procesos removido de bloqueados %d\n",esi1->id_ESI);
@@ -718,20 +726,23 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 			//Si esta vacia, la esi no existe en la cola de bloqueados
 			else{
 				//dictionary_remove_and_destroy(claves_bloqueadas, claveAEjecutar, (void*)clave_dictionary_destroy);
-				printf("No existe la esi en la cola de bloqueados %d\n",esi1->id_ESI);
+				printf("No existe la esi en la cola de bloqueados %d\n",id_esi_global);
 				key_existente=1;
 				}
+			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
 			}
 
 	    }
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
-	    	printf("la clave no esta tomada\n");
+	    	printf("////////////////Enviandole al coordinador un mensaje para liberar la clave\n");
 	    	send(socket,&mensaje_coord,1,0);
-			send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+			//send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
 			tamanio_clave = strlen(claveAEjecutar);
 			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-			send(socket,&claveAEjecutar,tamanio_clave,0);
+			printf("////////////////Mandando tamanio de clave %d\n",tamanio_clave);
+			send(socket,claveAEjecutar,tamanio_clave,0);
+			printf("////////////////ckave '%s'\n",claveAEjecutar);
 	    	}
 	    }
 	else{
@@ -791,8 +802,9 @@ void clave_destroy(claves *self) {
     free(self);
 }
 
-void coord_communication(int socket_ESI, unsigned char id_ESI ,unsigned char estado_esi){
+void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi){
 	printf("Entre a Coord Comm \n");
+	printf("ID ESI RECIBIDO %d\n",id_ESI);
 	int size_clave = 0, rc = 0;
 	char * clave = NULL;
 	unsigned char id_mensaje_coord = 32;
@@ -862,6 +874,7 @@ void get_keys_bloqueadas_de_entrada(int socket){
 		tamanio_clave = strlen(token);
 		send(socket,&tamanio_clave,sizeof(int),0);
 		send(socket,token,tamanio_clave,0);
+		ESI_GET(token,-1,0);
 		printf("saque de la cola '%s'\n", token);
 		printf("el tamanio de la clave a enviar es %d\n", tamanio_clave);
 	}

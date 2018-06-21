@@ -135,11 +135,14 @@ void _esi(int socket_local) {
         		clave[message_length] = '\0';
         		log_info(logger, "La ESI %d me esta pidiendo la clave '%s'", id_esi, clave);
         		if(dictionary_has_key(diccionario_claves, clave)) {
+        			log_info(logger, "Existe la clave '%s' en el diccionarop", clave);
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
         			if(clave_diccionario->tomada) {
+        				log_info(logger, "La clave '%s' esta tomada", clave);
         				identificador = ESI_ERROR;
     					send(socket_local, &identificador, 1, 0);
         			} else {
+        				log_info(logger, "La clave '%s' no esta tomada", clave);
             			identificador = ESI_OK;
             			send(socket_local, &identificador, 1, 0);
             			instancia_destino = distribuir(clave, NULL);
@@ -148,6 +151,7 @@ void _esi(int socket_local) {
             			clave_diccionario->instancia = instancia_destino;
         			}
         		} else {
+        			log_info(logger, "No existe la clave '%s' en el diccionarop", clave);
         			instancia_destino = distribuir(clave, NULL);
         			dictionary_put(diccionario_claves, clave, clave_create(id_esi, instancia_destino, true));
         			identificador = ESI_OK;
@@ -286,7 +290,7 @@ void _planificador(int socket_local) {
 					recv(socket_local, clave, size_clave, 0);
 					clave[size_clave] = '\0';
 
-					log_info(logger, "Voy a bloquear la clave %s", clave);
+					log_info(logger, "Voy a bloquear la clave '%s'", clave);
 					printf("%s\n",clave);
 	        		if(dictionary_has_key(diccionario_claves, clave)) {
 	        			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
@@ -309,11 +313,12 @@ void _planificador(int socket_local) {
 				recv(socket_local, clave, size_clave, 0);
 				clave[size_clave] = '\0';
 
-				log_info(logger, "Voy a desbloquear la clave %s", clave);
+				log_info(logger, "Voy a desbloquear la clave '%s'", clave);
 				if(dictionary_has_key(diccionario_claves, clave)) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 					store_clave(clave, clave_diccionario->instancia);
 					clave_diccionario->tomada = false;
+					log_error(logger, "clave desbloqueada");
 				} else {
 					log_error(logger, "Intentando desbloquear una clave inexistente");
 				}
