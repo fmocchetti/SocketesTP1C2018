@@ -296,13 +296,12 @@ void _planificador(int socket_local) {
 	        			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 	        			if(!clave_diccionario->tomada) {
 	            			clave_diccionario->tomada = true;
-	            			clave_diccionario->esi = -1;
 	            			instancia_destino = distribuir(clave, NULL);
 	            			clave_diccionario->instancia = instancia_destino;
 	        			}
 	        		} else {
 	        			instancia_destino = distribuir(clave, NULL);
-	        			dictionary_put(diccionario_claves, clave, clave_create(-1, instancia_destino, true));
+	        			dictionary_put(diccionario_claves, clave, clave_create(0, instancia_destino, true));
 	        		}
 	        		free(clave);
 				}
