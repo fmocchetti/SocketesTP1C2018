@@ -146,7 +146,7 @@ void thread_on_connection(int listen_sd) {
 		n++;
 
 		esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
-		printf("rafaga de %d\n",esi->rafaga);
+		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %d!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
 
 		esi2->socket_esi = esi->socket_esi;
 		esi2->id_ESI = esi->id_ESI;
