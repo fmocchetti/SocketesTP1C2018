@@ -44,6 +44,8 @@ int socket_coord;
 int esi_bloqueada_de_entrada;
 char clave_bloqueada_global[40];
 int id_esi_global;
+int alpha;
+int estimacion_inicial;
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();

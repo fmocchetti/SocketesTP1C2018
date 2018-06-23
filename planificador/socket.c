@@ -81,8 +81,8 @@ void thread_on_connection(int listen_sd) {
     int    n = 1;
     int    end_server = FALSE, compress_array = FALSE;
     int    close_conn;
-    int alpha = atoi(config_get_string_value(config_file, "alpha_planificacion"));
-    int estimacion_inicial = atoi(config_get_string_value(config_file, "estimacion_inicial"));
+    alpha = atoi(config_get_string_value(config_file, "alpha_planificacion"));
+    estimacion_inicial = atoi(config_get_string_value(config_file, "estimacion_inicial"));
 
 	while(1) {
 		buffer = (char *) malloc(sizeof(char));
@@ -145,14 +145,20 @@ void thread_on_connection(int listen_sd) {
 		//printf("el nuevo ID de la esi fue mandado\n");
 		n++;
 
-		esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
-		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %d!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
+		//esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
+		esi->rafaga = 0;
+		esi->lineas_ejecutadas = 0;
+		esi->estimacion_rafaga = (float)estimacion_inicial;
+		printf("!!!!!!!!!!!!!!!!!!!!!estimacion rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->estimacion_rafaga);
+		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
 
 		esi2->socket_esi = esi->socket_esi;
 		esi2->id_ESI = esi->id_ESI;
 		printf("id esi %d\n",esi2->id_ESI);
 		esi2->cantidadDeLineas = esi->cantidadDeLineas;
 		esi2->rafaga = esi->rafaga;
+		esi2->lineas_ejecutadas = esi->lineas_ejecutadas;
+		esi2->estimacion_rafaga = esi->estimacion_rafaga;
 		//free(esi);
 
 		//agrego el nuevo proceso a la cola de listos
