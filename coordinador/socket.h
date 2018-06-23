@@ -31,6 +31,7 @@
 enum mensajes {
 	ESI_OK = 7,
 	ESI_ERROR = 8,
+	ESI_BLOCK = 9,
 	IDENTIFY = 10,
 	INICIALIZAR_INSTANCIA = 11,
 	CONEXION_ESI = 18,

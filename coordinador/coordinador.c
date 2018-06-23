@@ -139,7 +139,7 @@ void _esi(int socket_local) {
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
         			if(clave_diccionario->tomada) {
         				log_info(logger, "La clave '%s' esta tomada", clave);
-        				identificador = ESI_ERROR;
+        				identificador = ESI_BLOCK;
     					send(socket_local, &identificador, 1, 0);
         			} else {
         				log_info(logger, "La clave '%s' no esta tomada", clave);
