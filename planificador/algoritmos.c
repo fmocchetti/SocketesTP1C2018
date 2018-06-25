@@ -141,6 +141,7 @@ void sjfcd(){
 	int lista_vacia = 0;
 	int result_connection = 0;
 	int resultado_lista_satisfy = 0;
+	int resultado_satisfy = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -205,12 +206,51 @@ void sjfcd(){
 					}
 
 					//hago close del socket
+					resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI);
+						if(resultado_satisfy==1){
+							ESI *nodo_lista_ejecucion2 = (ESI*) malloc(sizeof(ESI));
+							nodo_lista_ejecucion2 =  (ESI*) list_get(ejecucion, 0);
+							nodo_lista_ejecucion2->cantidadDeLineas = 0;
+							laWeaReplanificadoraFIFO(muertos,ejecucion);
+							_exit_with_error(nodo_lista_ejecucion2->socket_esi, "La ESI en ejecucion murio", NULL);
+							free(nodo_lista_ejecucion2);
+						}
+						else{
+							printf("NO ESTA EN EJECUCION\n");
+						}
+						resultado_satisfy = list_any_satisfy(listos, (void*)identificador_ESI);
+						if(resultado_satisfy==1){
+							ESI *nodo_lista_ejecucion2 = (ESI*) malloc(sizeof(ESI));
+							nodo_lista_ejecucion2 = list_remove_by_condition(listos,identificador_ESI);
+							nodo_lista_ejecucion2->cantidadDeLineas = 0;
+							laWeaReplanificadoraFIFO(muertos,ejecucion);
+							_exit_with_error(nodo_lista_ejecucion2->socket_esi, "La ESI en listos murio", NULL);
+							free(nodo_lista_ejecucion2);
+						}
+						else{
+							printf("NO ESTA EN LISTOS\n");
+						}
+						resultado_satisfy = list_any_satisfy(bloqueados, (void*)identificador_ESI);
+						if(resultado_satisfy==1){
+							ESI *nodo_lista_ejecucion2 = (ESI*) malloc(sizeof(ESI));
+							nodo_lista_ejecucion2 = list_remove_by_condition(bloqueados,identificador_ESI);
+							nodo_lista_ejecucion2->cantidadDeLineas = 0;
+							laWeaReplanificadoraFIFO(muertos,ejecucion);
+							_exit_with_error(nodo_lista_ejecucion2->socket_esi, "La ESI en bloqueados murio", NULL);
+							free(nodo_lista_ejecucion2);
+						}
+						else{
+							printf("NO ESTA EN BLOQUEADOS\n");
+						}
+					}
+
+					/*
 					laWeaReplanificadoraFIFO(muertos,ejecucion);
 					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 					nodo_lista_ejecucion->cantidadDeLineas = 0;
-					break;
+					break;*/
 
-				} else if(contestacionESI == 2) {
+				 else if(contestacionESI == 2) {
 					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
 					nodo_lista_ejecucion->cantidadDeLineas --;
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
