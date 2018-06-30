@@ -1,55 +1,5 @@
 #include "LRU.h"
 
-
-
-t_list* crear_registro(int cantEntradas){
-
-	t_list* lista = list_create();
-
-	for(int i = 0; i< cantEntradas; i++){
-		struct Registro* registro = (struct Registro*) malloc(sizeof(struct Registro));
-		registro->numeroEntrada = i;
-		registro->referenciado = 0;
-		list_add(lista,registro);
-	}
-
-return lista;
-}
-
-void* liberar_registros(t_list** registro){
-
-	void liberar_dato(struct Registro* unDato){
-		free(unDato);
-		return;
-
-	}
-
-	list_destroy_and_destroy_elements(*registro,liberar_dato);
-
-}
-
-void* obtener_registro(t_list* registro,int numEntrada){
-
-	bool buscar_registro(struct Registro* reg) {
-
-	     return ((reg->numeroEntrada) == numEntrada);
-
-	}
-	struct Registro*  reg = (struct Registro*)list_find(registro,buscar_registro);
-
-return reg;
-}
-
-void ordenar_registro(t_list** registro){
-
-	bool menos_accedida_al_comienzo(struct Registro* a,struct Registro* b){
-
-		return(a->referenciado < b->referenciado);
-	}
-	list_sort(*registro,menos_accedida_al_comienzo);
-
-}
-
 int obtener_numero_entrada(t_list** registro){
 
 		ordenar_registro(registro);
@@ -82,6 +32,7 @@ void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,c
 /*
  * Retorna cero si pudo hacer la insercion o -1 en caso contrario (las entradas que hay son todas no atomicas)
  * */
+
 int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 		char** posicionDeLectura,char* posicionFinalMemoria,struct ClaveValor* claveValor){
 
@@ -92,29 +43,30 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 
-	//reemplazo
+
+
+	if(existe_la_clave(*tabla,claveValor->clave)){
+
+		reemplazar_valor_de_clave_ya_existente(tabla,registro,primeraPosicionMemoria,claveValor);
+		log_info(logger,"LRU:Se encontro una clave ya existente y se reemplazo su valor");
+
+	return 1;
+	}
 	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
 
-		if(cantidadEntradasAOcupar == 1){// <------...si es atomico... ver esto
+	//	if(hay_espacio_fragmentado(tabla,claveValor->tamanioEntrada,))
 
 			char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
-			memcpy(posicionReemplazoEntrada,claveValor->valor,espacioAOcupar);
+			memcpy(posicionReemplazoEntrada,claveValor->valor,longitudS);
 			cargar_info_en_dato(&unDato,*posicionReemplazoEntrada,claveValor);
 			registrar_dato_en_tabla(tabla,&unDato);
 			registrar_acceso_a_entrada(registro,primeraPosicionMemoria,posicionReemplazoEntrada,claveValor->tamanioEntrada);
 
-		return 0;
-		}
-		else{
-			puts("No se pudo hacer reemplazo");
-			return -1;
-		}
-
-
+	return 2;
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
-	memcpy(*posicionDeLectura,claveValor->valor,espacioAOcupar);
-
+	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
+	log_info(logger,"LRU:Se guardo el valor: %s",claveValor->valor);
 	cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 	registrar_dato_en_tabla(tabla,&unDato);
 	registrar_acceso_a_entrada(registro,primeraPosicionMemoria,*posicionDeLectura,claveValor->tamanioEntrada);

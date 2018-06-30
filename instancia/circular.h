@@ -17,7 +17,8 @@
 #include "tabla.h"
 #include "ClaveValor.h"
 #include <pthread.h>
-
+#include "socket_client.h"
+#include "Compactar.h"
 
 
 bool no_hay_lugar(int tamanio,char* l,char* fin);
@@ -26,7 +27,7 @@ void cargar_info_en_dato(struct Dato* unDato,char*posicionDeLectura,struct Clave
 
 int SET_circular(char** l,t_list** t,struct ClaveValor* cv,char* ppio,char* fin);
 
-
+int calcular_cantidad_entradas(int longitudS,int tamEntrada);
 
 
 #endif /* CIRCULAR_H_ */

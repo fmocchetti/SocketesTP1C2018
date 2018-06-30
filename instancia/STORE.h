@@ -10,8 +10,8 @@
 
 #include "tabla.h"
 #include "Dump.h"
-#include <pthread.h>
+#include "socket_client.h"
 
-int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger);
+int STORE(t_list** tabla,t_list** registro,char* primeraPosicionMemoria,char* clave,char* ruta,int tamanioEntrada);
 
 #endif /* STORE_H_ */

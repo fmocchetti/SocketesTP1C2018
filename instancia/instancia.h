@@ -29,14 +29,18 @@
 #include <commons/log.h>
 #include "tabla.h"
 #include <pthread.h>
+#include "circular.h"
+#include "LRU.h"
+#include "ReemplazoEntrada.h"
+#include "STORE.h"
 
-typedef struct{
-	t_list* tabla;
-	char* storage;
-	char* puntoDeMontaje;
-	t_log* logger;
-	int intervaloDeDump;
-}parametros_dump;
+
+
+typedef struct {
+	int cantidad_entradas;
+	int tamanioEntrada;
+	int retardo;
+} valores_iniciales;
 
 pthread_mutex_t lock_dump;
 

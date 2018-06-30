@@ -54,7 +54,7 @@ void exit_gracefully(int return_nr) {
 }
 
 void configure_logger() {
-	logger = log_create("consola-planificador.log", "consola-planificador", true, LOG_LEVEL_INFO);
+	logger = log_create("Instancia.log", "Instancia", true, LOG_LEVEL_INFO);
 }
 
 void wait_hello(int socket) {

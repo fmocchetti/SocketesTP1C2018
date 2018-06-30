@@ -1,6 +1,6 @@
 #include "circular.h"
 
-/*
+
 
 // chequeo si el espacio libre es menor al tamaño requerido
 bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria){
@@ -29,7 +29,6 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
-	(unDato)->frecuenciaUso = 0;
 	strcpy((char*)(unDato->clave),claveValor->clave);
 	//memcpy((unDato->clave),claveValor->clave,40);
 }
@@ -37,12 +36,20 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
 int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
-	//pthread_mutex_unlock(&lock_dump);
+
 	struct Dato unDato;
 
 	int longitudS = strlen(claveValor->valor);
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
+
+	if(existe_la_clave(*tabla,claveValor->clave)){
+
+		reemplazar_valor_de_clave_ya_existente(tabla,NULL,primeraPosicionMemoria,claveValor);
+		log_info(logger,"CIRC:Se encontro una clave ya existente y se reemplazo su valor");
+
+	return 1;
+	}
 	//si se termino la memoria vuelvo al principio
 	if(*posicionDeLectura==posicionFinalMemoria){
 
@@ -53,35 +60,48 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 	//de la memoria
 	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
-		int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
+			log_info(logger,"CIRC:Se prueba compactar");
 
-		memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
+			compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
 
-		cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+			int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
 
-		actualizarTabla(tabla,longitudS - espacioRestante);
+			memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
 
-		registrar_dato_en_tabla(tabla,&unDato);
+			cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 
-		*posicionDeLectura=primeraPosicionMemoria;
+			actualizarTabla(tabla,longitudS - espacioRestante);
 
-		memcpy(*posicionDeLectura,((claveValor->valor)+espacioRestante),espacioAOcupar-espacioRestante);
+			registrar_dato_en_tabla(tabla,&unDato);
 
-		*posicionDeLectura += (espacioAOcupar-espacioRestante);
+			*posicionDeLectura=primeraPosicionMemoria;
 
-		return 0;
+			memcpy(*posicionDeLectura,((claveValor->valor)+espacioRestante),espacioAOcupar-espacioRestante);
 
+			*posicionDeLectura += (espacioAOcupar-espacioRestante);
+
+
+			return 0;
+/*		}
+		else{
+
+			log_info(logger,"El valor no es Atomico, no se guardo el valor con CIRCULAR");
+			return -1;
+		}
+*/
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
-	memcpy(*posicionDeLectura,claveValor->valor,espacioAOcupar);
+	memcpy(*posicionDeLectura,claveValor->valor,longitudS/*espacioAOcupar*/);
 
-	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*///,claveValor);
-/*	registrar_dato_en_tabla(tabla,&unDato);
+	log_info(logger,"CIRC:Se guardo el valor en memoria");
+
+
+	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*/,claveValor);
+	registrar_dato_en_tabla(tabla,&unDato);
 
 	*posicionDeLectura += espacioAOcupar;
-*/
-//	pthread_mutex_lock(&lock_dump);
 
-//}
 
+return 0;
+}
 

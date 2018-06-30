@@ -23,5 +23,13 @@ void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 
 int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir);
 
+int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir);
+
+
+int obtener_posicion_del_dato(t_list* tabla,struct Dato* unDato);
+
+int borrar_un_dato(t_list** tabla,struct Dato* unDato);
+
+int calcular_cant_entradas(int longitudS,int tamEntrada);//<-- esto no deberia estar aca
 
 #endif /* TABLA_H_ */

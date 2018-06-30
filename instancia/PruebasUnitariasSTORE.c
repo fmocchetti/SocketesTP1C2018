@@ -39,7 +39,7 @@ void testStore(){
 	char* ruta;
 	*ruta="";
 
-	STORE(tabla,unaClave,ruta,logger);
+	//STORE(tabla,unaClave,ruta,logger);
 
 	CU_ASSERT_STRING_EQUAL(1,1);
 

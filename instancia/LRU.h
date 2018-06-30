@@ -7,7 +7,6 @@
 #ifndef LRU_H_
 #define LRU_H_
 
-#include "RegistroReferencias.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +15,9 @@
 #include "ClaveValor.h"
 #include "Dato.h"
 #include "tabla.h"
+#include "circular.h"
+#include "socket_client.h"
+#include "Registro.h"
 
 //se repite en circular!!!------------------------------------
 bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria);
