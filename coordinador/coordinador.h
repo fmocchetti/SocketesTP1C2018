@@ -23,6 +23,7 @@ void inicializar_instancia (int socket);
 t_list* list_instances;
 t_config * config_file;
 t_log * logger;
+t_log * log_operaciones;
 
 int total_instancias;
 pthread_mutex_t mutex;

@@ -9,6 +9,7 @@
 
 void configure_logger() {
   logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
+  log_operaciones = log_create("operaciones.log", "operaciones", true, LOG_LEVEL_INFO);
 }
 
 

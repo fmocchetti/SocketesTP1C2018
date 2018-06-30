@@ -158,6 +158,7 @@ void _esi(int socket_local) {
         			send(socket_local, &identificador, 1, 0);
         		}
         		informar_planificador(clave, COORDINADOR_GET);
+        		log_info(log_operaciones, "ESI %d - GET %s", id_esi, clave);
         		break;
         	case ESI_SET:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -194,6 +195,7 @@ void _esi(int socket_local) {
         			log_error(logger, "Intentando hacer un SET a una clave inexistente");
         		}
         		informar_planificador(clave, COORDINADOR_SET);
+        		log_info(log_operaciones, "ESI %d - SET %s %s", id_esi, clave, valor);
         	    break;
         	case ESI_STORE:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -228,6 +230,7 @@ void _esi(int socket_local) {
 					log_error(logger, "Intentando hacer un STORE a una clave inexistente");
 				}
         		informar_planificador(clave, COORDINADOR_STORE);
+        		log_info(log_operaciones, "ESI %d - STORE %s", id_esi, clave);
         	    break;
         	default:
         		break;
