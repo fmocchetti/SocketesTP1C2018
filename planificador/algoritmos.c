@@ -142,6 +142,7 @@ void sjfcd(){
 	int result_connection = 0;
 	int resultado_lista_satisfy = 0;
 	int resultado_satisfy = 0;
+	int result_send = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -183,9 +184,20 @@ void sjfcd(){
 			if(nodo_lista_ejecucion->cantidadDeLineas >0) {
 
 				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
-				send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
+				result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
+				printf("RESULTADO SEND %d\n",result_send);
+				//POR QUE EL SEND ME DA 1??????????
+				//aca tengo que verificar
+				if (result_send <= 0) {
+					nodo_lista_ejecucion->cantidadDeLineas = 0;
+					laWeaReplanificadoraFIFO(muertos,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					break;
+				  }
+
 				//Espero que la esi me conteste
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
+				printf("RESULTADO RECV %d\n",result_connection);
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
 				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
@@ -206,6 +218,13 @@ void sjfcd(){
 					}
 
 					//hago close del socket
+
+						laWeaReplanificadoraFIFO(muertos,ejecucion);
+						_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+						nodo_lista_ejecucion->cantidadDeLineas = 0;
+						break;
+				}
+					/*
 					resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI);
 						if(resultado_satisfy==1){
 							ESI *nodo_lista_ejecucion2 = (ESI*) malloc(sizeof(ESI));
@@ -242,13 +261,7 @@ void sjfcd(){
 						else{
 							printf("NO ESTA EN BLOQUEADOS\n");
 						}
-					}
-
-					/*
-					laWeaReplanificadoraFIFO(muertos,ejecucion);
-					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-					nodo_lista_ejecucion->cantidadDeLineas = 0;
-					break;*/
+					}*/
 
 				 else if(contestacionESI == 2) {
 					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
