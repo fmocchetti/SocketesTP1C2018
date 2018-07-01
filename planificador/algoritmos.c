@@ -139,6 +139,7 @@ void sjfcd(){
 	unsigned char contestacionESI = 0;
 	int sem_value = 0;
 	int lista_vacia = 0;
+	int resultado_lista = 0;
 	int result_connection = 0;
 	int resultado_lista_satisfy = 0;
 	int resultado_satisfy = 0;
@@ -166,7 +167,9 @@ void sjfcd(){
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		log_info(logger,"Nodo de listos movido a Ejecucion");
 
-		if(!list_is_empty(ejecucion)){
+		resultado_lista = list_is_empty(ejecucion);
+
+		if(resultado_lista!= 1){
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
 		log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
 		log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
