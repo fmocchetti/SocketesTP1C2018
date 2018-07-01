@@ -165,11 +165,13 @@ void sjfcd(){
 		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		log_info(logger,"Nodo de listos movido a Ejecucion");
+
+		if(!list_is_empty(ejecucion)){
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
 		log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
 		log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 		id_esi_global = nodo_lista_ejecucion->id_ESI;
-
+		}
 		//sem_getvalue(&new_process,&sem_value);
 		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
 		while(replanificar == 0){
