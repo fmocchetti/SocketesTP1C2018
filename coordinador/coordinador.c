@@ -306,7 +306,7 @@ void _planificador(int socket_local) {
 	        			instancia_destino = distribuir(clave, NULL);
 	        			dictionary_put(diccionario_claves, clave, clave_create(0, instancia_destino, true));
 	        		}
-	        		free(clave);
+	        		//free(clave);
 				}
 				break;
 			case PLANIFICADOR_DESBLOQUEAR:
@@ -324,7 +324,7 @@ void _planificador(int socket_local) {
 				} else {
 					log_error(logger, "Intentando desbloquear una clave inexistente");
 				}
-				free(clave);
+				//free(clave);
 				break;
         }
 	}

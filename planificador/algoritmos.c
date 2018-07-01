@@ -169,11 +169,15 @@ void sjfcd(){
 
 		resultado_lista = list_is_empty(ejecucion);
 
-		if(resultado_lista!= 1){
-		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
-		log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
-		id_esi_global = nodo_lista_ejecucion->id_ESI;
+		log_info(logger, "Size list ejecucion %d", list_size(ejecucion));
+
+		if(!resultado_lista){
+			log_info(logger,"Voy a agarrar la wea de ejecucion");
+			nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+			log_info(logger,"Ya agarre la wea de ejecucion");
+			log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
+			log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+			id_esi_global = nodo_lista_ejecucion->id_ESI;
 		}
 		//sem_getvalue(&new_process,&sem_value);
 		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
@@ -198,7 +202,7 @@ void sjfcd(){
 					laWeaReplanificadoraFIFO(muertos,ejecucion);
 					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 					break;
-				  }
+				}
 
 				//Espero que la esi me conteste
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
@@ -224,10 +228,10 @@ void sjfcd(){
 
 					//hago close del socket
 
-						laWeaReplanificadoraFIFO(muertos,ejecucion);
-						_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-						nodo_lista_ejecucion->cantidadDeLineas = 0;
-						break;
+					laWeaReplanificadoraFIFO(muertos,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					nodo_lista_ejecucion->cantidadDeLineas = 0;
+					break;
 				}
 					/*
 					resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI);
@@ -278,7 +282,7 @@ void sjfcd(){
 					log_info(logger,"La ESI %d que se encontraba en ejecucion se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
 					//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
-					log_info(logger, "lienas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+					log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
 					//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
 					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
 					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
@@ -288,6 +292,7 @@ void sjfcd(){
 					replanificar = 1;
 					break;
 				}
+
 			} else {
 				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 				//printf("Entre a 1\n");
@@ -300,7 +305,7 @@ void sjfcd(){
 			//free(clave_temporal);
 			//break;
 		}
-
+		if(list_size(listos)!=0){
 		//si el valor de replanificar cambia, se sale del while y se evalua si la lista de ejecucion no esta vacia
 		lista_vacia = list_is_empty(ejecucion);
 		printf("lista vacia %d\n",lista_vacia);
@@ -317,7 +322,13 @@ void sjfcd(){
 			sem_post(&new_process);
 			//free(nodo_lista_ejecucion);
 		}
-	}
+
+		}
+		else{
+			replanificar=0;
+		}
+
+}
 }
 
 float calculoProxRafaga(float alpha,float estimacion_rafaga, float rafaga_real){
@@ -498,9 +509,11 @@ void ESI_STORE(char *claveAEjecutar){
 	   }
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
-	    	printf("la clave no esta tomada\n");
-	    	sem_post(&new_process);
-	    	replanificar = 1;
+				printf("la clave no esta tomada\n");
+				if(!list_is_empty(listos)){
+					sem_post(&new_process);
+					replanificar = 1;
+	    		}
 	    	}
     	}
 	else{

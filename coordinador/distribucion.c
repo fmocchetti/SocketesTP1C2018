@@ -44,13 +44,11 @@ int modificar_valor_clave(char * clave, char * valor, int instancia) {
 	t_instancia * o_instancia;
 
 	log_info(logger, "Modificar valor %d", instancia);
-	//pthread_mutex_lock(&mutex);
 	log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
 	o_instancia->clave = clave;
 	o_instancia->valor = valor;
 	o_instancia->operacion = 22;
-    //pthread_mutex_unlock(&mutex);
     log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
@@ -60,12 +58,11 @@ int modificar_valor_clave(char * clave, char * valor, int instancia) {
 int store_clave(char * clave, int instancia) {
 	t_instancia * o_instancia;
 	log_info(logger, "Store valor %d", instancia);
-	//pthread_mutex_lock(&mutex);
 	log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
+	log_debug(logger, "Clave a mandar a la instancia %s", clave);
 	o_instancia->clave = clave;
 	o_instancia->operacion = 23;
-    //pthread_mutex_unlock(&mutex);
 	log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);

@@ -82,27 +82,6 @@ int main () {
 
 
 
-				//creo thread dump
-			/*
-				log_info(logger, "Cree el thread Dump");
-				pthread_t threadDumpeador;
-
-				parametros_dump* parametros = malloc(sizeof(parametros_dump));
-
-				parametros->logger = logger;
-				parametros->puntoDeMontaje = "";
-				parametros->storage = storage;
-				parametros->tabla = tabla;
-				parametros->intervaloDeDump = 10; //tomar del recv
-
-
-				if( pthread_create(&threadDumpeador, NULL, (void *)respaldar_informacion_thread,parametros)) {
-					log_error(logger, "Error creating thread Dump");
-				}
-
-
-			*/
-
 				//recibo operacion
 
 				recv(server, &identificador, 1, 0);
@@ -179,23 +158,6 @@ int main () {
 					//vemos que se guardo
 					puts(storage);
 				} else if(identificador==23) {//store
-					/*recv(server, &size_ruta, 4, 0);
-					log_info(logger, "Size Valor %s", size_ruta);
-					ruta = malloc(size_ruta + 1);
-					recv(server, ruta, size_ruta, 0);
-					ruta[size_ruta] = '\0';
-					log_info(logger, "Valor %s", ruta);*/
-					/*
-					struct ClaveValor claveValor;
-					claveValor.tamanioEntrada = init.tamanioEntrada;
-					strcpy(claveValor.clave, clave);
-
-					valor = malloc(strlen("pabloPuto"));
-					strcpy(valor,"pabloPuto");
-					claveValor.valor = valor;
-
-					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
-					*/
 					STORE(tabla,clave, "",logger);
 				}
 				usleep(init.retardo * 1000);
@@ -203,27 +165,6 @@ int main () {
 				identificador = 1;
 				send(server, &identificador, 1, 0);
 		}
-		//libero memoria
-	    //free(storage);//free(parametros);
-	    //liberar_recursos(&tabla);
-
-
-
-  /*******************************************************************************************************************/
-
-
-
-
-
-//-----------ACA LOS TESTS-------------------------------------------------------------------------------------
-
-	//correrTestsCircular();
-
-	//correrTestsLRU();
-
-    //correrTestsDump();
-
-	//correrTestsSTORE();
 
 	return EXIT_SUCCESS;
 }
