@@ -205,9 +205,8 @@ void kill(){
 	//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		printf("------RECIBI MENOS DE 0\n");
 		claves* clave_temporal = (claves*) malloc(sizeof(claves));
-		ESI* ESI_temporal = (ESI*) malloc(sizeof(ESI));
 		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-		//ESI_STORE(clave_temporal->claveAEjecutar);
+		ESI_STORE(clave_temporal->claveAEjecutar,0);
 		free(clave_temporal);
 		//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
 		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);

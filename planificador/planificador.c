@@ -83,6 +83,7 @@ void generate_planning(){
 	}*/
 	if(strcmp(config_plani,"sjfsd")==0){
 		printf("SJFSD\n");
+		get_keys_bloqueadas_de_entrada(socket_coord);
 		sjfsd();
 	}
 	if(strcmp(config_plani,"sjfcd")==0){
