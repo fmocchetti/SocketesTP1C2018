@@ -8,10 +8,13 @@
 #include "coordinador.h"
 
 int informar_planificador(char * clave, unsigned char status) {
+	log_info(logger, "Esperando instancia");
+	sem_wait(&mutex_instancia);
+	log_info(logger, "Pase bloqueo de instancia");
 	thread_planificador->clave = clave;
 	thread_planificador->status = status;
-	sem_wait(&mutex_instancia);
 	sem_post(&mutex_planificador);
+	log_info(logger, "Desbloqueo planificador");
 	return 0;
 }
 
@@ -36,7 +39,7 @@ int distribuir(char * clave, char * valor) {
 	instancia->valor = valor;
 	instancia->operacion = 21;
 
-	sem_post(&mutex_instancia);
+	sem_post(&(instancia->instance_sem));
 	return instancia->id;
 }
 

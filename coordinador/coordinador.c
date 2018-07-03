@@ -141,6 +141,7 @@ void _esi(int socket_local) {
         				log_info(logger, "La clave '%s' esta tomada", clave);
         				identificador = ESI_BLOCK;
     					send(socket_local, &identificador, 1, 0);
+    					sem_post(&mutex_instancia);
         			} else {
         				log_info(logger, "La clave '%s' no esta tomada", clave);
             			identificador = ESI_OK;
@@ -261,10 +262,12 @@ void _planificador(int socket_local) {
         	break;
         }
 
+        log_info(logger, "El Planificador me esta diciendo: %d" , identificador);
+
         switch(identificador) {
 			case PLANIFICADOR_CLAVE:
 				sem_wait(&mutex_planificador);
-
+				log_info(logger, "Contestando pedido de clave");
 				int messageLength = 1;
 				int size_clave = strlen(thread_planificador->clave);
 				if(thread_planificador->status != COORDINADOR_SET) {
