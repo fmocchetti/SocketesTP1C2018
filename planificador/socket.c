@@ -149,6 +149,7 @@ void thread_on_connection(int listen_sd) {
 		esi->rafaga = 0;
 		esi->lineas_ejecutadas = 0;
 		esi->estimacion_rafaga = (float)estimacion_inicial;
+		esi->espera = 0;
 		printf("!!!!!!!!!!!!!!!!!!!!!estimacion rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->estimacion_rafaga);
 		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
 
@@ -159,6 +160,7 @@ void thread_on_connection(int listen_sd) {
 		esi2->rafaga = esi->rafaga;
 		esi2->lineas_ejecutadas = esi->lineas_ejecutadas;
 		esi2->estimacion_rafaga = esi->estimacion_rafaga;
+		esi2->espera = esi->espera;
 		//free(esi);
 
 		//agrego el nuevo proceso a la cola de listos

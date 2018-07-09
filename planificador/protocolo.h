@@ -20,6 +20,8 @@ typedef struct  {
   float rafaga;
   int lineas_ejecutadas;
   float estimacion_rafaga;
+  int espera;
+  float prioridad;
 }  ESI;
 //__attribute__((packed))
 

@@ -53,6 +53,7 @@ void fifo();
 bool identificador_ESI(void*);
 
 bool sort_by_estimacion(void*, void*);
+bool sort_by_aging(void *, void *);
 void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
 void sjfsd();
@@ -67,5 +68,10 @@ bool identificador_clave_por_idESI(void * data);
 void nodo_lista_claves_destroyer(claves * data);
 void get_keys_bloqueadas_de_entrada(int);
 void desbloquear_del_diccionario(char *,int);
+void aplicarHRRN(ESI*);
+void obtenerPrioridad();
+void envejecerLista(int);
+
+
 
 #endif /* ALGORITMOS_H_ */
