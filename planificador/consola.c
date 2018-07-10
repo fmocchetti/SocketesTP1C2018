@@ -140,6 +140,71 @@ void listar(){
 	char key[40];
 	int id = 0;
 	int dicc_size = 0;
+	int list_vacia = 0;
+	int id_esi_bloqueado = 0;
+	int resultado_lista_satisfy = 0;
+	printf("inserte clave\n");
+	//fgets(key, sizeof(key), stdin);
+	scanf("%s", key);
+	t_list * list_clave;
+	list_vacia = list_is_empty(claves_tomadas);
+	printf("HOLAAAAAAAAAAAAAA  %d\n", list_vacia);
+
+	printf("AAAAAAAAAAAAAAAA\n");
+	if(!list_is_empty(claves_tomadas)) {
+		printf("HOLAAAAAAAAAAAAAA\n");
+		strcpy(clave_bloqueada_global,key);
+		resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+
+		printf("Satisface la lista? %d\n\n",resultado_lista_satisfy);
+
+		id = list_size(claves_tomadas);
+		printf("Size de la lista de claves tomadas %d\n\n",id);
+		claves* clave_temporal = (claves*) malloc(sizeof(claves));
+		clave_temporal = list_get(claves_tomadas, 0);
+		printf("La CLAVE tomada es %s\n\n",clave_temporal->claveAEjecutar);
+
+
+		if(resultado_lista_satisfy){
+			claves* clave_temporal = (claves*) malloc(sizeof(claves));
+			clave_temporal = list_find(claves_tomadas, (void*)identificador_clave);
+			log_info(logger,"El recurso se encuentra tomado actualmente por la ESI %d\n",clave_temporal->id_ESI);
+		}
+		else{
+			log_info(logger,"El recurso no se encuentra tomado actualmente por una ESI\n");
+		}
+	}
+
+
+	if(dictionary_has_key(claves_bloqueadas,key)){
+	list_clave = dictionary_get(claves_bloqueadas,key);
+		if(!list_is_empty(list_clave)){
+
+			void mostrar_lista_diccionario(int id_esi) {
+					 printf("La ESI del ID %d se encuentra bloqueada esperando al recurso\n", id_esi);
+					 }
+			list_clave = list_map(list_clave,(void*) mostrar_lista_diccionario);
+
+			}
+		else{/*
+			void clave_dictionary_destroy(t_dictionary *data){
+				free(data);*/
+			dictionary_remove_and_destroy(claves_bloqueadas,key,(void*)clave_dictionary_destroy);
+			log_info(logger,"Borre la entrada del diccionario de la clave porque la lista no tenia entradas");
+			}
+
+
+	}
+	else{
+		log_info(logger,"No hay ESIs bloqueadas esperando al rescurso %s",key);
+	}
+}//PENSAR SI TENGO QUE LIBERAR LAS QUEUES EN ALGUN MOMENTO
+
+/*
+void listar(){
+	char key[40];
+	int id = 0;
+	int dicc_size = 0;
 	int queue_vacia = 0;
 	int id_esi_bloqueado = 0;
 	int resultado_lista_satisfy = 0;
@@ -192,6 +257,7 @@ void listar(){
 		log_info(logger,"No hay ESIs bloqueadas esperando al rescurso %s",key);
 	}
 }//PENSAR SI TENGO QUE LIBERAR LAS QUEUES EN ALGUN MOMENTO
+*/
 
 void kill(){
 	int id = 0;
@@ -220,7 +286,8 @@ void kill(){
 		laWeaReplanificadoraFIFO(muertos,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 		free(nodo_lista_ejecucion);
-		printf("1- El proceso %s murio viejo\n", id);
+		printf("1- El proceso %d murio viejo\n", id);
+		exit;
 	}
 	else{
 		printf("NO ESTA EN EJECUCION\n");
@@ -232,7 +299,7 @@ void kill(){
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		laWeaReplanificadoraFIFO(muertos,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
-		free(nodo_lista_ejecucion);
+		//free(nodo_lista_ejecucion);
 		printf("2- El proceso %d murio viejo\n", id);
 	}
 	else{
@@ -263,7 +330,24 @@ void status(){
 
 void deadlock(){
 	printf("deadlocks del sistema");
+
+}
+/*
+bool looking_for_deadlock(claves * data1, t_dictionary dicc1){
+	t_list * lista_dicc;
+	lista_dicc = dictionary_get(dicc1,data1->claveAEjecutar);
+	if(list_any_satisfy(lista_dicc,(void*)comparador) && );
+
+	if(esi1->rafaga <= esi2->rafaga) {
+			return true;
+		}
+		return false;
 }
 
-
-
+bool comparador(void * data1){
+	if(data1 == id_esi_deadlock) {
+		return true;
+	}
+	return false;
+}
+*/
