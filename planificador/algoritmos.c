@@ -599,7 +599,7 @@ void element_destroyer(void * data){
 }
 
 void nodo_lista_claves_destroyer(claves * data){
-	free(data->claveAEjecutar);
+	//free(data->claveAEjecutar);
 	free(data);
 }
 
