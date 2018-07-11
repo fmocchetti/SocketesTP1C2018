@@ -116,10 +116,9 @@ void _esi(int socket_local) {
 	char * valor = NULL;
 	t_clave * clave_diccionario = NULL;
 
-	id_esi = recv(socket_local, &id_esi, sizeof(id_esi), 0);
+	recv(socket_local, &id_esi, 4, 0);
+	log_info(logger, "Esta esi es la %d", id_esi);
 	while(1) {
-
-		log_info(logger, "Esta esi es la %d", id_esi);
         rc = recv(socket_local, &identificador, 1, 0);
         if (rc == 0) {
         	log_error(logger, "  recv() failed");

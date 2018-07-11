@@ -119,6 +119,15 @@ void thread_on_connection(int listen_sd) {
 		unsigned char id_mensaje_esi;
 		ESI *esi= (ESI*) malloc(sizeof(ESI));
 		ESI *esi2= (ESI*) malloc(sizeof(ESI));
+
+
+		// Le indico a la nueva ESI el ID que le corresponde
+
+		esi->id_ESI = n;
+		send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+		//printf("el nuevo ID de la esi fue mandado\n");
+		n++;
+
 		//Recibo ID del mensaje de la ESI
 		rc = recv(new_sd, &id_mensaje_esi, 1,0);
 		esi->socket_esi = new_sd;
@@ -138,12 +147,6 @@ void thread_on_connection(int listen_sd) {
 		if (rc <= 0) {
 			_exit_with_error(new_sd, "El socket murio", NULL);
 		}
-		// Le indico a la nueva ESI el ID que le corresponde
-
-		esi->id_ESI = n;
-		send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
-		//printf("el nuevo ID de la esi fue mandado\n");
-		n++;
 
 		//esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
 		esi->rafaga = 0;

@@ -27,13 +27,14 @@ int main(int argc, char **argv){
 
 	//aca hago el recv del id de la esi
 	//Primero recivo el id de la esi que me envia el planificador
-	recv(socket_planificador, &esi->id_ESI , sizeof(esi->id_ESI), 0);
+	recv(socket_planificador, &esi->id_ESI , 4, 0);
 
+	log_info(logger, "Soy la esi %d", esi->id_ESI);
 
 	int socket_coordinador = create_client(config_get_string_value(config_file, "ip_coordinador"), config_get_string_value(config_file, "puerto_coordinador"));
 
 	//aca le digo al coordinador que esi soy
-	send(socket_planificador, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+	send(socket_coordinador, &esi->id_ESI, 4, 0);
 
 
 	//abro el script para lectura
