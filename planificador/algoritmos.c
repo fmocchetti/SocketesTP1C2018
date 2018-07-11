@@ -585,9 +585,9 @@ bool identificador_clave(void * data){
 
 bool identificador_clave_por_idESI(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
-	printf("Clave liberada: %s\n",clave1->claveAEjecutar);
-	log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
-	log_info(logger, "El id a comparar es '%d'", id_esi_global);
+	//printf("Clave liberada: %s\n",clave1->claveAEjecutar);
+	/*log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
+	log_info(logger, "El id a comparar es '%d'", id_esi_global);*/
 	if(clave1->id_ESI == id_esi_global) {
 		return true;
 	}
@@ -705,7 +705,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 	int list_vacia = 0;
     int id_esi_desbloqueado = 0;
-    int key_existente = 1;
+    int key_existente = 0;
     int resultado_lista_satisfy = 0;
     strcpy(clave_bloqueada_global,claveAEjecutar);
     resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);

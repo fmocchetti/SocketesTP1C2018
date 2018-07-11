@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <stdlib.h>
 #include "consola.h"
+void looking_for_deadlocks();
 
 void consola(){
 
@@ -150,7 +151,6 @@ void listar(){
 	list_vacia = list_is_empty(claves_tomadas);
 	printf("HOLAAAAAAAAAAAAAA  %d\n", list_vacia);
 
-	printf("AAAAAAAAAAAAAAAA\n");
 	if(!list_is_empty(claves_tomadas)) {
 		printf("HOLAAAAAAAAAAAAAA\n");
 		strcpy(clave_bloqueada_global,key);
@@ -162,7 +162,6 @@ void listar(){
 		printf("Size de la lista de claves tomadas %d\n\n",id);
 		claves* clave_temporal = (claves*) malloc(sizeof(claves));
 		clave_temporal = list_get(claves_tomadas, 0);
-		printf("La CLAVE tomada es %s\n\n",clave_temporal->claveAEjecutar);
 
 
 		if(resultado_lista_satisfy){
@@ -189,7 +188,7 @@ void listar(){
 		else{/*
 			void clave_dictionary_destroy(t_dictionary *data){
 				free(data);*/
-			dictionary_remove_and_destroy(claves_bloqueadas,key,(void*)clave_dictionary_destroy);
+			//dictionary_remove_and_destroy(claves_bloqueadas,key,(void*)clave_dictionary_destroy);
 			log_info(logger,"Borre la entrada del diccionario de la clave porque la lista no tenia entradas");
 			}
 
@@ -285,7 +284,7 @@ void kill(){
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		laWeaReplanificadoraFIFO(muertos,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-		free(nodo_lista_ejecucion);
+		//free(nodo_lista_ejecucion);
 		printf("1- El proceso %d murio viejo\n", id);
 		exit;
 	}
@@ -297,7 +296,7 @@ void kill(){
 		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
 		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI);
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
-		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
 		//free(nodo_lista_ejecucion);
 		printf("2- El proceso %d murio viejo\n", id);
@@ -310,9 +309,9 @@ void kill(){
 		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
 		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI);
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
-		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en bloqueados murio", NULL);
-		free(nodo_lista_ejecucion);
+		//free(nodo_lista_ejecucion);
 		printf("3- El proceso %d murio viejo\n", id);
 	}
 	else{
@@ -329,46 +328,28 @@ void status(){
 }
 
 void deadlock(){
-	printf("deadlocks del sistema");
+	looking_for_deadlocks();
 
 }
-/*
-bool looking_for_deadlock(claves * data1, t_dictionary dicc1){
-	t_list * lista_dicc;
-	lista_dicc = dictionary_get(dicc1,data1->claveAEjecutar);
-	if(list_any_satisfy(lista_dicc,(void*)comparador) && );
-
-	if(esi1->rafaga <= esi2->rafaga) {
-			return true;
-		}
-		return false;
-}
-
-bool comparador(void * data1){
-	if(data1 == id_esi_deadlock) {
-		return true;
-	}
-	return false;
-}
-*/
 
 void looking_for_deadlocks(){
 	int i = 0;
 	int j = 0;
 	int cantidad_lista_tomados = 0;
 	int cantidad_lista_dicc = 0;
-	int cantidad_lista_dicc2 = 0;
 	int id_esi_a_buscar = 0;
 	int resultado_satisfy = 0;
 	t_list* lista_dicc;
 	t_list* lista_dicc2;
-	claves* nodo_tomados = (claves*) malloc(sizeof(claves));
-	claves* nodo_tomados2 = (claves*) malloc(sizeof(claves));
+	//claves* nodo_tomados = (claves*) malloc(sizeof(claves));
+	//claves* nodo_tomados2 = (claves*) malloc(sizeof(claves));
+	claves* nodo_tomados = NULL;
+	claves* nodo_tomados2 = NULL;
 
 	cantidad_lista_tomados = list_size(claves_tomadas);
 	if(cantidad_lista_tomados > 0){
 		//reviso la cantidad de claves que hay tomadas
-		for(i= 0; i <= cantidad_lista_tomados; i++){
+		for(i= 0; i < cantidad_lista_tomados; i++){
 			//hago un get de cada una mediante el for
 			nodo_tomados = list_get(claves_tomadas,i);
 			//reviso si el diccionario tiene la key asociada
@@ -377,7 +358,7 @@ void looking_for_deadlocks(){
 				lista_dicc = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
 				cantidad_lista_dicc = list_size(lista_dicc);
 				//reviso cada entrada de la lista mediante el for, para ver si esta tomada por alguna esi
-				for(i= 0; j <= cantidad_lista_dicc; j++){
+				for(j= 0; j < cantidad_lista_dicc; j++){
 					//tomo el elemento de la lista, para buscarlo en la lista de claves tomadas
 					id_esi_a_buscar = list_get(lista_dicc,j);
 					id_esi_global = id_esi_a_buscar;
@@ -392,7 +373,7 @@ void looking_for_deadlocks(){
 							id_esi_global = nodo_tomados->id_ESI;
 							resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
 							if(resultado_satisfy == 1){
-								log_info(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados,nodo_tomados2);
+								log_info(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados->id_ESI,nodo_tomados2->id_ESI);
 							}
 							else{
 								log_info(logger,"Las claves no estan en deadlock");
@@ -413,7 +394,10 @@ void looking_for_deadlocks(){
 	else{
 		log_info(logger,"No hay nada en la lista de tomados");
 	}
-	free(nodo_tomados);
-	free(nodo_tomados2);
+	//free(nodo_tomados);
+	//free(nodo_tomados2);
 	//FALTA ELIMINAR LISTAS
+	//list_destroy_and_destroy_elements(list, (void*) lista_destroy);
+	//list_destroy(lista_dicc);
+	//list_destroy(lista_dicc2);
 }
