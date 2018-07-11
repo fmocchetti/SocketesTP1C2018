@@ -109,13 +109,14 @@ void _instancia(int socket_local) {
 }
 
 void _esi(int socket_local) {
-	int rc = 0, close_conn = 0, id_esi = rand() % 5, instancia_destino = -1;
+	int rc = 0, close_conn = 0, id_esi = 0, instancia_destino = -1;
 	int message_length = 0;
 	unsigned char identificador = 0;
 	char * clave = NULL;
 	char * valor = NULL;
 	t_clave * clave_diccionario = NULL;
 
+	id_esi = recv(socket_local, &id_esi, sizeof(id_esi), 0);
 	while(1) {
 
 		log_info(logger, "Esta esi es la %d", id_esi);

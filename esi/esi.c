@@ -22,9 +22,18 @@ int main(int argc, char **argv){
 
 	config_file = config_create("esi.conf");
 
-	//me conecto con el coordinador y el planificador
+
 	int socket_planificador = create_client(config_get_string_value(config_file, "ip_planificador"), config_get_string_value(config_file, "puerto_planificador"));
+
+	//aca hago el recv del id de la esi
+	//Primero recivo el id de la esi que me envia el planificador
+	recv(socket_planificador, &esi->id_ESI , sizeof(esi->id_ESI), 0);
+
+
 	int socket_coordinador = create_client(config_get_string_value(config_file, "ip_coordinador"), config_get_string_value(config_file, "puerto_coordinador"));
+
+	//aca le digo al coordinador que esi soy
+	send(socket_planificador, &esi->id_ESI, sizeof(esi->id_ESI), 0);
 
 
 	//abro el script para lectura
@@ -63,9 +72,6 @@ int main(int argc, char **argv){
 		t_esi_operacion parsed = parse(line); //leo y parseo la primer linea del archivo
 
 		if(parsed.valido){
-			//Primero recivo el id de la esi que me envia el planificador
-			//esi->id_ESI = recv(socket_planificador, &esi->id_ESI , sizeof(esi->id_ESI), 0);
-
 			if(solicitudDeEjecucionPlanificador(socket_planificador)){
 				log_info(logger, "Puedo ejecutar");
 				//si el planificador me da el ok, primero guardo clave y valor en la estructura de la esi
