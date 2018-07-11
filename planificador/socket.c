@@ -141,7 +141,7 @@ void thread_on_connection(int listen_sd) {
 		// Le indico a la nueva ESI el ID que le corresponde
 
 		esi->id_ESI = n;
-		//send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+		send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
 		//printf("el nuevo ID de la esi fue mandado\n");
 		n++;
 
