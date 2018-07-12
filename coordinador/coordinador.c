@@ -59,6 +59,12 @@ void _instancia(int socket_local) {
 
 	log_info(logger, "Cantidad de instancias -> %d", list_size(list_instances));
 
+	if(algoritmo_elegido == KE) {
+		letras_instancia = (25 / total_instancias) + (25 % total_instancias);
+		log_info(logger, "Cantidad de letras por instancia -> %d", letras_instancia);
+	}
+
+
 	while(1) {
 
 		sem_wait(&(local_struct->instance_sem));
@@ -115,7 +121,7 @@ void _esi(int socket_local) {
 	char * clave = NULL;
 	char * valor = NULL;
 	t_clave * clave_diccionario = NULL;
-	char * claves_tomadas[10];
+	char * claves_tomadas[50];
 
 	recv(socket_local, &id_esi, 4, 0);
 	log_info(logger, "Esta esi es la %d", id_esi);
@@ -255,9 +261,11 @@ void liberar_claves(char ** claves_tomadas, int cantidad_claves) {
 	t_clave * clave_diccionario;
 
 	for(i = 0; i < cantidad_claves; i++) {
-		clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, claves_tomadas[i]);
-		clave_diccionario->tomada = false;
-		log_info(logger, "Liberando la clave: %s", claves_tomadas[i]);
+		if(dictionary_has_key(diccionario_claves, claves_tomadas[i])) {
+			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, claves_tomadas[i]);
+			clave_diccionario->tomada = false;
+			log_info(logger, "Liberando la clave: %s", claves_tomadas[i]);
+		}
 	}
 
 }

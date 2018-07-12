@@ -22,6 +22,7 @@ int informar_planificador(char * clave, unsigned char status) {
 
 int distribuir(char * clave, char * valor) {
 	t_instancia * instancia;
+	char letra_inicial = NULL;
 
 	switch(algoritmo_elegido) {
 		case EL:
@@ -30,6 +31,8 @@ int distribuir(char * clave, char * valor) {
 			ultima_instancia++;
 			break;
 		case KE:
+			letra_inicial = clave[0] - 96;
+			instancia = list_get(list_instances, letra_inicial / letras_instancia);
 			break;
 		case LSU:
 			break;
