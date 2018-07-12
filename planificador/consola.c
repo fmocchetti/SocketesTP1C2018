@@ -40,7 +40,7 @@ void consola(){
  	} else if(!strncmp(input,"kill", 4)){
  		kill();
  	} else if(!strncmp(input,"status", 6)){
- 		//status();
+ 		status();
  	} else if(!strncmp(input,"deadlock",8)){
  		deadlock();
  	}
@@ -255,16 +255,16 @@ void status(int socket){
 	int key_long = 0;
 	int instanciaAGuardar = 0;
 	unsigned char contestacionCoord = 0;
-	unsigned char pedirStatus = 0; // definir que numero es de protocolo
+	unsigned char pedirStatus = 98; // definir que numero es de protocolo
 
 	printf("inserte clave\n");
 	scanf("%s", key);
 
-	send(socket,&pedirStatus,sizeof(int),0);
+	send(socket_coord,&pedirStatus,1,0);
 	tamanio_clave = strlen(key);
-	send(socket,&tamanio_clave,sizeof(int),0);
-	send(socket,key,tamanio_clave,0);
-
+	send(socket_coord,&tamanio_clave,4,0);
+	send(socket_coord,key,tamanio_clave,0);
+/*
 	resultado_clave = recv(socket, &contestacionCoord, 1,0);
 	if(resultado_clave == 90){ //protocolo 90 porque pinto
 		recv(socket, &key_long, sizeof(int),0);
@@ -278,7 +278,7 @@ void status(int socket){
 		log_info(logger,"La instancia donde se guardaria seria %d",instanciaAGuardar);
 	}
 	//Aviso cuales ESIs esperan esta clave
-	listar_tomadas(key);
+	listar_tomadas(key);*/
 }
 
 void deadlock(){

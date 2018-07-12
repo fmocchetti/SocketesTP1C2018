@@ -13,6 +13,7 @@ int main (int argc, char *argv[])
 	pthread_mutex_init(&mutex, NULL);
 	sem_init(&mutex_planificador, 1, 0);
 	sem_init(&mutex_instancia, 1, 0);
+	sem_init(&mutex_status, 1, 0);
 	instancia_to_find = total_instancias = 0;
 	list_instances = list_create();
 	diccionario_claves = dictionary_create();

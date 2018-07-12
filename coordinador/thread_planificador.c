@@ -95,12 +95,26 @@ void _planificador(int socket_local) {
 
 				log_info(logger, "Voy a consultar estado de la clave '%s'", clave);
 
-				/*if(dictionary_has_key(diccionario_claves, clave)) {
+				if(dictionary_has_key(diccionario_claves, clave)) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 
-					log_info(logger, "Enviandole al planificador %d bytes", messageLength);
+					identificador = INSTANCIA_STATUS;
+					t_instancia * o_instancia;
+
+					o_instancia = list_get(list_instances, (clave_diccionario->instancia));
+					o_instancia->clave = clave;
+					o_instancia->valor = NULL;
+					o_instancia->operacion = INSTANCIA_STATUS;
+					sem_post(&(o_instancia->instance_sem));
+					sem_wait(&mutex_instancia);
+					sem_wait(&mutex_status);
+
+					log_info(logger, "La clave %s tiene el valor %s", o_instancia->clave, o_instancia->valor);
+
+
+					/*log_info(logger, "Enviandole al planificador %d bytes", messageLength);
 					send(socket_local, mensajes, messageLength, 0);
-					free(mensajes);
+					free(mensajes);*/
 
 
 					//preguntar a instancia el valor
@@ -109,7 +123,7 @@ void _planificador(int socket_local) {
 
 				} else {
 
-				}*/
+				}
 
 
 				break;

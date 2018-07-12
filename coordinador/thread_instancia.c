@@ -57,7 +57,7 @@ void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0, identificador_instancia = 0;
 	int size_clave = 0, size_valor = 0, messageLength = 0;
 	bool restore = false;
-	unsigned char buffer = 0, identificador = 0;
+	unsigned char buffer = 0, identificador = 0, id_response = 0;
 	char * mensajes = NULL;
 	t_instancia * local_struct;
 
@@ -106,6 +106,8 @@ void _instancia(int socket_local) {
 		log_info(logger, "Cantidad de letras por instancia -> %d", letras_instancia);
 	}
 
+
+	local_struct->socket_instancia = socket_local;
 
 	while(1) {
 
@@ -170,11 +172,28 @@ void _instancia(int socket_local) {
         }
 
 		free(mensajes);
-        rc = recv(socket_local, &buffer, 1, 0);
+        rc = recv(socket_local, &id_response, 1, 0);
         if (rc <= 0) {
         	log_error(logger, "  recv() failed");
         	close_conn = TRUE;
         	break;
+        }
+
+        log_info(logger, "La instancia me dice %d", id_response);
+
+        if(local_struct->operacion == INSTANCIA_STATUS) {
+			if(buffer == INSTANCIA_VALOR) {
+				recv(socket_local, &size_clave, 4, 0);
+				mensajes = (char *) malloc (size_clave + 1);
+				recv(socket_local, mensajes, size_clave, 0);
+				mensajes[size_clave] = '\0';
+				log_info(logger, "Recibi el valor %s", mensajes);
+				local_struct->valor = mensajes;
+				sem_post(&mutex_status);
+			}else if(buffer == INSTANCIA_ERROR) {
+				local_struct->valor = NULL;
+				sem_post(&mutex_status);
+			}
         }
 
         log_info(logger, "La instancia termino de procesar");

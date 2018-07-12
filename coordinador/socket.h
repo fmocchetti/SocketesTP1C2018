@@ -26,6 +26,8 @@
 #define TRUE             1
 #define FALSE            0
 
+
+char * returned_value;
 // Quien decidio este protocolo? Un hechicero lo hizo
 
 enum mensajes {
@@ -45,7 +47,11 @@ enum mensajes {
 	PLANIFICADOR_CLAVE = 32,
 	PLANIFICADOR_BLOQUEAR = 33,
 	PLANIFICADOR_DESBLOQUEAR = 34,
-	PLANIFICADOR_STATUS = 98
+	PLANIFICADOR_STATUS = 98,
+	INSTANCIA_COMPACTAR = 200,
+	INSTANCIA_STATUS = 201,
+	INSTANCIA_ERROR = 202,
+	INSTANCIA_VALOR = 203
 };
 
 enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 3};
