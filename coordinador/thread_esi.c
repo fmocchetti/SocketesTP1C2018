@@ -111,7 +111,7 @@ void _esi(int socket_local) {
     					send(socket_local, &identificador, 1, 0);
         				//informar esi error
         			}else {
-        				modificar_valor_clave(clave, valor, clave_diccionario->instancia);
+        				instancia = modificar_valor_clave(clave, valor, clave_diccionario->instancia);
         				identificador = ESI_OK;
 						send(socket_local, &identificador, 1, 0);
         				//informar esi todo ok
@@ -124,8 +124,12 @@ void _esi(int socket_local) {
         		}
         		log_info(logger, "Esperando instancia");
 				sem_wait(&mutex_instancia);
-        		informar_planificador(clave, COORDINADOR_SET);
+				if(instancia && instancia->status)
+					informar_planificador(clave, COORDINADOR_SET);
+				else
+					informar_planificador(clave, COORDINADOR_ERROR);
         		log_info(log_operaciones, "ESI %d - SET %s %s", id_esi, clave, valor);
+        		instancia = NULL;
         	    break;
         	case ESI_STORE:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -145,7 +149,7 @@ void _esi(int socket_local) {
 						send(socket_local, &identificador, 1, 0);
 
 					}else {
-						store_clave(clave, clave_diccionario->instancia);
+						instancia = store_clave(clave, clave_diccionario->instancia);
 						//informar esi todo ok
 						//informar planificador que clave se libero (ESI_STORE, clave)
 						identificador = ESI_OK;
@@ -161,8 +165,12 @@ void _esi(int socket_local) {
 				}
         		log_info(logger, "Esperando instancia");
 				sem_wait(&mutex_instancia);
-        		informar_planificador(clave, COORDINADOR_STORE);
+				if(instancia && instancia->status)
+					informar_planificador(clave, COORDINADOR_STORE);
+				else
+					informar_planificador(clave, COORDINADOR_ERROR);
         		log_info(log_operaciones, "ESI %d - STORE %s", id_esi, clave);
+        		instancia = NULL;
         	    break;
         	default:
         		break;
