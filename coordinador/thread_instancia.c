@@ -117,6 +117,23 @@ void _instancia(int socket_local) {
 
 
 		if(local_struct->operacion == ESI_GET) {
+			identificador = local_struct->operacion;
+			rc = send(socket_local, &identificador, 1, 0);
+
+			log_info(logger, "El send me dice %d", rc);
+	        if (rc <= 0) {
+	        	log_error(logger, "  recv() failed");
+	        	close_conn = TRUE;
+	        	break;
+	        }
+
+	        rc=recv(socket_local, &identificador, 1, 0);
+	        if (rc <= 0) {
+				log_error(logger, "  recv() failed");
+				close_conn = TRUE;
+				break;
+			}
+
 	        log_info(logger, "La instancia termino de procesar");
 	        sem_post(&mutex_instancia);
 	        continue;

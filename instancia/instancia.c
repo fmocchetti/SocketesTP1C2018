@@ -227,6 +227,13 @@ int main (int argc, char * argv[]) {
 
 				log_info(logger, "Identificador %d", identificador);
 
+				if(identificador == 21) {
+					identificador = 42;
+					send(server, &identificador, 1, 0);
+					log_info(logger,"Keep alive al coordinador");
+					continue;
+				}
+
 
 				//recibo clave
 				int rc = recv(server, &size_clave, 4, 0);
