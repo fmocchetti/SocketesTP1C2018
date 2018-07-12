@@ -272,12 +272,14 @@ void kill(){
 	printf("Inserte ID de la ESI a matar\n");
 	scanf("%d", &id);
 
+	id_esi_global_kill = id;
 	id_esi_global = id;
+	printf("ID de la ESI a matar %d\n",id);
 	resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 	while(resultado_satisfy == 1){
 	//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		printf("------RECIBI MENOS DE 0\n");
-		claves* clave_temporal = (claves*) malloc(sizeof(claves));
+		claves* clave_temporal = NULL;//(claves*) malloc(sizeof(claves));
 		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
 		ESI_STORE(clave_temporal->claveAEjecutar,0);
 		free(clave_temporal);
@@ -285,9 +287,9 @@ void kill(){
 		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 		}
 		//hago close del socket
-	resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI);
+	resultado_satisfy = list_any_satisfy(ejecucion, (void*)identificador_ESI_kill);
 	if(resultado_satisfy==1){
-		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
+		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		laWeaReplanificadoraFIFO(muertos,ejecucion);
@@ -299,10 +301,10 @@ void kill(){
 	else{
 		printf("NO ESTA EN EJECUCION\n");
 	}
-	resultado_satisfy = list_any_satisfy(listos, (void*)identificador_ESI);
+	resultado_satisfy = list_any_satisfy(listos, (void*)identificador_ESI_kill);
 	if(resultado_satisfy==1){
-		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
-		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI);
+		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
+		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI_kill);
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
@@ -312,10 +314,10 @@ void kill(){
 	else{
 		printf("NO ESTA EN LISTOS\n");
 	}
-	resultado_satisfy = list_any_satisfy(bloqueados, (void*)identificador_ESI);
+	resultado_satisfy = list_any_satisfy(bloqueados, (void*)identificador_ESI_kill);
 	if(resultado_satisfy==1){
-		ESI *nodo_lista_ejecucion = (ESI*) malloc(sizeof(ESI));
-		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI);
+		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
+		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI_kill);
 		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en bloqueados murio", NULL);
