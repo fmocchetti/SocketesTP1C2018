@@ -55,12 +55,19 @@ void sjfsd(){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
 		log_info(logger,"Esperando para planificar");
 
+
 		//espero a que me digan que hay un nuevo proceso en listos
 		log_info(logger,"ESTADO DEL SEMAFORO NEW PROCESS %d",new_process);
 		sem_wait(&new_process);
 
 		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
 		estadoListas();
+
+		//En caso de pausar la plani
+		sem_getvalue(&sem_pausar_planificacion,&sem_value);
+			if(sem_value<1){
+			sem_wait(&sem_pausar_algoritmo);
+			}
 
 		//replanifico aca, dependiendo de la rafaga
 		if(list_size(listos) >= 1){
@@ -145,6 +152,7 @@ void sjfsd(){
 				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
 				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
 				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas = 0;
 				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
 				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
