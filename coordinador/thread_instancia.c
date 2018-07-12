@@ -111,6 +111,14 @@ void _instancia(int socket_local) {
 		//pthread_mutex_lock(&mutex);
 		log_info(logger, "Pase el Mutex de la instancia");
 
+
+		if(local_struct->operacion == ESI_GET) {
+	        log_info(logger, "La instancia termino de procesar");
+	        sem_post(&mutex_instancia);
+	        continue;
+		}
+
+
 		size_clave = strlen(local_struct->clave);
 		messageLength = 5 + size_clave;
 		if(local_struct->operacion == ESI_SET) {
