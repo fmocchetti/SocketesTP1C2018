@@ -164,7 +164,7 @@ void _instancia(int socket_local) {
 				break;
 			}
 
-	        log_info(logger, "Mando a compactar las instancias");
+	        log_info(logger, "Mando a compactar las instancias, %d", identificador);
 	        sem_post(&mutex_instancia);
 	        continue;
 		}
@@ -232,7 +232,7 @@ void _instancia(int socket_local) {
 
             void compactarInstancias(void * element) {
             	t_instancia * instancia = (t_instancia *) element;
-            	if(instancia->status) {
+            	if(instancia->status && instancia->id != identificador_instancia) {
             		instancia->operacion = INSTANCIA_COMPACTAR;
             		sem_post(&(instancia->instance_sem));
             	}
