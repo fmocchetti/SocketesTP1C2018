@@ -13,13 +13,6 @@
 #include <semaphore.h>
 #include <commons/log.h>
 #include <commons/config.h>
-#include "distribucion.h"
-
-void _instancia(int socket_local);
-void _planificador(int socket_local);
-void _esi(int socket_local);
-void inicializar_instancia (int socket);
-void liberar_claves(char ** claves_tomadas, int cantidad_claves);
 
 t_list* list_instances;
 t_config * config_file;
@@ -27,10 +20,16 @@ t_log * logger;
 t_log * log_operaciones;
 
 int total_instancias;
+int instancias_activas;
 int instancia_to_find;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
 sem_t mutex_instancia;
+
+int listening_port;
+int cantidad_entradas;
+int size_key;
+int retardo;
 
 typedef struct {
     int id;
@@ -46,6 +45,8 @@ typedef struct {
     unsigned char status;
     char * clave;
 } t_planificador;
+
+#include "distribucion.h"
 
 t_planificador * thread_planificador;
 
@@ -70,7 +71,6 @@ static t_instancia *instancia_create(int id, int totalEntradas) {
     new->operacion = 0;
     new->status = true;
     new->entradasLibres = totalEntradas;
-    total_instancias++;
     return new;
 }
 
@@ -97,6 +97,12 @@ static t_clave *clave_create(int esi, int instancia, bool tomada){
 static void clave_destroy(t_clave *self){
 	free(self);
 }
+
+void _instancia(int socket_local);
+void _planificador(int socket_local);
+void _esi(int socket_local);
+void inicializar_instancia (int socket);
+void liberar_claves(char ** claves_tomadas, int cantidad_claves);
 
 
 #endif /* COORDINADOR_H_ */

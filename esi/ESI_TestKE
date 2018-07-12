@@ -1,0 +1,6 @@
+GET bebida1
+GET worth
+SET bebida1 whisky
+SET worth lol
+STORE bebida1
+STORE worth
