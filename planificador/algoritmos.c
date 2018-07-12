@@ -202,6 +202,12 @@ void sjfcd(){
 		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
 		estadoListas();
 
+		//En caso de ejecutar el comando pausar se usa el siguiente semaforo y condicion
+					sem_getvalue(&sem_pausar_planificacion,&sem_value);
+					if(sem_value<1){
+						sem_wait(&sem_pausar_algoritmo);
+						//break;
+					}
 		//replanifico dependiendo de la rafaga
 		if(replanificar == 1){
 			log_info(logger,"Replanificando");
@@ -294,11 +300,20 @@ void sjfcd(){
 					log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
 					//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
 					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+					nodo_lista_ejecucion->lineas_ejecutadas = 0;
 					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
 					log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
+
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+					log_info(logger, "TAMANIO DE LISTA EJECUCION %d", list_size(ejecucion));
+					//list_clean_and_destroy_elements(ejecucion,(void*)element_destroyer);
+
+					if(list_size(listos)>=1){
 					replanificar = 1;
+					sem_post(&new_process);
+
+					}
 					break;
 				}
 
@@ -323,6 +338,7 @@ void sjfcd(){
 			//De ser afirmativo
 			//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
 			nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+			nodo_lista_ejecucion->lineas_ejecutadas = 0;
 			nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
 			log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
