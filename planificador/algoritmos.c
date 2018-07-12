@@ -547,6 +547,15 @@ bool sort_by_estimacion(void * data1, void * data2){
 		return false;
 }
 
+bool identificador(void * data){
+	int dato1 = data;
+	if(dato1 == id_esi_global) {
+		return true;
+	}
+	return false;
+}
+
+
 bool identificador_ESI(void * data){
 	ESI *esi1= (ESI*) data;
 	if(esi1->id_ESI == id_esi_global) {
@@ -594,16 +603,29 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 	memset(clave1, 0, sizeof(claves));
 	strcpy(clave1->claveAEjecutar,claveAEjecutar);
 	clave1->id_ESI = id_ESI;
+	id_esi_global = id_ESI;
 
 	if(esi_bloqueada_de_entrada==1){
 		strcpy(clave_bloqueada_global,claveAEjecutar);
+		if(list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI)){
+			log_info(logger,"La esi ya tiene tomada la clave");
+		}
 
-		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
+		else if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
 				t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
-				//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
-				list_add(list_clave, (int*)id_ESI);
-				log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
-				free(clave1);
+				if(!list_is_empty(list_clave)){
+					if(list_any_satisfy(list_clave,(void*)identificador)){
+						log_info(logger,"La esi ya se encuentra bloqueada esperando el recurso");
+					}
+					//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+
+					else{
+						printf("LLEGUE ACA3\n");
+						list_add(list_clave, (int*)id_ESI);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
 		} else {
 				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
 				printf("Entre en 2\n");
