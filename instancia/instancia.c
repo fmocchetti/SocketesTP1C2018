@@ -83,7 +83,7 @@ int main (int argc, char * argv[]) {
 		char * clave= 0;
 		char * valor= 0;
 		char * ruta= 0;
-		int size_clave = 0, size_valor = 0,size_ruta =  0;
+		int size_clave = 0, size_valor = 0,size_ruta =  0, rc = 0;
 
 
 
@@ -222,188 +222,181 @@ int main (int argc, char * argv[]) {
 			/******************************************************************************************************************/
 
 
+			log_info(logger, "INSTANCIA %d: Esperando identificador" ,nombre);
+			identificador = 0;
+
+			//recibo operacion
+
+			rc = recv(server, &identificador, 1, 0);
+	        if (rc <= 0) {
+	        	log_error(logger, "  recv() failed");
+	        	break;
+	        }
+
+			log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
+
+
+			if(identificador == 21) {
+				identificador = 42;
+				send(server, &identificador, 1, 0);
+				log_info(logger, "INSTANCIA %d: Keep alive coordinador",nombre);
+				continue;
+			}
+
+			//recibo clave
+			int rc = recv(server, &size_clave, 4, 0);
+
+			log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
+
+			clave = (char *)malloc(size_clave + 1);
+
+			if(clave == NULL){
+				log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
+				return EXIT_FAILURE;
+			}
+
+			rc = recv(server, clave, size_clave, 0);
+			log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
+
+			clave[size_clave] = '\0';
+
+			log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
+
+			log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
+
+
+			//TODO: Si es un get aca no tiene que recibir nada
+			if(identificador == 22){
+
+				//lleno estructura que le paso al set_cicular
+				struct ClaveValor claveValor;
+
+				claveValor.tamanioEntrada = init.tamanioEntrada;
+				claveValor.cantidadEntradas = init.cantidad_entradas;
+
+
+				//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
+
+
+				log_info(logger, "INSTANCIA %d: Asigne tamanioClave %d" ,nombre , size_clave);
+
+				strcpy(claveValor.clave,clave);
+
+
+				log_info(logger, "INSTANCIA %d: Asigne clave: %s",nombre ,clave);
 
 
 
+				log_info(logger, "INSTANCIA %d: Asigne las estructuras",nombre);
+
+				recv(server, &size_valor, 4, 0);
+				valor = malloc(size_valor + 1);
+				recv(server, valor, size_valor, 0);
+				valor[size_valor] = '\0';
+				log_info(logger, "INSTANCIA %d: Valor %s",nombre , valor);
+
+				claveValor.valor = valor;
+
+				log_info(logger, "INSTANCIA %d: Asigne valor: %s",nombre ,valor);
 
 
+				log_info(logger, "INSTANCIA %d: Valores iniciales %s, %s, %d",nombre , clave, valor, init.retardo);
 
+				log_info(logger, "INSTANCIA %d: Recibi clave y valor",nombre);
 
-				//recibo operacion
+				if(!strcmp((const char*)algoritmo,"CIRC")){
+					pthread_mutex_lock(&lock_dump);
+					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+					pthread_mutex_unlock(&lock_dump);
 
-				recv(server, &identificador, 1, 0);
-
-				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
-
-
-				if(identificador == 21) {
-					identificador = 42;
-					send(server, &identificador, 1, 0);
-					log_info(logger, "INSTANCIA %d: Keep alive coordinador",nombre);
-					continue;
+				}
+				else if(!strcmp((const char*)algoritmo,"LRU")){
+					pthread_mutex_lock(&lock_dump);
+					SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					pthread_mutex_unlock(&lock_dump);
+				}
+				else if(!strcmp((const char*)algoritmo,"BSU")){
+					pthread_mutex_lock(&lock_dump);
+					SET_BSU(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					pthread_mutex_unlock(&lock_dump);
 				}
 
-				if(identificador == 21) {
-					identificador = 42;
-					send(server, &identificador, 1, 0);
-					log_info(logger,"Keep alive al coordinador");
-					continue;
-				}
+				free(valor);
+
+			} else if(identificador==23) {//store
 
 
-				//recibo clave
-				int rc = recv(server, &size_clave, 4, 0);
+				ruta = malloc(size_ruta);
 
-				log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
-
-				clave = (char *)malloc(size_clave + 1);
-
-				if(clave == NULL){
-					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
+				if(ruta == NULL){
+					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la ruta",nombre);
 					return EXIT_FAILURE;
 				}
 
-				rc = recv(server, clave, size_clave, 0);
-				log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
+				strcpy(ruta, puntoMontaje);
 
-				clave[size_clave] = '\0';
+				pthread_mutex_lock(&lock_dump);
+				STORE(&tabla,&registro,storage,clave,ruta,init.tamanioEntrada);
+				pthread_mutex_unlock(&lock_dump);
 
-				log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
+				free(ruta);
+			}
+			else if(identificador==200){ //compactar
 
-				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
+				pthread_mutex_lock(&lock_dump);
 
+				compactar(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,init.tamanioEntrada);
 
-				//TODO: Si es un get aca no tiene que recibir nada
-				if(identificador == 22){
+				pthread_mutex_unlock(&lock_dump);
 
-					//lleno estructura que le paso al set_cicular
-					struct ClaveValor claveValor;
+			}
+			else if(identificador == 201){// status consola
 
-					claveValor.tamanioEntrada = init.tamanioEntrada;
-					claveValor.cantidadEntradas = init.cantidad_entradas;
+				log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
 
+				unsigned char id;
 
-					//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
+				struct Dato* unDato = buscar(tabla,clave);
+				if(unDato == NULL){
 
-
-					log_info(logger, "INSTANCIA %d: Asigne tamanioClave %d" ,nombre , size_clave);
-
-					strcpy(claveValor.clave,clave);
-
-
-					log_info(logger, "INSTANCIA %d: Asigne clave: %s",nombre ,clave);
-
-
-
-					log_info(logger, "INSTANCIA %d: Asigne las estructuras",nombre);
-
-					recv(server, &size_valor, 4, 0);
-					valor = malloc(size_valor + 1);
-					recv(server, valor, size_valor, 0);
-					valor[size_valor] = '\0';
-					log_info(logger, "INSTANCIA %d: Valor %s",nombre , valor);
-
-					claveValor.valor = valor;
-
-					log_info(logger, "INSTANCIA %d: Asigne valor: %s",nombre ,valor);
-
-
-					log_info(logger, "INSTANCIA %d: Valores iniciales %s, %s, %d",nombre , clave, valor, init.retardo);
-
-					log_info(logger, "INSTANCIA %d: Recibi clave y valor",nombre);
-
-					if(!strcmp((const char*)algoritmo,"CIRC")){
-						pthread_mutex_lock(&lock_dump);
-						SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
-						pthread_mutex_unlock(&lock_dump);
-
-					}
-					else if(!strcmp((const char*)algoritmo,"LRU")){
-						pthread_mutex_lock(&lock_dump);
-						SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
-						pthread_mutex_unlock(&lock_dump);
-					}
-					else if(!strcmp((const char*)algoritmo,"BSU")){
-						pthread_mutex_lock(&lock_dump);
-						SET_BSU(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
-						pthread_mutex_unlock(&lock_dump);
-					}
-
-					free(valor);
-
-				} else if(identificador==23) {//store
-
-
-					ruta = malloc(size_ruta);
-
-					if(ruta == NULL){
-						log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la ruta",nombre);
-						return EXIT_FAILURE;
-					}
-
-					strcpy(ruta, puntoMontaje);
-
-					pthread_mutex_lock(&lock_dump);
-					STORE(&tabla,&registro,storage,clave,ruta,init.tamanioEntrada);
-					pthread_mutex_unlock(&lock_dump);
-
-					free(ruta);
-				}
-				else if(identificador==200){ //compactar
-
-					pthread_mutex_lock(&lock_dump);
-
-					compactar(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,init.tamanioEntrada);
-
-					pthread_mutex_unlock(&lock_dump);
+					log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
+					id = 202;
+					//no se encontro la clave
+					send(server, &id, 1, 0);
 
 				}
-				else if(identificador == 201){// status consola
+				else{
+					log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
+					id = 203;
+					unDato->cantidadDeBytes -= 1;
+					int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
+					log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
+					char* buffer = (char*) malloc (tamanioBuffer);
+					*buffer = 0;
+					memcpy(buffer,&id,1);
+					memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
+					memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
 
-					log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
-
-					unsigned char id;
-
-					struct Dato* unDato = buscar(tabla,clave);
-					if(unDato == NULL){
-
-						log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
-						id = 202;
-						//no se encontro la clave
-						send(server, &id, 1, 0);
-
-					}
-					else{
-						log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
-						id = 203;
-						int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
-						log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
-						char* buffer = (char*) malloc (tamanioBuffer);
-						*buffer = 0;
-						memcpy(buffer,&id,1);
-						memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
-						memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
-
-						send(server, buffer, tamanioBuffer-1, 0);
-						free(buffer);
-					}
-
-
-
+					send(server, buffer, tamanioBuffer, 0);
+					free(buffer);
 				}
-				usleep(init.retardo * 1000);
-				identificador = 1;
-				send(server, &identificador, 1, 0);
-				log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
-				free(clave);
-				log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
+
+
+
+			}
+			usleep(init.retardo * 1000);
+			identificador = 1;
+			send(server, &identificador, 1, 0);
+			log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
+			free(clave);
+			log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
 		}
+
 		//libero memoria
-	    //free(storage);//free(parametros);
-	    //liberar_recursos(&tabla);
-
-
-
+	    free(storage);
+	    free(parametros);
+	    liberar_recursos(&tabla);
+	    shutdown(server, SHUT_RDWR);
   /*******************************************************************************************************************/
 
 

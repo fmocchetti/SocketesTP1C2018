@@ -123,7 +123,7 @@ void _instancia(int socket_local) {
 
 		if(local_struct->operacion == ESI_GET) {
 			identificador = local_struct->operacion;
-			rc = send(socket_local, &identificador, 1, 0);
+			rc = send(local_struct->socket_instancia, &identificador, 1, 0);
 
 			log_info(logger, "El send me dice %d", rc);
 	        if (rc <= 0) {
@@ -132,7 +132,9 @@ void _instancia(int socket_local) {
 	        	break;
 	        }
 
-	        rc=recv(socket_local, &identificador, 1, 0);
+	        log_info(logger, "Le mande a la instancia un %d", identificador);
+
+	        rc=recv(local_struct->socket_instancia, &identificador, 1, 0);
 	        if (rc <= 0) {
 				log_error(logger, "  recv() failed");
 				close_conn = TRUE;
@@ -146,7 +148,7 @@ void _instancia(int socket_local) {
 
 		if(local_struct->operacion == INSTANCIA_COMPACTAR) {
 			identificador = local_struct->operacion;
-			rc = send(socket_local, &identificador, 1, 0);
+			rc = send(local_struct->socket_instancia, &identificador, 1, 0);
 
 			log_info(logger, "El send me dice %d", rc);
 	        if (rc <= 0) {
@@ -155,7 +157,7 @@ void _instancia(int socket_local) {
 	        	break;
 	        }
 
-	        rc=recv(socket_local, &identificador, 1, 0);
+	        rc=recv(local_struct->socket_instancia, &identificador, 1, 0);
 	        if (rc <= 0) {
 				log_error(logger, "  recv() failed");
 				close_conn = TRUE;
@@ -187,7 +189,7 @@ void _instancia(int socket_local) {
 		}
 
 		log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
-		rc = send(socket_local, mensajes, messageLength, 0);
+		rc = send(local_struct->socket_instancia, mensajes, messageLength, 0);
 
 		log_info(logger, "El send me dice %d", rc);
         if (rc <= 0) {
@@ -197,7 +199,7 @@ void _instancia(int socket_local) {
         }
 
 		free(mensajes);
-        rc = recv(socket_local, &id_response, 1, 0);
+        rc = recv(local_struct->socket_instancia, &id_response, 1, 0);
         if (rc <= 0) {
         	log_error(logger, "  recv() failed");
         	close_conn = TRUE;
@@ -208,9 +210,9 @@ void _instancia(int socket_local) {
 
         if(local_struct->operacion == INSTANCIA_STATUS) {
 			if(id_response == INSTANCIA_VALOR) {
-				recv(socket_local, &size_clave, 4, 0);
+				recv(local_struct->socket_instancia, &size_clave, 4, 0);
 				mensajes = (char *) malloc (size_clave + 1);
-				recv(socket_local, mensajes, size_clave, 0);
+				recv(local_struct->socket_instancia, mensajes, size_clave, 0);
 				mensajes[size_clave] = '\0';
 				log_info(logger, "Recibi el valor %s", mensajes);
 				local_struct->valor = mensajes;
