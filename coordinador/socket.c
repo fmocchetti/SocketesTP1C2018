@@ -75,13 +75,13 @@ void create_server(int max_connections, int timeout, int server_type, int port) 
 void thread_on_connection(int listen_sd) {
 	int new_sd = -1;					// Escuchar sobre socket_client, nuevas conexiones sobre newConnection
 	pthread_t th_receiptMessage;		// hilo para crear receptor de mensajes
-	char * buffer;
+	unsigned char buffer = 0;
 	int rc;
 	unsigned char message = 0;
     thread_handle_struct * connection_arguments = malloc(sizeof(thread_handle_struct));
 
 	while(1) {
-		buffer = (char *) malloc(sizeof(char));
+		buffer = 0;
         log_info(logger,"Waiting new connection...");
 		new_sd = accept(listen_sd, NULL, NULL);
         if (new_sd < 0) {
@@ -100,16 +100,16 @@ void thread_on_connection(int listen_sd) {
 
         log_info(logger,"  Waiting for the client to identify\n");
 
-        rc = recv(new_sd, buffer, sizeof(buffer), 0);
+        rc = recv(new_sd, &buffer, 1, 0);
         if (rc < 0) {
            if (errno != EWOULDBLOCK) {
              log_error(logger, "  recv() failed");
            }
         }
 
-        log_info(logger," The client is an: %d", *buffer);
+        log_info(logger," The client is an: %d", buffer);
         connection_arguments->socket = new_sd;
-        connection_arguments->identidad = *buffer;
+        connection_arguments->identidad = buffer;
 
         //printf("Mando %d , %d \n",connection_arguments->socket, connection_arguments->identidad);
 
@@ -123,8 +123,6 @@ void thread_on_connection(int listen_sd) {
         if(pthread_detach(th_receiptMessage)) {
         	log_error(logger, "Error deataching thread");
         }
-
-        free(buffer);
 	}
 }
 

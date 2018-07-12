@@ -111,6 +111,12 @@ void _instancia(int socket_local) {
 
 	if (close_conn) {
 		shutdown(socket_local, SHUT_RDWR);
+
+		total_instancias--;
+		if(algoritmo_elegido == KE) {
+			letras_instancia = (25 / total_instancias) + (25 % total_instancias);
+			log_info(logger, "Cantidad de letras por instancia -> %d", letras_instancia);
+		}
 	}
 }
 
