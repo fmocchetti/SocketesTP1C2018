@@ -63,11 +63,10 @@ void sjfsd(){
 		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
 		estadoListas();
 
-		//En caso de pausar la plani
 		sem_getvalue(&sem_pausar_planificacion,&sem_value);
 			if(sem_value<1){
 			sem_wait(&sem_pausar_algoritmo);
-			}
+				}
 
 		//replanifico aca, dependiendo de la rafaga
 		if(list_size(listos) >= 1){
@@ -571,12 +570,24 @@ bool identificador_ESI(void * data){
 	printf("Entre a identificador_ESI\n");
 	//claves *esi1= (claves*) data; //recibo estructura de la lista?
 	ESI *esi1= (ESI*) data;
-	printf("ID de la ESI1: %d\n",esi1->id_ESI);
-	printf("ID de la ESI2: %d\n",id_esi_global);
+	//printf("ID de la ESI1: %d\n",esi1->id_ESI);
+	//printf("ID de la ESI2: %d\n",id_esi_global);
 	if(esi1->id_ESI == id_esi_global) {
 		return true;
 	}
 	return false;
+}
+
+bool identificador_ESI_kill(void * data){
+	printf("Entre a identificador_ESI\n");
+		//claves *esi1= (claves*) data; //recibo estructura de la lista?
+		ESI *esi1= (ESI*) data;
+		//printf("ID de la ESI1: %d\n",esi1->id_ESI);
+		//printf("ID de la ESI2: %d\n",id_esi_global);
+		if(esi1->id_ESI == id_esi_global_kill) {
+			return true;
+		}
+		return false;
 }
 
 bool identificador_clave(void * data){
@@ -594,8 +605,8 @@ bool identificador_clave(void * data){
 bool identificador_clave_por_idESI(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
 	//printf("Clave liberada: %s\n",clave1->claveAEjecutar);
-	/*log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
-	log_info(logger, "El id a comparar es '%d'", id_esi_global);*/
+	log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
+	log_info(logger, "El id a comparar es '%d'", id_esi_global);
 	if(clave1->id_ESI == id_esi_global) {
 		return true;
 	}

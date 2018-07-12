@@ -44,6 +44,7 @@ int socket_coord;
 int esi_bloqueada_de_entrada;
 char clave_bloqueada_global[40];
 int id_esi_global;
+int id_esi_global_kill;
 int alpha;
 int estimacion_inicial;
 
@@ -51,6 +52,7 @@ void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
 void fifo();
 bool identificador_ESI(void*);
+bool identificador_ESI_kill(void*);
 
 bool sort_by_estimacion(void*, void*);
 bool sort_by_aging(void *, void *);
