@@ -75,7 +75,7 @@ int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,t_list** tabla
 	  while ((dir = readdir(directorio)) != NULL)
 	  {
 	      if(dir -> d_type == DT_REG && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0){
-	    	  log_info(logger,"UPDATEADOR: Se leyo:  %s", dir->d_name);
+	    	  log_info(logger,"UPDATEADOR: Se detecto un archivo llamadado:  %s y se leeran los datos", dir->d_name);
 
 	    	  if(dictionary_has_key(tablaDeRequeridas,dir->d_name))
 	    	  {
@@ -84,6 +84,8 @@ int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,t_list** tabla
 	    		    strcpy(claveValor.clave, (const char*)dir->d_name);
 
 	    		    claveValor.valor = obtener_valor_de_archivo(dir->d_name , path);
+
+	    		    log_info(logger,"UPDATEADOR: Se guardara el valor:  %s  en memoria, correspondiente a la clave", claveValor.valor);
 
 	    		    claveValor.tamanioEntrada = tamanioEntrada;
 
@@ -96,7 +98,7 @@ int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,t_list** tabla
 	  }
 
 	  closedir(directorio);
-
+	  log_info(logger,"UPDATEADOR: Finaliza el proceso, se cargaron las claves en storage");
 return EXIT_SUCCESS;
 }
 
