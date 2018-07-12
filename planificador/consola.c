@@ -119,15 +119,7 @@ void bloquear(int socket){
 	printf("inserte id\n");
 	scanf("%d",&id);
 
-	send(socket,&mensaje_coord,1,0);
-	send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
-
-	tamanio_clave = strlen(key);
-	printf("largo de la clave %d\n", tamanio_clave);
-	send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-	send(socket,key,tamanio_clave,0);
-
-	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
+	//log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
 	//ESI_GET(key,id,0);
 	ESI_GET_BLOQUEAR(key, id, 0, socket_coord);
 }
