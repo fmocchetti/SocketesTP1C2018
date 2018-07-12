@@ -57,7 +57,7 @@ void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0, identificador_instancia = 0;
 	int size_clave = 0, size_valor = 0, messageLength = 0;
 	bool restore = false;
-	unsigned char buffer = 0;
+	unsigned char buffer = 0, identificador = 0;
 	char * mensajes = NULL;
 	t_instancia * local_struct;
 
@@ -92,6 +92,10 @@ void _instancia(int socket_local) {
 
 	if(restore)
 		restaura_clave(identificador_instancia-1, socket_local);
+	else {
+		identificador = 58;
+		send(socket_local, &identificador, 1, 0);
+	}
 
 	sem_init(&(local_struct->instance_sem), 1, 0);
 
