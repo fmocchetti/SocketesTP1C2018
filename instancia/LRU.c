@@ -31,14 +31,23 @@ int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, 
 
 			struct Registro* reg = list_get(*registro,i);
 			unDato = buscar_dato_por_posicion(*tabla,primeraPosicionMemoria + (reg->numeroEntrada * tamanioEntrada));
-			if(calcular_cantidad_entradas(unDato->cantidadDeBytes,tamanioEntrada)==1){ //es atomica
 
-				borrar_un_dato_y_liberar(tabla,unDato);
-				sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
+			if(unDato != NULL){
+
+				if(calcular_cantidad_entradas(unDato->cantidadDeBytes,tamanioEntrada)==1){ //es atomica
+
+					borrar_un_dato_y_liberar(tabla,unDato);
+					sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
+
+				}
+
+				entradasLiberadas++;
 
 			}
 			i++;
-			entradasLiberadas++;
+
+
+
 
 	  }
 	  log_info(logger,"LRU: Se liberaron %d entradas atomicas menos accedidas",entradasLiberadas);
@@ -171,6 +180,7 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 				registrar_dato_en_tabla(tabla,&unDato);
 				registrar_acceso_a_entrada(registro,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
 				log_info(logger,"LRU: Se reemplazaron las entradas");
+				return 0;
 
 		}
 

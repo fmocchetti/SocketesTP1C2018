@@ -329,11 +329,6 @@ int main (int argc, char * argv[]) {
 						pthread_mutex_unlock(&lock_dump);
 					}
 
-
-
-
-					log_info(logger,"INSTANCIA %d: El valor del storage es: %s",nombre ,storage);
-
 					free(valor);
 
 				} else if(identificador==23) {//store
@@ -373,30 +368,24 @@ int main (int argc, char * argv[]) {
 					if(unDato == NULL){
 
 						log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
-						int id = 202; //cambiar numeroo <------------------
-
+						id = 202;
 						//no se encontro la clave
 						send(server, &id, 1, 0);
 
 					}
 					else{
-
-
 						log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
-
-						//cmabiar numeroooooooooooo id <------------------
 						id = 203;
-
-						int tamanioBuffer = 1+4+unDato->cantidadDeBytes;
-						log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer-1);
+						int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
+						log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
 						char* buffer = (char*) malloc (tamanioBuffer);
+						*buffer = 0;
 						memcpy(buffer,&id,1);
 						memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
 						memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
+
 						send(server, buffer, tamanioBuffer-1, 0);
-
 						free(buffer);
-
 					}
 
 
