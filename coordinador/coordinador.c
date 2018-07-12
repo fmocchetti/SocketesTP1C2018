@@ -109,12 +109,13 @@ void _instancia(int socket_local) {
 }
 
 void _esi(int socket_local) {
-	int rc = 0, close_conn = 0, id_esi = 0, instancia_destino = -1;
+	int rc = 0, close_conn = 0, id_esi = 0, instancia_destino = -1, clavesDisponibles = 0;
 	int message_length = 0;
 	unsigned char identificador = 0;
 	char * clave = NULL;
 	char * valor = NULL;
 	t_clave * clave_diccionario = NULL;
+	char * claves_tomadas[10];
 
 	recv(socket_local, &id_esi, 4, 0);
 	log_info(logger, "Esta esi es la %d", id_esi);
@@ -150,6 +151,7 @@ void _esi(int socket_local) {
             			clave_diccionario->tomada = true;
             			clave_diccionario->esi = id_esi;
             			clave_diccionario->instancia = instancia_destino;
+            			claves_tomadas[clavesDisponibles++] = clave;
         			}
         		} else {
         			log_info(logger, "No existe la clave '%s' en el diccionarop", clave);
@@ -157,6 +159,7 @@ void _esi(int socket_local) {
         			dictionary_put(diccionario_claves, clave, clave_create(id_esi, instancia_destino, true));
         			identificador = ESI_OK;
         			send(socket_local, &identificador, 1, 0);
+        			claves_tomadas[clavesDisponibles++] = clave;
         		}
         		informar_planificador(clave, COORDINADOR_GET);
         		log_info(log_operaciones, "ESI %d - GET %s", id_esi, clave);
@@ -241,6 +244,20 @@ void _esi(int socket_local) {
 
 	if (close_conn) {
 		shutdown(socket_local, SHUT_RDWR);
+		liberar_claves(claves_tomadas, clavesDisponibles);
+
+	}
+
+}
+
+void liberar_claves(char ** claves_tomadas, int cantidad_claves) {
+	int i = 0;
+	t_clave * clave_diccionario;
+
+	for(i = 0; i < cantidad_claves; i++) {
+		clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, claves_tomadas[i]);
+		clave_diccionario->tomada = false;
+		log_info(logger, "Liberando la clave: %s", claves_tomadas[i]);
 	}
 
 }

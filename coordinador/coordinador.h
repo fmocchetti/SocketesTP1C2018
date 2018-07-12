@@ -19,6 +19,7 @@ void _instancia(int socket_local);
 void _planificador(int socket_local);
 void _esi(int socket_local);
 void inicializar_instancia (int socket);
+void liberar_claves(char ** claves_tomadas, int cantidad_claves);
 
 t_list* list_instances;
 t_config * config_file;
