@@ -182,7 +182,7 @@ void _instancia(int socket_local) {
         log_info(logger, "La instancia me dice %d", id_response);
 
         if(local_struct->operacion == INSTANCIA_STATUS) {
-			if(buffer == INSTANCIA_VALOR) {
+			if(id_response == INSTANCIA_VALOR) {
 				recv(socket_local, &size_clave, 4, 0);
 				mensajes = (char *) malloc (size_clave + 1);
 				recv(socket_local, mensajes, size_clave, 0);
@@ -190,7 +190,7 @@ void _instancia(int socket_local) {
 				log_info(logger, "Recibi el valor %s", mensajes);
 				local_struct->valor = mensajes;
 				sem_post(&mutex_status);
-			}else if(buffer == INSTANCIA_ERROR) {
+			}else if(id_response == INSTANCIA_ERROR) {
 				local_struct->valor = NULL;
 				sem_post(&mutex_status);
 			}
