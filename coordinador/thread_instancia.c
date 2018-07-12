@@ -76,17 +76,20 @@ void _instancia(int socket_local) {
 			local_struct = instancia_create(identificador_instancia, cantidad_entradas);
 			list_add(list_instances, local_struct);
 			total_instancias++;
+		    instancias_activas++;
 		} else {
-			local_struct->status = true;
+			if(!local_struct->status) {
+				local_struct->status = true;
+			    instancias_activas++;
+			}
 			restore = true;
 		}
 	} else {
 		local_struct = instancia_create(identificador_instancia, cantidad_entradas);
 		list_add(list_instances, local_struct);
 		total_instancias++;
+	    instancias_activas++;
 	}
-
-    instancias_activas++;
 
 	inicializar_instancia(socket_local);
 
