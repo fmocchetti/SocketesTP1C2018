@@ -22,11 +22,40 @@ bool find_instancia(void * element) {
 	return false;
 }
 
+void restaura_clave(int identificador_instancia, int socket_local) {
+	char * message = NULL;
+	int size_clave = 0, claves =0, size_package = 0;
+	unsigned char identificador = 57;
+
+	void _evaluar_restaurar(char * clave, t_clave * elemento) {
+		if(elemento->instancia == identificador_instancia) {
+			size_clave = strlen(clave);
+			message = (char *)realloc(message,size_package+strlen(clave)+4);
+			memcpy(message+size_package, &size_clave, 4);
+			memcpy(message+size_package+4, clave, strlen(clave));
+			size_package += strlen(clave)+4;
+			claves++;
+		}
+	}
+
+	dictionary_iterator(diccionario_claves, (void *)_evaluar_restaurar);
+
+	if(!claves) identificador = 58;
+	send(socket_local, &identificador, 1, 0);
+	if(identificador == 57) {
+		send(socket_local, &claves, 4, 0);
+		send(socket_local, message, size_package, 0);
+	}
+
+	return;
+}
+
 
 
 void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0, identificador_instancia = 0;
 	int size_clave = 0, size_valor = 0, messageLength = 0;
+	bool restore = false;
 	unsigned char buffer = 0;
 	char * mensajes = NULL;
 	t_instancia * local_struct;
@@ -48,6 +77,7 @@ void _instancia(int socket_local) {
 			total_instancias++;
 		} else {
 			local_struct->status = true;
+			restore = true;
 		}
 	} else {
 		local_struct = instancia_create(identificador_instancia, cantidad_entradas);
@@ -58,6 +88,9 @@ void _instancia(int socket_local) {
     instancias_activas++;
 
 	inicializar_instancia(socket_local);
+
+	if(restore)
+		restaura_clave(identificador_instancia-1, socket_local);
 
 	sem_init(&(local_struct->instance_sem), 1, 0);
 

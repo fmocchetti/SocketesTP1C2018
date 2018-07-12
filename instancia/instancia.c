@@ -80,7 +80,7 @@ int main (int argc, char * argv[]) {
 	int nombre = config_get_int_value(config_file, "Nombre");
 
 	valores_iniciales init;
-		char identificador = 0;
+		unsigned char identificador = 0;
 		char * clave= 0;
 		char * valor= 0;
 		char * ruta= 0;
@@ -178,19 +178,20 @@ int main (int argc, char * argv[]) {
 
 		//-----------------------------------------------------------------------------------------------------------
 
-		/*
+
 
 		int cantidad_claves;
 		t_dictionary* tablaDeRequeridas = dictionary_create();
 		recv(server,&identificador,1,0);
-		if(identificador == 200) {
+		log_info(logger, "Identificador %d", identificador);
+		if(identificador == 57) {
 			recv(server, &cantidad_claves, 4, 0);
 			for(int i=0; i < cantidad_claves; i++) {
-
 				recv(server, &size_clave, 4, 0);
 				clave = (char *)malloc (size_clave + 1);
 				recv(server, clave, size_clave, 0);
 				clave[size_clave] = '\0';
+				log_info(logger, "Levantando clave %s", clave);
 				dictionary_put(tablaDeRequeridas,clave,clave);
 			}
 
@@ -200,7 +201,6 @@ int main (int argc, char * argv[]) {
 
 			levantar_archivos_a_memoria(&storage,init.tamanioEntrada,&tabla,tablaDeRequeridas,posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
 		}
-*/
 
 
 		//-----------------------------------------------------------------------------------------------------------
