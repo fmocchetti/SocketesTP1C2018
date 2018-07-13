@@ -82,13 +82,13 @@ void _esi(int socket_local) {
         		if(dictionary_has_key(diccionario_claves, clave)) {
         			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
         			if(clave_diccionario->tomada && clave_diccionario->esi != id_esi) {
-        				log_info(logger, "Esta clave esta tomada por la esi %d", clave_diccionario->esi);
+        				log_error(logger, "Esta clave esta tomada por la esi %d", clave_diccionario->esi);
         				identificador = ESI_ERROR_CLAVE_NO_BLOQ;
         				exit_status = true;
     					send(socket_local, &identificador, 1, 0);
         				//informar esi error
         			} else if (!(clave_diccionario->tomada)) {
-        				log_info(logger, "Esta clave no estaba tomada");
+        				log_error(logger, "Esta clave no estaba tomada");
         				identificador = ESI_ERROR_CLAVE_NO_BLOQ;
         				exit_status = true;
     					send(socket_local, &identificador, 1, 0);
@@ -114,6 +114,7 @@ void _esi(int socket_local) {
 								dictionary_remove(diccionario_claves, clave);
 								exit_status = true;
 								identificador = ESI_ERROR_CLAVE_INACC;
+								log_error(logger, "Intentando hacer store de una clave inaccesible");
 							} else {
 								identificador = ESI_OK;
 							}
@@ -146,11 +147,13 @@ void _esi(int socket_local) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 					if(clave_diccionario->tomada && clave_diccionario->esi != id_esi) {
 						//informar esi error
+						log_error(logger, "Esta clave no estaba tomada");
 	    				identificador = ESI_ERROR_CLAVE_NO_BLOQ;
 	    				exit_status = true;
 						send(socket_local, &identificador, 1, 0);
 					} else if (!(clave_diccionario->tomada)) {
 						//informar esi error
+						log_error(logger, "Esta clave no estaba tomada");
 						exit_status = true;
 	    				identificador = ESI_ERROR_CLAVE_NO_BLOQ;
 						send(socket_local, &identificador, 1, 0);
@@ -165,10 +168,11 @@ void _esi(int socket_local) {
 							dictionary_remove(diccionario_claves, clave);
 							exit_status = true;
 							identificador = ESI_ERROR_CLAVE_INACC;
+							log_error(logger, "Intentando hacer store de una clave inaccesible");
 						} else {
 							identificador = ESI_OK;
+							log_info(logger, "Informo a la ESI %d", identificador);
 						}
-						log_info(logger, "Informo a la ESI %d", identificador);
 						send(socket_local, &identificador, 1, 0);
 						clave_diccionario->tomada = false;
 						clave_diccionario->esi = -1;
