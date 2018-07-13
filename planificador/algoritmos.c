@@ -183,12 +183,15 @@ void sjfcd(){
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char contestacionESI = 0;
 	int sem_value = 0;
+	int sem_value2 = 0;
 	int lista_vacia = 0;
 	int resultado_lista = 0;
 	int result_connection = 0;
 	int resultado_lista_satisfy = 0;
 	int resultado_satisfy = 0;
 	int result_send = 0;
+	int replanificar_en_ejecucion = 0;
+	int l = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -224,7 +227,7 @@ void sjfcd(){
 
 		resultado_lista = list_is_empty(ejecucion);
 
-		log_info(logger, "Size list ejecucion %d", list_size(ejecucion));
+		log_info(logger, "Esta vacia la lista de ejecucion? %d", list_size(ejecucion));
 
 		if(!resultado_lista){
 			nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
@@ -291,6 +294,7 @@ void sjfcd(){
 					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
 					nodo_lista_ejecucion->cantidadDeLineas --;
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					nodo_lista_ejecucion->rafaga --;
 
 				} else {
 					//agrego a bloqueados en caso de recibir otra contestacion de la ESI
@@ -320,6 +324,7 @@ void sjfcd(){
 			} else {
 				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 				//printf("Entre a 1\n");
+				log_info(logger, "TERMINE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				laWeaReplanificadoraFIFO(terminados,ejecucion);
 				estadoListas();
 				replanificar = 1;
@@ -329,33 +334,42 @@ void sjfcd(){
 			//free(clave_temporal);
 			//break;
 		}
-		if(list_size(listos)>0){
+		if(nodo_lista_ejecucion->cantidadDeLineas >0 && !list_is_empty(ejecucion)){
+			replanificar_en_ejecucion = 1;
+		}
+
+		if(replanificar_en_ejecucion == 1){
 			printf("*-*-*-*-*-*-*NO DEBERIA ENTRAR ACA *-*-*-*-*-*-*-*-* %d\n",lista_vacia);
 		//si el valor de replanificar cambia, se sale del while y se evalua si la lista de ejecucion no esta vacia
-		lista_vacia = list_is_empty(ejecucion);
+		/*lista_vacia = list_is_empty(ejecucion);
 		printf("lista vacia %d\n",lista_vacia);
-		if(lista_vacia != 1){
+		if(lista_vacia != 1){*/
 			//De ser afirmativo
 			//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
-			nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+			/*nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
 			nodo_lista_ejecucion->lineas_ejecutadas = 0;
-			nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+			nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;*/
 			log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
 			//Y se mueve la esi que estaba ejecutando a listos para su replanificacion
 			laWeaReplanificadoraFIFO(listos,ejecucion);
+			printf("*-*-*-*-*-*-*MOVI DE EJECUCION A LISTOS *-*-*-*-*-*-*-*-* %d\n",lista_vacia);
+			estadoListas();
 			replanificar = 1;					//
 			sem_post(&new_process);
+			replanificar_en_ejecucion = 0;
 			//free(nodo_lista_ejecucion);
-		}
+		//}
 
-		}
-		else{
-			replanificar=0;
 		}
 		}
 	else{
 		log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
+		sem_getvalue(&new_process,&sem_value2);
+		for(l = 0;l<sem_value2;l++){
+			sem_wait(&new_process);
+		}
+
 	}
 }
 }
@@ -564,10 +578,10 @@ void aplicarHRRN(ESI* esi){
 
 
 float calculoProxRafaga(float alpha,float estimacion_rafaga, float rafaga_real){
-	printf("alpha es: %f\n",alpha);
+	/*printf("alpha es: %f\n",alpha);
 	printf("alpha es: %d\n",estimacion_inicial);
 	printf("estimacion rafaga es %f\n",estimacion_rafaga);
-	printf("rafaga real es: %f\n",rafaga_real);
+	printf("rafaga real es: %f\n",rafaga_real);*/
 	float resultado = ((alpha/100)*rafaga_real + (1-(alpha/100))*estimacion_rafaga);
 	return resultado;
 }
@@ -608,8 +622,8 @@ bool identificador_ESI_kill(void * data){
 
 bool identificador_clave(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
-	log_info(logger, "La clave a ejecutar es '%s'", clave1->claveAEjecutar);
-	log_info(logger, "La clave a comparar es '%s'", clave_bloqueada_global);
+	//log_info(logger, "La clave a ejecutar es '%s'", clave1->claveAEjecutar);
+	//log_info(logger, "La clave a comparar es '%s'", clave_bloqueada_global);
 
 
 	if(strcmp(clave1->claveAEjecutar,clave_bloqueada_global)==0) {
@@ -621,8 +635,8 @@ bool identificador_clave(void * data){
 bool identificador_clave_por_idESI(void * data){
 	claves *clave1= (claves*) data; //recibo estructura de la lista?
 	//printf("Clave liberada: %s\n",clave1->claveAEjecutar);
-	log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
-	log_info(logger, "El id a comparar es '%d'", id_esi_global);
+	//log_info(logger, "El id a ejecutar es '%d'", clave1->id_ESI);
+	//log_info(logger, "El id a comparar es '%d'", id_esi_global);
 	if(clave1->id_ESI == id_esi_global) {
 		return true;
 	}
@@ -737,6 +751,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 }
 */
 
+/*
 void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 	int list_vacia = 0;
     int id_esi_desbloqueado = 0;
@@ -768,10 +783,10 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
 			id_esi_global = id_esi_desbloqueado;
 
-	/*lo que se hace a continuacion es para ver si la esi que saque de la cola del diccionario esta en la cola de bloqueados. De ser asi, la
-	 muevo a listos y replanifico. En caso de no encontrarla, sigue buscando la proxima, ya que dicha ESI no estaria bloqueada,
-	 por lo que replanificar no tendria sentido
-	 */
+	//lo que se hace a continuacion es para ver si la esi que saque de la cola del diccionario esta en la cola de bloqueados. De ser asi, la
+	 //muevo a listos y replanifico. En caso de no encontrarla, sigue buscando la proxima, ya que dicha ESI no estaria bloqueada,
+	 //por lo que replanificar no tendria sentido
+
 			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
 			while(key_existente!=1){
 					if(resultado_lista_satisfy ==1){
@@ -805,14 +820,99 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
 				printf("la clave no esta tomada\n");
-				/*if(!list_is_empty(listos)){
-					sem_post(&new_process);
+				//if(!list_is_empty(listos)){
+				//	sem_post(&new_process);
 					replanificar = 1;
-	    		}*/
+	    		//}
 				if(cantidadDeLineas<=1){
 									sem_post(&new_process);
 									replanificar = 1;
 	    	}
+    	}
+    }
+	else{
+		printf("La clave no existe en el diccionario, nada que desbloquear\n");
+	}
+
+}*/
+
+void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
+	int list_vacia = 0;
+    int id_esi_desbloqueado = 0;
+    int key_existente = 0;
+    int resultado_lista_satisfy = 0;
+    strcpy(clave_bloqueada_global,claveAEjecutar);
+    resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
+    if(resultado_lista_satisfy==1){
+    	//////////elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+		printf("ENTRO ACAAAAAAAA\n");
+		list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave,(void*)clave_destroy);
+		//printf("Clave removida de la lista %s\n",clave_temporal->claveAEjecutar);
+		//free(clave_temporal);
+		log_info(logger,"Clave eliminada correctamente de la lista de tomados\n");
+    }
+
+    //reviso si la clave existe en el diccionario
+    if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
+		t_list * list_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
+	    list_vacia = list_is_empty(list_clave);
+
+	    //reviso si la lista no esta vacia
+		if(!list_vacia){
+			printf("Entre a lista NO vacia\n");
+			//quito el primer elemento de la lista, que sera la proxima esi a salir de bloqueados
+			id_esi_desbloqueado = (int)list_remove(list_clave,0);
+			log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario %d\n",id_esi_desbloqueado);
+			ESI* esi1 = NULL;//(ESI*) malloc(sizeof(ESI));
+			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
+			id_esi_global = id_esi_desbloqueado;
+
+	/*lo que se hace a continuacion es para ver si la esi que saque de la cola del diccionario esta en la cola de bloqueados. De ser asi, la
+	 muevo a listos y replanifico. En caso de no encontrarla, sigue buscando la proxima, ya que dicha ESI no estaria bloqueada,
+	 por lo que replanificar no tendria sentido
+	 */
+			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
+			while(key_existente!=1){
+					if(resultado_lista_satisfy ==1){
+						esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
+						log_info(logger,"Procesos removido de bloqueados %d",esi1->id_ESI);
+						list_add(listos, (ESI*)esi1);
+						log_info(logger,"Procesos agregado a la lista de listos %d\n",esi1->id_ESI);
+						//seteo los semaforos para el sjfcd
+						key_existente=1;
+						replanificar = 1;
+						sem_post(&new_process);
+						log_info(logger,"SUME AL SEMAFORO++++++++++++++++++++++++++++++++++++++++++++++\n");
+						}
+				//Si esta vacia, la esi no existe en la cola de bloqueados
+					else{
+
+						log_error(logger,"No existe la esi en la cola de bloqueados %d",id_esi_global);
+						//evaluo la proxima ESI que sigue en la queue
+						list_vacia = list_is_empty(list_clave);
+						if(!list_vacia){
+							id_esi_desbloqueado = (int)list_remove(list_clave,0);
+							log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario %d",id_esi_desbloqueado);
+							id_esi_global = id_esi_desbloqueado;
+							resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
+						}
+						else{
+							break;
+						}
+					}
+			}
+	   }
+	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
+	    else{
+				printf("la clave no esta tomada\n");
+				/*if(!list_is_empty(listos)){
+					sem_post(&new_process);
+					replanificar = 1;
+	    		}*/
+				/*if(cantidadDeLineas<=1){
+									sem_post(&new_process);
+									replanificar = 1;
+	    	}*/
     	}
     }
 	else{
