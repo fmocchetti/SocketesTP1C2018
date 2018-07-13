@@ -13,7 +13,8 @@ void looking_for_deadlocks();
 
 void consola(){
 
- char input[100];
+
+ char input[100] = "";
 
  printf( "----------Bienvenido al planificador-----------\n" );
  opciones();
