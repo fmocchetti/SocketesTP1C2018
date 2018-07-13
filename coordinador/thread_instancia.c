@@ -11,7 +11,7 @@ void inicializar_instancia (int socket) {
 	memcpy(buffer+13, &retardo, 4);
 	send(socket, buffer, 5 + messageLength, 0);
 	log_info(logger, "Inicializacion enviada correctamente");
-	//free(buffer);//////////TE AGREGUE ESTE FREE CHANGUI
+	free(buffer);
 }
 
 bool find_instancia(void * element) {
@@ -50,8 +50,6 @@ void restaura_clave(int identificador_instancia, int socket_local) {
 
 	return;
 }
-
-
 
 void _instancia(int socket_local) {
 	int rc = 0, close_conn = 0, identificador_instancia = 0;
@@ -120,8 +118,6 @@ void _instancia(int socket_local) {
 		sem_wait(&(local_struct->instance_sem));
 
 		log_info(logger, "Pase el semaforo de la instancia %d", local_struct->id);
-		//pthread_mutex_lock(&mutex);
-		log_info(logger, "Pase el Mutex de la instancia");
 
 		if(local_struct->operacion == ESI_GET) {
 			identificador = local_struct->operacion;
@@ -136,18 +132,6 @@ void _instancia(int socket_local) {
 
 	        log_info(logger, "Le mande a la instancia un %d", identificador);
 
-	        /*rc=recv(local_struct->socket_instancia, &identificador, 1, 0);
-	        if (rc <= 0) {
-				log_error(logger, "  recv() failed");
-				close_conn = TRUE;
-				break;
-			}
-
-	        if(identificador != 42) {
-	        	log_error(logger, "La instancia me mando basura");
-	        }
-
-	        log_info(logger, "La instancia termino de procesar %d", identificador);*/
 		}else if(local_struct->operacion == INSTANCIA_COMPACTAR) {
 			identificador = local_struct->operacion;
 			rc = send(local_struct->socket_instancia, &identificador, 1, 0);
@@ -242,9 +226,6 @@ void _instancia(int socket_local) {
             rc = recv(local_struct->socket_instancia, &id_response, 1, 0);
 
         }
-
-
-        //pthread_mutex_unlock(&mutex);
 	}
 
 

@@ -58,12 +58,10 @@ void _planificador(int socket_local) {
 	        			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 	        			if(!clave_diccionario->tomada) {
 	            			clave_diccionario->tomada = true;
-	            			instancia_destino = distribuir(clave, NULL, 1);
-	            			clave_diccionario->instancia = (instancia_destino->id - 1);
+	            			clave_diccionario->instancia = -1;
 	        			}
 	        		} else {
-	        			instancia_destino = distribuir(clave, NULL, 0);
-	        			dictionary_put(diccionario_claves, clave, clave_create(0, (instancia_destino->id - 1), true));
+	        			dictionary_put(diccionario_claves, clave, clave_create(0, -1, true));
 	        		}
 	        		sem_wait(&mutex_instancia);
 	        		log_info(logger, "Se almaceno la clave en la instancia %d", instancia_destino->id);
@@ -191,15 +189,13 @@ void _planificador(int socket_local) {
 	        			if(!clave_diccionario->tomada) {
 	        				clave_diccionario->esi = id_esi;
 	            			clave_diccionario->tomada = true;
-	            			instancia_destino = distribuir(clave, NULL, 1);
-	            			clave_diccionario->instancia = instancia_destino->id;
+	            			clave_diccionario->instancia = -1;
 	        			}
 	        		} else {
-	        			instancia_destino = distribuir(clave, NULL, 0);
-	        			dictionary_put(diccionario_claves, clave, clave_create(id_esi, instancia_destino->id, true));
+	        			dictionary_put(diccionario_claves, clave, clave_create(id_esi, -1, true));
 	        		}
 	        		sem_wait(&mutex_instancia);
-	        		log_info(logger, "Se almaceno la clave en la instancia %d", instancia_destino->id);
+	        		log_info(logger, "Se bloqueo la clave en la instancia");
 	        		//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
 				}
 				break;

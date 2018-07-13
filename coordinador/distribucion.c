@@ -65,7 +65,7 @@ t_instancia * simular(char * clave) {
 	return instancia;
 }
 
-t_instancia * distribuir(char * clave, char * valor, int existia) {
+t_instancia * distribuir(char * clave) {
 	t_instancia * instancia = NULL;
 	char letra_inicial = 0;
 	int indice_busqueda = 0;
@@ -83,7 +83,6 @@ t_instancia * distribuir(char * clave, char * valor, int existia) {
 			log_info(logger, "Ultima instancia: %d, total instancias: %d, instancias_activas: %d", ultima_instancia, total_instancias, instancias_activas);
 			while(!instancia) {
 				ultima_instancia  %= total_instancias;
-				//log_info(logger, "Voy a probar con: %d", ultima_instancia);
 				instancia = list_get(list_instances, ultima_instancia);
 				ultima_instancia++;
 				if(!instancia->status)
@@ -111,21 +110,12 @@ t_instancia * distribuir(char * clave, char * valor, int existia) {
 				instancia = list_get(list_instances, instanciaLSU);
 				if(!instancia->status) {
 					instancia = NULL;
-				} else {
-					if(!existia)
-						instancia->entradasLibres -= 1;
 				}
 			}
 			break;
 	}
 
 	if(!instancia) exit_gracefully(-1);
-
-	instancia->clave = clave;
-	instancia->valor = valor;
-	instancia->operacion = 21;
-
-	sem_post(&(instancia->instance_sem));
 	return instancia;
 }
 
@@ -133,7 +123,6 @@ int modificar_valor_clave(char * clave, char * valor, int instancia) {
 	t_instancia * o_instancia;
 
 	log_info(logger, "Modificar valor %d", instancia);
-	//log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
 	if(!o_instancia->status) {
 		sem_post(&mutex_instancia);
@@ -142,16 +131,21 @@ int modificar_valor_clave(char * clave, char * valor, int instancia) {
 	o_instancia->clave = clave;
 	o_instancia->valor = valor;
 	o_instancia->operacion = 22;
-    //log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
+	sem_wait(&mutex_instancia);
+	if(!o_instancia->status) {
+		o_instancia = NULL;
+		log_error(logger, "Esa instancia fallo");
+	} else {
+		log_error(logger, "Dato enviado a la instancia");
+	}
 	return o_instancia;
 }
 
 int store_clave(char * clave, int instancia) {
 	t_instancia * o_instancia;
 	log_info(logger, "Store valor %d", instancia);
-	//log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
 	if(!o_instancia->status) {
 		sem_post(&mutex_instancia);
@@ -160,7 +154,6 @@ int store_clave(char * clave, int instancia) {
 	log_debug(logger, "Clave a mandar a la instancia %s", clave);
 	o_instancia->clave = clave;
 	o_instancia->operacion = 23;
-	//log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
 	return o_instancia;
