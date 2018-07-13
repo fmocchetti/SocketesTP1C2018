@@ -248,7 +248,20 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 		case ESI_BLOCK:
 			return false;
 			break;
-		case ESI_ERROR:
+		case ESI_ERROR_TAM_CLAVE:
+			log_info(logger,"El tamanio de la clave excede los 40 caracteres");
+			exit(EXIT_FAILURE);
+			break;
+		case ESI_ERROR_CLAVE_NO_IDEN:
+			log_info(logger,"La clave no existe en el sistema");
+			exit(EXIT_FAILURE);
+			break;
+		case ESI_ERROR_CLAVE_INACC:
+			log_info(logger,"La clave existe en el sistema, pero la instancia en donde se encuentra esta caida");
+			exit(EXIT_FAILURE);
+			break;
+		case ESI_ERROR_CLAVE_NO_BLOQ:
+			log_info(logger,"Intentando hacer un SET de una clave que no me pertenece");
 			exit(EXIT_FAILURE);
 			break;
 		default:
