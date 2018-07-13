@@ -12,6 +12,7 @@ int informar_planificador(char * clave, unsigned char status) {
 	thread_planificador->status = status;
 	sem_post(&mutex_planificador);
 	log_info(logger, "Desbloqueo planificador");
+	sem_wait(&mutex_esi);
 	return 0;
 }
 

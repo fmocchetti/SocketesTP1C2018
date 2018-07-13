@@ -43,7 +43,8 @@ void _planificador(int socket_local) {
 				log_info(logger, "Enviandole al planificador %d bytes", messageLength);
 				send(socket_local, mensajes, messageLength, 0);
 				free(mensajes);
-
+				sem_post(&mutex_esi);
+				log_info(logger, "Desbloqueo ESI");
 				break;
 			case PLANIFICADOR_BLOQUEAR:
 				recv(socket_local, &cantidad_claves, 4, 0);

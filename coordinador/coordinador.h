@@ -24,6 +24,7 @@ int instancias_activas;
 int instancia_to_find;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
+sem_t mutex_esi;
 sem_t mutex_instancia;
 sem_t mutex_status;
 
