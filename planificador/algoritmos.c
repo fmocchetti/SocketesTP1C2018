@@ -399,7 +399,12 @@ void hrrn(){
 		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
 		estadoListas();
 
-		//replanifico dependiendo de la rafaga
+		sem_getvalue(&sem_pausar_planificacion,&sem_value);
+					if(sem_value<1){
+						sem_wait(&sem_pausar_algoritmo);
+						//break;
+					}
+		//replanifico dependiendo del RR (El que mayor RR posea)
 		if(list_size(listos)>0){
 			log_info(logger,"Replanificando");
 			obtenerPrioridad();
@@ -479,18 +484,24 @@ void hrrn(){
 					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
 					nodo_lista_ejecucion->cantidadDeLineas --;
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					//nodo_lista_ejecucion->lineas_a_sumar_espera ++;
+					//envejecerLista(nodo_lista_ejecucion->lineas_a_sumar_espera);
+					envejecerLista(1);
+
 
 				} else {
 					//agrego a bloqueados en caso de recibir otra contestacion de la ESI
 					log_info(logger,"La ESI %d que se encontraba en ejecucion se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
 					//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					envejecerLista(1);
 					log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
 					//envejecemos TODOS los nodos encolados ANTES de replanificar
 					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
 					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
 					log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
-					envejecerLista(nodo_lista_ejecucion->lineas_ejecutadas);
+					//envejecerLista(nodo_lista_ejecucion->lineas_ejecutadas);
+					nodo_lista_ejecucion->lineas_ejecutadas = 0;
 
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 					break;
@@ -500,7 +511,7 @@ void hrrn(){
 			if(nodo_lista_ejecucion->cantidadDeLineas <=0) {
 				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 				//printf("Entre a 1\n");
-				envejecerLista(nodo_lista_ejecucion->lineas_ejecutadas);
+				//envejecerLista(nodo_lista_ejecucion->lineas_a_sumar_espera);
 				laWeaReplanificadoraFIFO(terminados,ejecucion);
 				estadoListas();
 				replanificar = 1;
@@ -571,7 +582,10 @@ void aplicarHRRN(ESI* esi){
 	}
 	else{
 	esi->prioridad = 1 + (espera / (esi->rafaga));
-	log_info(logger,"El calculo de prioridad dio %f",esi->prioridad);
+	log_info(logger,"La ESI %d tiene los siguientes valores",esi->id_ESI);
+	log_info(logger,"El calculo de RR dio %f",esi->prioridad);
+	log_info(logger,"El calculo de W dio %f",espera);
+	log_info(logger,"El calculo de S dio %f",esi->rafaga);
 	}
 }
 //HRRN functions//
