@@ -225,6 +225,17 @@ void _instancia(int socket_local) {
             list_iterate(list_instances, (void *)compactarInstancias);
             rc = recv(local_struct->socket_instancia, &id_response, 1, 0);
 
+        } else if(id_response == INSTANCIA_OCUPADAS) {
+        	int entradasOcupadas = 0;
+        	local_struct->entradasLibres = cantidad_entradas;
+        	rc = recv(local_struct->socket_instancia, &(entradasOcupadas), 4, 0);
+        	local_struct->entradasLibres -= entradasOcupadas;
+
+        	//Marito, esto es una villa
+        	if(algoritmo_elegido_anterior == LSU && algoritmo_elegido == EL && local_struct->entradasLibres < cantidad_entradas)
+        		algoritmo_elegido = LSU;
+
+        	log_info(logger, "La instancia %d tiene %d entradas ocupadas", identificador_instancia, local_struct->entradasLibres);
         }
 	}
 

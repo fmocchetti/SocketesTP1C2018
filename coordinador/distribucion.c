@@ -161,17 +161,24 @@ int store_clave(char * clave, int instancia) {
 }
 
 int buscarMasLibre(int totalInstancias){
-	int posicionMasLibre;
+	int posicionMasLibre = -1;
 	int masEntradasLibres = 0;
+	int i = 0;
 	t_instancia *instanciaA;
-	totalInstancias--;
-	for(; totalInstancias >= 0; totalInstancias--){
-		instanciaA = list_get(list_instances, totalInstancias);
+	for(; i < totalInstancias; i++){
+		instanciaA = list_get(list_instances, i);
 		log_info(logger, "Consultando la instancia: %d, con %d entradas libres y esta en estado: %d", instanciaA->id, instanciaA->entradasLibres, instanciaA->status);
 		if(instanciaA->status && masEntradasLibres < instanciaA->entradasLibres){
-			posicionMasLibre = totalInstancias;
+			posicionMasLibre = i;
 			masEntradasLibres = instanciaA->entradasLibres;
 		}
 	}
+
+	if(posicionMasLibre == -1) {
+		log_error(logger, "No hay mas entradas libres");
+		algoritmo_elegido = EL;
+		posicionMasLibre = ultima_instancia;
+	}
+
 	return posicionMasLibre;
 }

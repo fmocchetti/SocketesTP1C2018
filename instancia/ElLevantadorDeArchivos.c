@@ -81,10 +81,9 @@ int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,int cantidadEn
 	    	  {
 	    		    log_info(logger,"UPDATEADOR: Se guardara la clave:  %s  en memoria", dir->d_name);
 
-	    		    //char* clave = (char*) malloc(strlen(dir->d_name)+1);
-	    		    //memcpy(clave,dir->);
-
-	    		    claveValor.clave = dir->d_name;
+	    		    char* clave = (char*) malloc(strlen(dir->d_name)+1);
+	    		    strcpy(clave, dir->d_name);
+	    		    claveValor.clave = clave;
 
 	    		    char* val = obtener_valor_de_archivo(dir->d_name,path);
 

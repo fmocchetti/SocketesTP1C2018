@@ -54,7 +54,7 @@ void _esi(int socket_local) {
         				log_info(logger, "La clave '%s' no esta tomada", clave);
             			clave_diccionario->tomada = true;
             			clave_diccionario->esi = id_esi;
-            			clave_diccionario->instancia = -1;
+            			//clave_diccionario->instancia = -1;
             			claves_tomadas[clavesDisponibles++] = clave;
             			identificador = ESI_OK;
             			send(socket_local, &identificador, 1, 0);
@@ -93,6 +93,7 @@ void _esi(int socket_local) {
         				//informar esi error
         			}else {
         				if(clave_diccionario->instancia < 0) {
+        					log_error(logger, "Esta clave no estaba en ninguna instancia");
 							while(!instancia) {
 								instancia = distribuir(clave);
 								log_info(logger, "Elegi instancia, intento hacer el set");
@@ -105,6 +106,7 @@ void _esi(int socket_local) {
 							clave_diccionario->instancia = (instancia->id - 1);
 							identificador = ESI_OK;
         				} else {
+        					log_error(logger, "Esta clave ya estaba en alguna instancia %d", clave_diccionario->instancia);
         					instancia = modificar_valor_clave(clave, valor, clave_diccionario->instancia);
 							if(!instancia || !instancia->status) {
 								dictionary_remove(diccionario_claves, clave);

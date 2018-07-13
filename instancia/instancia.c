@@ -61,6 +61,19 @@ return EXIT_SUCCESS;
 }
 
 
+int entradas_ocupadas(t_list* tabla, valores_iniciales init) {
+	int entradas = 0;
+	void _contar_entradas(struct Dato* elemento) {
+		if(elemento->clave) {
+			entradas += calcular_cantidad_entradas(elemento->cantidadDeBytes, init.tamanioEntrada);
+		}
+	}
+
+	list_iterate(tabla, (void *)_contar_entradas);
+
+	return entradas;
+}
+
 int main (int argc, char * argv[]) {
 
 //#if 0
@@ -169,13 +182,6 @@ int main (int argc, char * argv[]) {
 
 		char* posicionFinDeMemoria = (storage+(init.cantidad_entradas*init.tamanioEntrada));
 
-
-		if( pthread_create(&threadDumpeador, NULL, (void *)respaldar_informacion_thread,parametros)) {
-			log_error(logger, "INSTANCIA %d: Error creating thread Dump",nombre);
-		}
-
-
-
 		//-----------------------------------------------------------------------------------------------------------
 
 
@@ -212,12 +218,12 @@ int main (int argc, char * argv[]) {
 
 		}
 
+		if( pthread_create(&threadDumpeador, NULL, (void *)respaldar_informacion_thread,parametros)) {
+			log_error(logger, "INSTANCIA %d: Error creating thread Dump",nombre);
+		}
+
 
 		//-----------------------------------------------------------------------------------------------------------
-
-
-
-
 
 		while(1){
 
@@ -382,6 +388,23 @@ int main (int argc, char * argv[]) {
 
 				free(valor);
 
+
+				int entradasOcupadas = entradas_ocupadas(tabla, init);
+				log_error(logger, "Entradas ocupadas %d", entradasOcupadas);
+				identificador = 204;
+				int tamanioBuffer = 1 + 4;
+				log_info(logger, "INSTANCIA %d: Informo entradas ocupadas al coordinador",nombre);
+				char* buffer = (char*) malloc (5);
+				*buffer = 0;
+
+				memcpy(buffer,&identificador,1);
+				memcpy(buffer+1,&(entradasOcupadas),4);
+				usleep(init.retardo * 1000);
+				rc = send(server, buffer, 5, 0);
+				log_info(logger, "INSTANCIA %d: Enviados %d bytes al coordinador", nombre, rc);
+				free(buffer);
+				continue;
+
 			} else if(identificador==23) {//store
 
 				//recibo clave
@@ -463,6 +486,7 @@ int main (int argc, char * argv[]) {
 					log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
 					id = 202;
 					//no se encontro la clave
+					usleep(init.retardo * 1000);
 					send(server, &id, 1, 0);
 					continue;
 
@@ -479,6 +503,7 @@ int main (int argc, char * argv[]) {
 					memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
 					memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
 
+					usleep(init.retardo * 1000);
 					rc = send(server, buffer, tamanioBuffer, 0);
 					log_info(logger, "INSTANCIA %d: Enviados %d bytes al coordinador", nombre, rc);
 					free(buffer);
