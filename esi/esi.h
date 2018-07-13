@@ -29,7 +29,7 @@ typedef struct {
 void * planificador();
 void * coordinador();
 bool solicitudDeEjecucionPlanificador(int socket);
-bool envioYRespuestaCoordinador(int socket, ESI* esi);
+bool envioYRespuestaCoordinador(int socket, ESI* esi, bool estado_erroneo);
 void enviarRespuestaAlPlanificador(int socket, bool respuesta);
 
 
