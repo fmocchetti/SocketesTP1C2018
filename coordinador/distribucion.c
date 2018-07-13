@@ -70,12 +70,13 @@ t_instancia * distribuir(char * clave) {
 	char letra_inicial = 0;
 	int indice_busqueda = 0;
 
-	if(!total_instancias && !instancias_activas) {
+	log_info(logger, "Voy a buscar a que instancia se la debo asignar");
+
+
+	if(!total_instancias || !instancias_activas) {
 		log_error(logger, "No hay instancias disponibles, finalizando coordinador");
 		exit_gracefully(-1);
 	}
-
-	log_info(logger, "Voy a buscar a que instancia se la debo asignar");
 
 	switch(algoritmo_elegido) {
 		case EL:
