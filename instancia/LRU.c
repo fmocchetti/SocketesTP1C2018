@@ -39,7 +39,7 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 
 	struct Dato unDato;
 
-	int longitudS = strlen(claveValor->valor);
+	int longitudS = strlen(claveValor->valor)+1;
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 

@@ -9,6 +9,9 @@ void* buscar(t_list *tabla,char* claveBuscada){
 
 
 	}
+	if (list_size(tabla) <= 0){
+		return NULL;
+	}
 	struct Dato* dato = (struct Dato*)list_find(tabla,elemento_buscado);
 
 return dato;

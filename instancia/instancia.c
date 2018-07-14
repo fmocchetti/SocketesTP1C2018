@@ -32,6 +32,10 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 				strcat(rutaArmada,(const char*)unDato->clave);
 
 				int fd = open(rutaArmada, O_RDWR | O_CREAT, (mode_t)0600);
+				if(fd < 0){
+					log_error(logger,"Error al abrir la ruta, puede que el directorio %s no exista",parametros->puntoDeMontaje);
+					return EXIT_FAILURE;
+				}
 				lseek(fd, unDato->cantidadDeBytes-1, SEEK_SET);
 				write(fd, "", 1);
 				char *map = mmap(0, unDato->cantidadDeBytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -72,7 +76,6 @@ int main () {
 
 
 
-
 	valores_iniciales init;
 		char identificador = 0;
 		char * clave= 0;
@@ -89,6 +92,8 @@ int main () {
 
 
 		int server = create_client("127.0.0.1","12346");
+
+
 
 		recv(server, &identificador, 1, 0);
 		int messageLength;
@@ -166,6 +171,44 @@ int main () {
 			log_error(logger, "Error creating thread Dump");
 		}
 
+
+
+		//-----------------------------------------------------------------------------------------------------------
+
+
+
+		int cantidad_claves;
+		t_dictionary* tablaDeRequeridas = dictionary_create();
+		recv(server,&identificador,1,0);
+		if(identificador == 200)//<-- cambiar
+		recv(server, &cantidad_claves, 4, 0);
+		for(int i=0; i < cantidad_claves; i++) {
+
+			recv(server, &size_clave, 4, 0);
+			clave = (char *)malloc (size_clave + 1);
+			recv(server, clave, size_clave, 0);
+			clave[size_clave] = '\0';
+			dictionary_put(tablaDeRequeridas,clave,clave);
+		}
+
+
+
+		//para probar
+
+		//dictionary_put(tablaDeRequeridas,"futbol:ansaldi","futbol:ansaldi");
+		//dictionary_put(tablaDeRequeridas,"futbol:messi","futbol:messi");
+
+		levantar_archivos_a_memoria(&storage,init.tamanioEntrada,&tabla,tablaDeRequeridas,posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
+
+
+
+
+		//-----------------------------------------------------------------------------------------------------------
+
+
+
+
+
 		while(1){
 
 			/******************************************************************************************************************/
@@ -223,7 +266,7 @@ int main () {
 					strcpy(claveValor.clave,clave);
 
 
-					log_info(logger, "Asigne claveValor.clave");
+					log_info(logger, "Asigne clave: %s",clave);
 
 
 
@@ -235,9 +278,9 @@ int main () {
 					valor[size_valor] = '\0';
 					log_info(logger, "Valor %s", valor);
 
-					claveValor.valor=valor;
+					claveValor.valor = valor;
 
-					log_info(logger, "Asigne valor");
+					log_info(logger, "Asigne valor: %s",valor);
 
 
 					log_info(logger, "Valores iniciales %s, %s, %d", clave, valor, init.retardo);
@@ -275,6 +318,7 @@ int main () {
 				identificador = 1;
 				send(server, &identificador, 1, 0);
 				free(clave);
+				log_info(logger, "Ya termine de ejecutar esa instruccion");
 		}
 		//libero memoria
 	    //free(storage);//free(parametros);

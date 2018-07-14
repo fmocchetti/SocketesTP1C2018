@@ -25,7 +25,7 @@ return resultado;
 
 void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
-	int longitudS = strlen(claveValor->valor);
+	int longitudS = strlen(claveValor->valor)+1;
 
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
@@ -39,7 +39,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 	struct Dato unDato;
 
-	int longitudS = strlen(claveValor->valor);
+	int longitudS = strlen(claveValor->valor)+1;
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 
@@ -91,12 +91,12 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 */
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
-	memcpy(*posicionDeLectura,claveValor->valor,longitudS/*espacioAOcupar*/);
+	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 
 	log_info(logger,"CIRC:Se guardo el valor en memoria");
 
 
-	cargar_info_en_dato(&unDato,*posicionDeLectura/*,longitudS*/,claveValor);
+	cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 	registrar_dato_en_tabla(tabla,&unDato);
 
 	*posicionDeLectura += espacioAOcupar;

@@ -15,7 +15,6 @@
 #include <pthread.h>
 #include "ClaveValor.h"
 #include <stdbool.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -28,11 +27,11 @@
 #include <sys/mman.h>
 #include <commons/log.h>
 #include "tabla.h"
-#include <pthread.h>
 #include "circular.h"
 #include "LRU.h"
 #include "ReemplazoEntrada.h"
 #include "STORE.h"
+#include "ElLevantadorDeArchivos.h"
 
 
 
