@@ -24,5 +24,6 @@ void listar();
 void kill();
 void status();
 void deadlock();
+void listar_tomadas(char*);
 
 #endif /* CONSOLA_H_ */

@@ -138,21 +138,27 @@ void desbloquear(){
 	desbloquear_del_diccionario(key,socket_coord);
 }
 
+/*
 void listar_tomadas(){
 	void mostrar_listos(claves* esi1) {
 		     printf("'%s'\n",esi1->claveAEjecutar);
 		     }
 		claves_tomadas = list_map(claves_tomadas, (void*) mostrar_listos);
-}
+}*/
 
 void listar(){
 	char key[40];
-	int id = 0;
-	int list_vacia = 0;
-	int resultado_lista_satisfy = 0;
 	printf("inserte clave\n");
 	//fgets(key, sizeof(key), stdin);
 	scanf("%s", key);
+	listar_tomadas(key);
+
+}
+
+void listar_tomadas(char* key){
+	int list_vacia = 0;
+	int id = 0;
+	int resultado_lista_satisfy = 0;
 	t_list * list_clave;
 	list_vacia = list_is_empty(claves_tomadas);
 
@@ -245,17 +251,41 @@ void kill(){
 	}
 }
 
-void status(){
-	char *key = malloc(sizeof(char));
-	printf("Inserte key\n");
-	gets(key);
-	printf("status de la instancia\n");
-	free(key);
+void status(int socket){
+	char key[40];
+	int tamanio_clave = 0;
+	int resultado_clave = 0;
+	int key_long = 0;
+	int instanciaAGuardar = 0;
+	unsigned char contestacionCoord = 0;
+	unsigned char pedirStatus = 0; // definir que numero es de protocolo
+
+	printf("inserte clave\n");
+	scanf("%s", key);
+
+	send(socket,&pedirStatus,sizeof(int),0);
+	tamanio_clave = strlen(key);
+	send(socket,&tamanio_clave,sizeof(int),0);
+	send(socket,key,tamanio_clave,0);
+
+	resultado_clave = recv(socket, &contestacionCoord, 1,0);
+	if(resultado_clave == 90){ //protocolo 90 porque pinto
+		recv(socket, &key_long, sizeof(int),0);
+		char * valorClave = malloc(key_long);
+		recv(socket, &valorClave, sizeof(key_long),0);
+		log_info(logger,"El valor de la clave es '%s'",valorClave);
+	}
+	else{
+		log_info(logger,"La clave no esta en ninguna instancia");
+		recv(socket, &instanciaAGuardar, sizeof(int),0);
+		log_info(logger,"La instancia donde se guardaria seria %d",instanciaAGuardar);
+	}
+	//Aviso cuales ESIs esperan esta clave
+	listar_tomadas(key);
 }
 
 void deadlock(){
 	looking_for_deadlocks();
-
 }
 
 void looking_for_deadlocks(){
