@@ -39,6 +39,7 @@ typedef struct {
     char * valor;
     unsigned char operacion;
     bool status;
+    int entradasLibres;
 } t_instancia;
 
 typedef struct {
@@ -61,13 +62,14 @@ static void planificador_destroy(t_planificador *self) {
 }
 
 
-static t_instancia *instancia_create(int id) {
+static t_instancia *instancia_create(int id, int totalEntradas) {
 	t_instancia *new = malloc(sizeof(t_instancia));
     new->id = id;
     new->clave = 0;
     new->valor = 0;
     new->operacion = 0;
     new->status = true;
+    new->entradasLibres = totalEntradas;
     total_instancias++;
     return new;
 }

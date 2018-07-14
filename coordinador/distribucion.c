@@ -24,26 +24,36 @@ int distribuir(char * clave, char * valor) {
 	t_instancia * instancia;
 	char letra_inicial = NULL;
 
+	if(!total_instancias) exit_gracefully(-1);
+
 	switch(algoritmo_elegido) {
 		case EL:
+			log_info(logger, "Ultima instancia: %d", ultima_instancia);
+			log_info(logger, "Total instancias: %d", total_instancias);
 			ultima_instancia  %= total_instancias;
 			instancia = list_get(list_instances, ultima_instancia);
 			ultima_instancia++;
 			break;
 		case KE:
 			letra_inicial = clave[0] - 96;
+			if(letra_inicial <= 0) letra_inicial = 1;
 			instancia = list_get(list_instances, letra_inicial / letras_instancia);
 			break;
 		case LSU:
+			instanciaLSU = buscarMasLibre(total_instancias);
+			instancia = list_get(list_instances, instanciaLSU);
+			instancia->entradasLibres -= 1;
 			break;
 	}
+
+	if(!instancia) exit_gracefully(-1);
 
 	instancia->clave = clave;
 	instancia->valor = valor;
 	instancia->operacion = 21;
 
 	sem_post(&(instancia->instance_sem));
-	return instancia->id;
+	return instancia->id - 1;
 }
 
 int modificar_valor_clave(char * clave, char * valor, int instancia) {
@@ -73,4 +83,19 @@ int store_clave(char * clave, int instancia) {
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
 	return instancia;
+}
+
+int buscarMasLibre(int totalInstancias){
+	int posicionMasLibre;
+	int masEntradasLibres = 0;
+	t_instancia *instanciaA;
+	totalInstancias--;
+	for(; totalInstancias >= 0; totalInstancias--){
+		instanciaA = list_get(list_instances, totalInstancias);
+		if(masEntradasLibres < instanciaA->entradasLibres){
+			posicionMasLibre = totalInstancias;
+			masEntradasLibres = instanciaA->entradasLibres;
+		}
+	}
+	return posicionMasLibre;
 }

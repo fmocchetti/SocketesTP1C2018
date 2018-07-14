@@ -45,7 +45,7 @@ void inicializar_instancia (int socket) {
 }
 
 bool find_instancia(void * element) {
-	t_instancia * elemento = (t_instancia) element;
+	t_instancia * elemento = (t_instancia *) element;
 	if(elemento->id == instancia_to_find) {
 		return true;
 	}
@@ -58,6 +58,7 @@ void _instancia(int socket_local) {
 	int size_clave = 0, size_valor = 0, messageLength = 0;
 	unsigned char buffer = 0;
 	char * mensajes = NULL;
+	t_instancia * local_struct;
 
 	rc = recv(socket_local, &identificador_instancia, sizeof(identificador_instancia), 0);
 	if (rc == 0) {
@@ -66,9 +67,15 @@ void _instancia(int socket_local) {
 	}
 
 	if(total_instancias != 0) {
-		t_instancia * local_struct = list_find(list_instances, )
+		local_struct = list_find(list_instances, (void *)find_instancia);
+		if(!local_struct) {
+			local_struct = instancia_create(identificador_instancia, cantidad_entradas);
+			list_add(list_instances, local_struct);
+		} else {
+			local_struct->status = true;
+		}
 	} else {
-		t_instancia * local_struct = instancia_create(identificador_instancia);
+		local_struct = instancia_create(identificador_instancia, cantidad_entradas);
 		list_add(list_instances, local_struct);
 	}
 
@@ -112,7 +119,7 @@ void _instancia(int socket_local) {
 		}
 
 		log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
-		send(socket_local, mensajes, messageLength, 0);
+		rc = send(socket_local, mensajes, messageLength, 0);
 		free(mensajes);
 
         rc = recv(socket_local, &buffer, 1, 0);
@@ -132,10 +139,12 @@ void _instancia(int socket_local) {
 		shutdown(socket_local, SHUT_RDWR);
 
 		total_instancias--;
+		local_struct->status = false;
 		if(algoritmo_elegido == KE) {
 			letras_instancia = (25 / total_instancias) + (25 % total_instancias);
 			log_info(logger, "Cantidad de letras por instancia -> %d", letras_instancia);
 		}
+		sem_post(&mutex_instancia);
 	}
 }
 

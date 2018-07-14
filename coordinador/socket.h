@@ -61,5 +61,6 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
 void connection_thread();
 void thread_on_connection(int listen_sd);
 void exit_gracefully(int return_nr);
+void _exit_with_error(int socket, char* error_msg, char * buffer);
 
 #endif /* SOCKET_H_ */

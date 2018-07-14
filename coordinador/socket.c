@@ -208,6 +208,14 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
   }
 }
 
+void _exit_with_error(int socket, char* error_msg, char * buffer) {
+  if (buffer != NULL) {
+    free(buffer);
+  }
+  log_error(logger, error_msg);
+  close(socket);
+}
+
 void exit_gracefully(int return_nr) {
 	log_destroy(logger);
 	exit(return_nr);
