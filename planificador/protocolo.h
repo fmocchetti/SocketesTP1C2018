@@ -38,6 +38,7 @@ typedef struct {
 
 void * wait_content(int socket);
 void _exit_with_error(int socket, char* error_msg, char * buffer);
+void _exit_with_error_and_close(int socket, char* error_msg, char * buffer);
 void exit_gracefully(int return_nr);
 
 #endif /* PROTOCOLO_H_ */

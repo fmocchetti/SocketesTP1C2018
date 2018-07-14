@@ -68,6 +68,16 @@ void _exit_with_error(int socket, char* error_msg, char * buffer) {
   close(socket);
 }
 
+void _exit_with_error_and_close(int socket, char* error_msg, char * buffer) {
+  if (buffer != NULL) {
+    free(buffer);
+    printf("hago FREE!\n");
+  }
+  log_error(logger, error_msg);
+  close(socket);
+  exit_gracefully(1);
+}
+
 void exit_gracefully(int return_nr) {
   /*
     20.   Siempre llamamos a esta funcion para cerrar el programa.
@@ -75,5 +85,6 @@ void exit_gracefully(int return_nr) {
           sistema exit() para terminar la ejecucion
   */
   log_destroy(logger);
+  //list_destroy(listos)
   exit(return_nr);
 }

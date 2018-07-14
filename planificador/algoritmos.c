@@ -813,11 +813,20 @@ void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi, i
 	send(socket_coord, &id_mensaje_coord,1,0);
 	//primero hago un recv del coordinador, que me indica que operacion voy a realizar
 	rc = recv(socket_coord, &id_mensaje_coord,1, 0);
+	if(rc<=0){
+		_exit_with_error_and_close(socket_coord, "Se perdio la conexion con el coordinador, desconectando", NULL);
+	}
 
 	if(id_mensaje_coord != 25) {
-		recv(socket_coord, &size_clave, 4, 0);
+		rc = recv(socket_coord, &size_clave, 4, 0);
+		if(rc<=0){
+			_exit_with_error_and_close(socket_coord, "Se perdio la conexion con el coordinador, desconectando", NULL);
+		}
 		clave = (char *) malloc (size_clave +1);
-		recv(socket_coord, clave, size_clave, 0);
+		rc = recv(socket_coord, clave, size_clave, 0);
+		if(rc<=0){
+			_exit_with_error_and_close(socket_coord, "Se perdio la conexion con el coordinador, desconectando", NULL);
+		}
 		clave[size_clave] = '\0';
 		log_debug(logger,"Recibi la clave %s \n", clave);
 	}

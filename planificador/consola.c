@@ -309,7 +309,7 @@ void looking_for_deadlocks(){
 	if(cantidad_lista_tomados > 0){
 		//reviso la cantidad de claves que hay tomadas
 		for(i= 0; i < cantidad_lista_tomados; i++){
-			//hago un get de cada una mediante el for
+			//hago un list get de cada una mediante el for
 			nodo_tomados = list_get(claves_tomadas,i);
 			//reviso si el diccionario tiene la key asociada
 			if(dictionary_has_key(claves_bloqueadas,nodo_tomados->claveAEjecutar)){
