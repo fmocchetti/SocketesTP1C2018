@@ -6,36 +6,46 @@
  */
 #include "STORE.h"
 
-int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
+int STORE(t_list** tabla,t_list** registro,char* primeraPosicionMemoria,char* clave,char* ruta,int tamanioEntrada){
 
-	struct Dato* claveBuscada = buscar(tabla,clave);
+
+	struct Dato* claveBuscada = buscar(*tabla,clave);
 
 	if(claveBuscada == NULL){
 
-		log_info(logger,"No se encontro la Clave en STORE: %s", clave);
+		log_info(logger,"STORE:No se encontro la Clave: %s", clave);
+
 		return (1);
 
 	}
 
-	//char* ruta = puntoDeMontaje;
-	//const char* clave =(char*) unDato->clave;
-	//ruta = strcat(ruta,clave);
 
 
-	char* rutaArmada = malloc(strlen(ruta)+strlen(clave)+1);
 
-	//memcpy(rutaArmada,ruta,sizeof(ruta));
-	//memcpy(rutaArmada+sizeof(ruta),'/',1);
-	//memcpy(rutaArmada+sizeof(clave)+1,clave,sizeof(clave));
-	strcpy(rutaArmada,ruta);
-	strcpy(rutaArmada,"/");
-	strcpy(rutaArmada,clave);
+	char* rutaArmada = malloc(strlen(ruta)+strlen(clave)+strlen(getenv("HOME"))+1);
+	//strcpy(rutaArmada,getenv("HOME"));
+	if(strlen(ruta)>1)
+		strcpy(rutaArmada,ruta);
+	//strcat(rutaArmada,"/");
+	strcat(rutaArmada,clave);
 
-	log_info(logger,"Se guardara el archivo en ruta: %s",rutaArmada);
+/*
+	//memcpy(rutaArmada,ruta,sizeof(*ruta));
+	memcpy(rutaArmada,"/",sizeof("/"));
+	memcpy(rutaArmada+sizeof("/"),clave,sizeof(*clave));
+*/
+	log_info(logger,"STORE:Se guardara el archivo en ruta: %s",rutaArmada);
 
 
 	int fd = open(rutaArmada, O_RDWR | O_CREAT, (mode_t)0600);
-	log_info(logger,"Se crea el archivo: %d",fd);
+
+	if(fd < 0){
+
+		log_error(logger,"STORE:Error al intentar abrir archivo en la ruta");
+		return -1;
+	}
+
+	log_info(logger,"STORE:Se crea el archivo: %d",fd);
 	lseek(fd, claveBuscada->cantidadDeBytes-1, SEEK_SET);
 	write(fd, "", 1);
 	char *map = mmap(0, claveBuscada->cantidadDeBytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -43,8 +53,31 @@ int STORE(t_list* tabla,char* clave,char* ruta,t_log* logger){
 	msync(map, claveBuscada->cantidadDeBytes, MS_SYNC);
 	munmap(map, claveBuscada->cantidadDeBytes);
 	close(fd);
+
+
+	log_info(logger,"STORE:Se cierra el archivo");
+
+
+
+
+	registrar_acceso_a_entrada(registro,primeraPosicionMemoria,claveBuscada->posicionMemoria,tamanioEntrada);
+
+	log_info(logger,"STORE:Se registro acceso a entrada");
+
+/*
+	if(borrar_un_dato(tabla,claveBuscada) == 0){
+
+		log_info(logger,"STORE:Se libero la clave %s",claveBuscada->clave);
+	}
+	else{
+		log_error(logger,"STORE:No se pudo liberar la clave");
+	}
+*/
 	free(rutaArmada);
-	log_info(logger,"Se cierra el archivo");
+
+
 
 return 0;
 }
+
+

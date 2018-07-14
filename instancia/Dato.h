@@ -11,7 +11,6 @@
 struct Dato{
 
 	char* posicionMemoria;
-	unsigned int frecuenciaUso;
 	unsigned int cantidadDeBytes;
 	char* clave[40];
 };

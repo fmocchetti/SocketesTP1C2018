@@ -42,7 +42,7 @@ void testDumpear(){
 	configure_logger();
 
 
-	respaldar_informacion(tabla,storage,"",logger);
+	respaldar_informacion(tabla,"",logger);
 
 
 	struct Dato* unDato = (struct Dato*)list_get(tabla,1);

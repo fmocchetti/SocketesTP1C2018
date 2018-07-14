@@ -5,43 +5,55 @@ void* buscar(t_list *tabla,char* claveBuscada){
 
 	bool elemento_buscado(struct Dato* unDato) {
 
-	     return (/*(*unDato->clave) == *claveBuscada*/!strcmp(unDato->clave,claveBuscada));
+	     return (!strcmp((const char*)unDato->clave,(const char*)claveBuscada));
+
 
 	}
-	struct Dato* dato = (struct Dato*)list_find(tabla, elemento_buscado);
+	if (list_size(tabla) <= 0){
+		return NULL;
+	}
+	struct Dato* dato = (struct Dato*)list_find(tabla,elemento_buscado);
 
 return dato;
 }
-/*
-char* obtener_valor(char* memoria, char* posicionDeMemoria,unsigned int longBytes,char* valor){
-	//veeeeeeeeeeeer solo funciona con malloc
 
+int calcular_cant_entradas(int longitudS,int tamEntrada){
 
-	//memcpy(*valor,posicionDeMemoria,longBytes);
-	memcpy(*valor,posicionDeMemoria,longBytes);
+	int resto = longitudS % tamEntrada;
+	int resultado = longitudS / tamEntrada;
+	if(tamEntrada > longitudS){
 
-return (*valor);
+		return 1;
+	}
+	else if(resto > 0){
+
+		return resultado + 1;
+	}
+return resultado;
 }
 
-char* get_key(char* memoria,t_list* tabla,char* clave){
+void ordenar_tabla(t_list** tabla,char* primeraPosicion){
 
-	struct Dato* datoEncontrado;
+	bool mas_proximas_al_comienzo(struct Dato* a,struct Dato* b){
 
-	datoEncontrado = buscar(tabla,clave);
+		int distanciaA = a->posicionMemoria - primeraPosicion;
+		int distanciaB = b->posicionMemoria - primeraPosicion;
 
-
-
-	if(datoEncontrado != NULL){
-		char valor[datoEncontrado->cantidadDeBytes];
-
-		return (obtener_valor(memoria,datoEncontrado->posicionMemoria,datoEncontrado->cantidadDeBytes,&valor));
+		return(distanciaA < distanciaB);
 	}
-	else{
-		return NULL; //*****Aborta el ESI******
-	}
+	list_sort(*tabla,mas_proximas_al_comienzo);
+
 }
-*/
 
+
+bool existe_la_clave(t_list *tabla,char* claveBuscada){
+
+
+return (buscar(tabla,claveBuscada) != NULL);
+}
+
+// voy recorriendo la tabla y sumando los bytes que ocupa cada dato y sacandolo de la tabla cuando
+//llegue al tamaño del dato que voy a guardar termina
 int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir){
 
 	int bytesQueOcupaElDatoLeido,i;
@@ -64,23 +76,62 @@ return 0;
 
 }
 
+
+int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir){
+
+
+
+
+return 0;
+}
+
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
 	struct Dato* unDatos = (struct Dato*)malloc(sizeof(struct Dato));
 	unDatos->cantidadDeBytes = unDato->cantidadDeBytes;
 	memcpy(unDatos->clave, unDato->clave,sizeof(unDato->clave));
-	unDatos->frecuenciaUso = unDato->frecuenciaUso;
 	unDatos->posicionMemoria = unDato->posicionMemoria;
 
 	list_add(*tabla,unDatos);
 
 }
 
+int obtener_posicion_del_dato(t_list* tabla,struct Dato* unDato){
+
+	int tamanio = list_size(tabla);
+	int i = 0,posicion = -1;
+
+	struct Dato* dato;
+	while( i < tamanio ){
+
+		dato = list_get(tabla,i);
+		if(!strcmp((const char*)dato->clave,(const char*)unDato->clave)){
+			posicion = i;
+			i=tamanio +1;
+		}
+		i++;
+	}
+return posicion;
+}
+
+int borrar_un_dato(t_list** tabla,struct Dato* unDato){
+
+	int posicion = obtener_posicion_del_dato(*tabla,unDato);
+
+	if(posicion >= 0){
+
+		list_remove(*tabla,posicion);
+	return 0;
+	}
+
+return -1;
+}
+
+
 void* liberar_recursos(t_list** tabla){
 
 	void liberar_dato(struct Dato* unDato){
 		free(unDato);
-		return;
 
 	}
 

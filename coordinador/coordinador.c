@@ -388,6 +388,32 @@ void _planificador(int socket_local) {
 				}
 				//free(clave);
 				break;
+			case PLANIFICADOR_STATUS:
+				recv(socket_local, &size_clave, 4, 0);
+				clave = (char *)malloc (size_clave + 1);
+				recv(socket_local, clave, size_clave, 0);
+				clave[size_clave] = '\0';
+
+				log_info(logger, "Voy a consultar estado de la clave '%s'", clave);
+
+				/*if(dictionary_has_key(diccionario_claves, clave)) {
+					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
+
+					log_info(logger, "Enviandole al planificador %d bytes", messageLength);
+					send(socket_local, mensajes, messageLength, 0);
+					free(mensajes);
+
+
+					//preguntar a instancia el valor
+					//ver en que instancia esta
+					//simular distribucion
+
+				} else {
+
+				}*/
+
+
+				break;
         }
 	}
 
