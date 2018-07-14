@@ -127,6 +127,3 @@ void generate_planning(){
 void generate_console(){
 	consola();
 }
-
-
-
