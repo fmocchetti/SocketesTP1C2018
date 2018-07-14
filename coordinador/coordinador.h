@@ -27,6 +27,7 @@ t_log * logger;
 t_log * log_operaciones;
 
 int total_instancias;
+int instancia_to_find;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
 sem_t mutex_instancia;
@@ -37,6 +38,7 @@ typedef struct {
     char * clave;
     char * valor;
     unsigned char operacion;
+    bool status;
 } t_instancia;
 
 typedef struct {
@@ -65,6 +67,7 @@ static t_instancia *instancia_create(int id) {
     new->clave = 0;
     new->valor = 0;
     new->operacion = 0;
+    new->status = true;
     total_instancias++;
     return new;
 }

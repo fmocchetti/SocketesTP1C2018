@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
 	pthread_mutex_init(&mutex, NULL);
 	sem_init(&mutex_planificador, 1, 0);
 	sem_init(&mutex_instancia, 1, 0);
-	total_instancias = 0;
+	instancia_to_find = total_instancias = 0;
 	list_instances = list_create();
 	diccionario_claves = dictionary_create();
 	cantidad_entradas = config_get_int_value(config_file, "cantidad_entradas");
@@ -44,18 +44,37 @@ void inicializar_instancia (int socket) {
 	log_info(logger, "Inicializacion enviada correctamente");
 }
 
+bool find_instancia(void * element) {
+	t_instancia * elemento = (t_instancia) element;
+	if(elemento->id == instancia_to_find) {
+		return true;
+	}
+
+	return false;
+}
+
 void _instancia(int socket_local) {
-	int rc = 0, close_conn = 0;
+	int rc = 0, close_conn = 0, identificador_instancia = 0;
 	int size_clave = 0, size_valor = 0, messageLength = 0;
 	unsigned char buffer = 0;
 	char * mensajes = NULL;
-	t_instancia * local_struct = instancia_create(total_instancias);
+
+	rc = recv(socket_local, &identificador_instancia, sizeof(identificador_instancia), 0);
+	if (rc == 0) {
+		log_error(logger, "  recv() failed");
+		close_conn = TRUE;
+	}
+
+	if(total_instancias != 0) {
+		t_instancia * local_struct = list_find(list_instances, )
+	} else {
+		t_instancia * local_struct = instancia_create(identificador_instancia);
+		list_add(list_instances, local_struct);
+	}
 
 	inicializar_instancia(socket_local);
 
 	sem_init(&(local_struct->instance_sem), 1, 0);
-
-	list_add(list_instances, local_struct);
 
 	log_info(logger, "Cantidad de instancias -> %d", list_size(list_instances));
 

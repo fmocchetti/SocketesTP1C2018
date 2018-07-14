@@ -47,6 +47,8 @@ int id_esi_global;
 int id_esi_global_kill;
 int alpha;
 int estimacion_inicial;
+int algoritmo_elegido;
+enum {SJFSD , SJFCD, HRRN};
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
 void estadoListas();
@@ -60,6 +62,7 @@ void element_destroyer(void *);
 float calculoProxRafaga(float ,float, float);
 void sjfsd();
 void sjfcd();
+void hrrn();
 void ESI_GET(char *, int, unsigned char);
 void ESI_STORE(char *,int);
 void clave_dictionary_destroy(t_dictionary *data);
