@@ -47,6 +47,7 @@ void sjfsd(){
 	int result_send = 0;
 	int resultado_lista_satisfy = 0;
 	int l = 0;
+	int resultado_satisfy = 0;
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -149,6 +150,18 @@ void sjfsd(){
 		if(nodo_lista_ejecucion->cantidadDeLineas <=0){
 		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 		log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+
+		//desalojo las claves tomadas en caso de que existan
+		id_esi_global = nodo_lista_ejecucion->id_ESI;
+		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+		while(resultado_satisfy == 1){
+		//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+			claves* clave_temporal = NULL;
+			clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+			ESI_STORE(clave_temporal->claveAEjecutar,0);
+			free(clave_temporal);
+			resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+			}
 		laWeaReplanificadoraFIFO(terminados,ejecucion);
 		estadoListas();
 		}
@@ -178,6 +191,7 @@ void sjfcd(){
 	int result_send = 0;
 	int replanificar_en_ejecucion = 0;
 	int l = 0;
+	int resultado_satisfy = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -292,6 +306,17 @@ void sjfcd(){
 				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 				//printf("Entre a 1\n");
 				log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+				//desalojo las claves tomadas en caso de que existan
+				id_esi_global = nodo_lista_ejecucion->id_ESI;
+				resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+				while(resultado_satisfy == 1){
+				//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+					claves* clave_temporal = NULL;
+					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+					ESI_STORE(clave_temporal->claveAEjecutar,0);
+					free(clave_temporal);
+					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+				}
 				laWeaReplanificadoraFIFO(terminados,ejecucion);
 				estadoListas();
 				replanificar = 1;
@@ -336,6 +361,7 @@ void hrrn(){
 	int resultado_lista_satisfy = 0;
 	int result_send = 0;
 	int l = 0;
+	int resultado_satisfy = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -446,6 +472,17 @@ void hrrn(){
 			if(nodo_lista_ejecucion->cantidadDeLineas <=0) {
 				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
 				log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+				//desalojo las claves tomadas en caso de que existan
+				id_esi_global = nodo_lista_ejecucion->id_ESI;
+				resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+				while(resultado_satisfy == 1){
+				//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+					claves* clave_temporal = NULL;
+					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+					ESI_STORE(clave_temporal->claveAEjecutar,0);
+					free(clave_temporal);
+					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+				}
 				laWeaReplanificadoraFIFO(terminados,ejecucion);
 				estadoListas();
 				replanificar = 1;
@@ -621,7 +658,6 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 
 	    //reviso si la lista no esta vacia
 		if(!list_vacia){
-			printf("Entre a lista NO vacia\n");
 			//quito el primer elemento de la lista, que sera la proxima esi a salir de bloqueados
 			id_esi_desbloqueado = (int)list_remove(list_clave,0);
 			log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario %d",id_esi_desbloqueado);
@@ -666,6 +702,8 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
 	    	log_info(logger,"la clave no esta tomada");
+	    	//list_destroy(list_clave);
+	    	//dictionary_remove_and_destroy(claves_bloqueadas,claveAEjecutar,(void*)clave_dictionary_destroy);
 				/*if(!list_is_empty(listos)){
 					sem_post(&new_process);
 					replanificar = 1;

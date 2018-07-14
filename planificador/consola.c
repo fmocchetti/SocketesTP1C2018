@@ -186,7 +186,7 @@ void listar_tomadas(char* key){
 			list_clave = list_map(list_clave,(void*) mostrar_lista_diccionario);
 		}
 		else{
-			log_info(logger,"Borre la entrada del diccionario de la clave porque la lista no tenia entradas");
+			//log_info(logger,"Borre la entrada del diccionario de la clave porque la lista no tenia entradas");
 		}
 	}
 	else{
