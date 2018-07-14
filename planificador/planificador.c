@@ -34,7 +34,7 @@ int main (int argc, char *argv[])
 	config_file = config_create("planificador.conf");
 	//Configuro los logs a utilizar
 	configure_logger();
-	configure_logger_consola();
+	//configure_logger_consola();
 
 	//creo los threads a utilizar
 	pthread_t thread_poll;

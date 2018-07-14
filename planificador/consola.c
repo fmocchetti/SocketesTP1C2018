@@ -54,9 +54,10 @@ void consola(){
  printf("Nos vimo perro");
  }
 
+/*
 void configure_logger_consola() { //Configuracion del log del planificador
   logger = log_create("consola.log", "Consola", true, LOG_LEVEL_INFO);
-}
+}*/
 
 void opciones(){
 	printf("Seleccione la opcion deseada:\n");

@@ -8,7 +8,7 @@
 #include "socket.h"
 
 void configure_logger() {
-  logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
+  logger = log_create("planificador.log", "planificador", true, LOG_LEVEL_INFO);
 }
 
 
