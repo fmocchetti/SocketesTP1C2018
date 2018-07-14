@@ -18,18 +18,15 @@
 #include <netdb.h>
 #include <errno.h>
 #include <strings.h>
-#include <commons/log.h>
 #include "protocolo.h"
 #include "algoritmos.h"
 #include <semaphore.h>
 #include <pthread.h>
-#include <commons/config.h>
+
 
 #define TRUE             1
 #define FALSE            0
 
-t_log * logger;
-t_config * config_file;
 
 enum mensajes {
 	IDENTIFY = 10,
@@ -55,5 +52,6 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
 void connection_thread();
 void thread_on_connection(int listen_sd);
 void exit_gracefully(int return_nr);
+int create_client(char * ip, char * port);
 
 #endif /* SOCKET_H_ */

@@ -26,9 +26,12 @@
 #define TRUE             1
 #define FALSE            0
 
+// Quien decidio este protocolo? Un hechicero lo hizo
+
 enum mensajes {
 	ESI_OK = 7,
 	ESI_ERROR = 8,
+	ESI_BLOCK = 9,
 	IDENTIFY = 10,
 	INICIALIZAR_INSTANCIA = 11,
 	CONEXION_ESI = 18,
@@ -37,7 +40,11 @@ enum mensajes {
 	ESI_STORE = 23,
 	COORDINADOR_GET = 24,
 	COORDINADOR_SET = 	25,
-	COORDINADOR_STORE = 26
+	COORDINADOR_STORE = 26,
+	PLANIFICADOR_CLAVE = 32,
+	PLANIFICADOR_BLOQUEAR = 33,
+	PLANIFICADOR_DESBLOQUEAR = 34,
+	PLANIFICADOR_STATUS = 98
 };
 
 enum { ESI = 1, INSTANCIA = 2, PLANIFICADOR = 3};
@@ -55,5 +62,6 @@ void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int l
 void connection_thread();
 void thread_on_connection(int listen_sd);
 void exit_gracefully(int return_nr);
+void _exit_with_error(int socket, char* error_msg, char * buffer);
 
 #endif /* SOCKET_H_ */

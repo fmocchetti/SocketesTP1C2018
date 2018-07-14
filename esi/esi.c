@@ -22,9 +22,19 @@ int main(int argc, char **argv){
 
 	config_file = config_create("esi.conf");
 
-	//me conecto con el coordinador y el planificador
+
 	int socket_planificador = create_client(config_get_string_value(config_file, "ip_planificador"), config_get_string_value(config_file, "puerto_planificador"));
+
+	//aca hago el recv del id de la esi
+	//Primero recivo el id de la esi que me envia el planificador
+	recv(socket_planificador, &esi->id_ESI , 4, 0);
+
+	log_info(logger, "Soy la esi %d", esi->id_ESI);
+
 	int socket_coordinador = create_client(config_get_string_value(config_file, "ip_coordinador"), config_get_string_value(config_file, "puerto_coordinador"));
+
+	//aca le digo al coordinador que esi soy
+	send(socket_coordinador, &esi->id_ESI, 4, 0);
 
 
 	//abro el script para lectura
@@ -55,15 +65,14 @@ int main(int argc, char **argv){
 
 	log_info(logger, "Le envie la cantidad de lineas al planificador");
 
-	while ((read = getline(&line, &len, script)) != -1) {
+	//El machete estuvo aqui
+
+	read = getline(&line, &len, script);
+
+	while (read  != -1) {
 		t_esi_operacion parsed = parse(line); //leo y parseo la primer linea del archivo
 
-		numeroDeLinea--;
-
 		if(parsed.valido){
-			//Primero recivo el id de la esi que me envia el planificador
-			//esi->id_ESI = recv(socket_planificador, &esi->id_ESI , sizeof(esi->id_ESI), 0);
-
 			if(solicitudDeEjecucionPlanificador(socket_planificador)){
 				log_info(logger, "Puedo ejecutar");
 				//si el planificador me da el ok, primero guardo clave y valor en la estructura de la esi
@@ -92,6 +101,10 @@ int main(int argc, char **argv){
 				log_info(logger, "Coordinador me informo el estado: %d", respuestaCoordinador);
 				enviarRespuestaAlPlanificador(socket_planificador, respuestaCoordinador);
 				log_info(logger, "Informe al planificador");
+				if(respuestaCoordinador) {
+					read = getline(&line, &len, script);
+					numeroDeLinea--;
+				}
 		    }else{
 		    	printf("El planificador fallo\n");
 		    	exit(EXIT_FAILURE);
@@ -130,9 +143,6 @@ void * coordinador () {
 	send_message(coordinador);
 	return NULL;
 }
-
-
-
 
 bool solicitudDeEjecucionPlanificador(int socket){
 
@@ -197,16 +207,24 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 
 	log_info(logger, "El coordinador me dijo %d", identificador);
 
-	if (rc == 0){
+	if (rc < 0){
 		printf("Desconexion con el Coordinador\n");
 		exit(EXIT_FAILURE);
-	}else if (rc == -1){
-		printf("ERROR\n");
-		exit(EXIT_FAILURE);
-	}else{
-		if(identificador != 7){
+	}
+
+	switch(identificador) {
+		case ESI_OK:
+			return true;
+			break;
+		case ESI_BLOCK:
 			return false;
-		}
+			break;
+		case ESI_ERROR:
+			exit(EXIT_FAILURE);
+			break;
+		default:
+			exit(EXIT_FAILURE);
+			break;
 	}
 
 	//Si el buffer es 7 entonces es OK (segun el protocolo)

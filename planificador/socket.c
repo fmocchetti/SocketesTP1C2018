@@ -8,7 +8,7 @@
 #include "socket.h"
 
 void configure_logger() {
-  logger = log_create("coordinador.log", "coordinador", true, LOG_LEVEL_INFO);
+  logger = log_create("planificador.log", "planificador", true, LOG_LEVEL_INFO);
 }
 
 
@@ -64,25 +64,18 @@ void create_server(int max_connections, int timeout, int server_type, int port) 
   fds[0].events = POLLIN;
 
   //funcion que decide como se va a implementar el servicio de listen, si por hilos o por poll
-  if(!server_type) {
-	  listen_on_poll(fds, max_connections, timeout, listen_sd);
-  } else {
-	  thread_on_connection(listen_sd);
-  }
+
+  thread_on_connection(listen_sd);
 }
 
 void thread_on_connection(int listen_sd) {
 	int new_sd = -1;					// Escuchar sobre socket_client, nuevas conexiones sobre newConnection
-	pthread_t th_receiptMessage;		// hilo para crear receptor de mensajes
 	char * buffer;
 	unsigned char message = 0;
-    thread_handle_struct * connection_arguments = malloc(sizeof(thread_handle_struct));
-    int    rc, on = 1;
+    int    rc = 1;
     int    n = 1;
-    int    end_server = FALSE, compress_array = FALSE;
-    int    close_conn;
-    int alpha = atoi(config_get_string_value(config_file, "alpha_planificacion"));
-    int estimacion_inicial = atoi(config_get_string_value(config_file, "estimacion_inicial"));
+    alpha = atoi(config_get_string_value(config_file, "alpha_planificacion"));
+    estimacion_inicial = atoi(config_get_string_value(config_file, "estimacion_inicial"));
 
 	while(1) {
 		buffer = (char *) malloc(sizeof(char));
@@ -104,12 +97,19 @@ void thread_on_connection(int listen_sd) {
 
         log_info(logger,"  Waiting for the client to identify\n");
         //sleep(10);
+        /*
         rc = recv(new_sd, buffer, sizeof(buffer), 0);
         if (rc < 0) {
            if (errno != EWOULDBLOCK) {
              log_error(logger, "  recv() failed");
            }
-        }
+        }*/
+        rc = recv(new_sd, buffer, 1, 0);
+		if (rc < 0) {
+		   if (errno != EWOULDBLOCK) {
+			 log_error(logger, "  recv() failed");
+		   }
+		}
 
         log_info(logger," The client is an: %d", *buffer);
         //connection_arguments->socket = new_sd;
@@ -119,6 +119,15 @@ void thread_on_connection(int listen_sd) {
 		unsigned char id_mensaje_esi;
 		ESI *esi= (ESI*) malloc(sizeof(ESI));
 		ESI *esi2= (ESI*) malloc(sizeof(ESI));
+
+
+		// Le indico a la nueva ESI el ID que le corresponde
+
+		esi->id_ESI = n;
+		send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
+		//printf("el nuevo ID de la esi fue mandado\n");
+		n++;
+
 		//Recibo ID del mensaje de la ESI
 		rc = recv(new_sd, &id_mensaje_esi, 1,0);
 		esi->socket_esi = new_sd;
@@ -128,7 +137,7 @@ void thread_on_connection(int listen_sd) {
 
 		//Chequeo si el mensaje recibido de la ESI es el correcto
 		if(id_mensaje_esi != 18){
-			 _exit_with_error(socket, "id de mensaje incorrecto", NULL);
+			 _exit_with_error((int)socket, "id de mensaje incorrecto", NULL);
 		}
 
 
@@ -138,22 +147,28 @@ void thread_on_connection(int listen_sd) {
 		if (rc <= 0) {
 			_exit_with_error(new_sd, "El socket murio", NULL);
 		}
-		// Le indico a la nueva ESI el ID que le corresponde
 
-		esi->id_ESI = n;
-		//send(new_sd, &esi->id_ESI, sizeof(esi->id_ESI), 0);
-		//printf("el nuevo ID de la esi fue mandado\n");
-		n++;
+		//esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
 
-		esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
-		printf("rafaga de %d\n",esi->rafaga);
+		esi->lineas_ejecutadas = 0;
+		esi->estimacion_rafaga = (float)estimacion_inicial;
+		esi->rafaga = esi->estimacion_rafaga;
+		esi->espera = 0;
+
+		//esi->rafaga = calculoProxRafaga((float)alpha,esi->estimacion_rafaga,(float)esi->lineas_ejecutadas);
+		printf("!!!!!!!!!!!!!!!!!!!!!estimacion rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->estimacion_rafaga);
+		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
 
 		esi2->socket_esi = esi->socket_esi;
 		esi2->id_ESI = esi->id_ESI;
 		printf("id esi %d\n",esi2->id_ESI);
 		esi2->cantidadDeLineas = esi->cantidadDeLineas;
 		esi2->rafaga = esi->rafaga;
-		//free(esi);
+		esi2->lineas_ejecutadas = esi->lineas_ejecutadas;
+		esi2->estimacion_rafaga = esi->estimacion_rafaga;
+		esi2->espera = esi->espera;
+
+		free(esi);
 
 		//agrego el nuevo proceso a la cola de listos
 		printf("Agregando a la lista de ready\n");
@@ -168,104 +183,6 @@ void thread_on_connection(int listen_sd) {
 
         free(buffer);
 	}
-}
-
-
-void listen_on_poll(struct pollfd * fds, int max_connections, int timeout, int listen_sd) {
-  int rc;
-  int nfds = 1, current_size = 0, i;
-  int end_server = FALSE;
-  int new_sd = -1;
-  int close_conn;
-  char buffer[80];
-
-  do {
-    printf("Waiting on poll()...\n");
-    rc = poll(fds, max_connections, timeout);
-
-    if (rc < 0) {
-      log_error(logger,"poll() failed");
-      break;
-    }
-
-    if (rc == 0) {
-      log_info(logger,"  poll() timed out.  End program.\n");
-      break;
-    }
-
-    current_size = nfds;
-    for (i = 0; i < current_size; i++) {
-      if(fds[i].revents == 0) continue;
-
-      if(fds[i].revents != POLLIN) {
-    	log_error(logger,"  Error! revents = %d\n", fds[i].revents);
-        end_server = TRUE;
-        break;
-      }
-
-      if (fds[i].fd == listen_sd) {
-        log_info(logger,"Listening socket is readable\n");
-        do {
-          new_sd = accept(listen_sd, NULL, NULL);
-          if (new_sd < 0) {
-            if (errno != EWOULDBLOCK) {
-              log_error(logger,"accept() failed");
-              end_server = TRUE;
-            }
-            break;
-          }
-
-
-          log_info(logger,"  New incoming connection - %d\n", new_sd);
-
-          fds[nfds].fd = new_sd;
-          fds[nfds].events = POLLIN;
-          nfds++;
-
-          send(new_sd , "identify", strlen("identify"), 0);
-
-          log_info(logger,"  Waiting for the client to identify\n");
-
-          rc = recv(new_sd, buffer, sizeof(buffer), 0);
-          if (rc < 0) {
-             if (errno != EWOULDBLOCK) {
-               log_error(logger, "  recv() failed");
-               close_conn = TRUE;
-             }
-          }
-
-          log_info(logger," The client is an: %s",buffer);
-
-
-          //Crear thread con esa conexion
-
-        } while (new_sd != -1);
-      }
-    }
-  } while (end_server == FALSE); /* End of serving running.    */
-
-
-  for (i = 0; i < nfds; i++)
-  {
-    if(fds[i].fd >= 0)
-      shutdown(fds[i].fd, SHUT_RDWR);
-  }
-}
-
-void connection_thread(void * connection_arguments) {
-	/*thread_handle_struct args = *(thread_handle_struct *) connection_arguments;
-	int socket_local = args.socket, identidad_local = args.identidad;
-	log_info(logger, "New thread created");
-
-	if(identidad_local == IDENTIFY_INSTANCIA) {
-		_instancia(socket_local);
-	} else if(identidad_local == IDENTIFY_ESI) {
-		_esi(socket_local);
-	} else if(identidad_local == PLANIFICADOR) {
-		_planificador(socket_local);
-	}*/
-
-	return;
 }
 
 int connect_to_server(char * ip, char * port) {

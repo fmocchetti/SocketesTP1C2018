@@ -19,12 +19,15 @@ void _instancia(int socket_local);
 void _planificador(int socket_local);
 void _esi(int socket_local);
 void inicializar_instancia (int socket);
+void liberar_claves(char ** claves_tomadas, int cantidad_claves);
 
 t_list* list_instances;
 t_config * config_file;
 t_log * logger;
+t_log * log_operaciones;
 
 int total_instancias;
+int instancia_to_find;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
 sem_t mutex_instancia;
@@ -35,6 +38,8 @@ typedef struct {
     char * clave;
     char * valor;
     unsigned char operacion;
+    bool status;
+    int entradasLibres;
 } t_instancia;
 
 typedef struct {
@@ -57,12 +62,14 @@ static void planificador_destroy(t_planificador *self) {
 }
 
 
-static t_instancia *instancia_create(int id) {
+static t_instancia *instancia_create(int id, int totalEntradas) {
 	t_instancia *new = malloc(sizeof(t_instancia));
     new->id = id;
     new->clave = 0;
     new->valor = 0;
     new->operacion = 0;
+    new->status = true;
+    new->entradasLibres = totalEntradas;
     total_instancias++;
     return new;
 }
@@ -80,7 +87,7 @@ typedef struct {
 t_dictionary * diccionario_claves;
 
 static t_clave *clave_create(int esi, int instancia, bool tomada){
-	t_clave *new = malloc( sizeof(t_clave) );
+	t_clave * new = malloc (sizeof(t_clave));
 	new->esi = esi;
 	new->instancia = instancia;
 	new->tomada = tomada;

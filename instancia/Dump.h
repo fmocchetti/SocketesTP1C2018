@@ -20,17 +20,16 @@
 #include <sys/mman.h>
 #include <commons/log.h>
 #include "tabla.h"
+#include <pthread.h>
 
 typedef struct{
 	t_list* tabla;
-	char* storage;
 	char* puntoDeMontaje;
-	t_log* logger;
-	int intervaloDeDump;
+	unsigned int intervaloDeDump;
 }parametros_dump;
 
-int respaldar_informacion(t_list* tabla,char* storage,char* puntoDeMontaje,t_log* logger);
+int respaldar_informacion(t_list* tabla,char* puntoDeMontaje,t_log* logger);
 
-int respaldar_informacion_thread(parametros_dump* paramtros);
+//int respaldar_informacion_thread(parametros_dump* paramtros);
 
 #endif /* DUMP_H_ */

@@ -26,9 +26,6 @@ typedef struct {
   int len;
 } __attribute__((packed)) ContentHeader;
 
-
-
-
 void * planificador();
 void * coordinador();
 bool solicitudDeEjecucionPlanificador(int socket);
