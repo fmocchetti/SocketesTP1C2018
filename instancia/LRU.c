@@ -115,8 +115,6 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 
 		}
 
-
-	return 2;
 	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
 	memcpy(*posicionDeLectura,claveValor->valor,longitudS);

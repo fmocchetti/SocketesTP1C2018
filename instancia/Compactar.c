@@ -78,6 +78,7 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posici
 		espacioAOcupar = calcular_cantidad_entradas(unDato->cantidadDeBytes,tamEntrada)*(tamEntrada);
 
 		memcpy(posicionInsercion,unDato->posicionMemoria,unDato->cantidadDeBytes);
+		unDato->posicionMemoria = posicionInsercion;
 
 		posicionInsercion += espacioAOcupar;
 

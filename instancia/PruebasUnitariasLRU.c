@@ -2,7 +2,66 @@
 #include <commons/collections/list.h>
 #include "LRU.h"
 #include "tabla.h"
+#include "Dump.h"
+int respaldar_informaci(t_list* tabla){
 
+
+
+		//sleep(parametros->intervaloDeDump);
+		//pthread_mutex_lock(&lock_dump);
+
+
+		log_info(logger,"****Comienza el proceso respaldo de Informacion en: %s ****","/home/utnso/inst1");
+
+		int tamanioTabla = list_size(tabla);
+		if(tamanioTabla <= 0){
+			log_info(logger,"**La tabla se encontro vacia, no hay nada para respaldar**");
+		//	pthread_mutex_unlock(&lock_dump);
+		}
+		else{
+
+			struct Dato* unDato;
+
+			int j =0;
+
+			char* rutaArmada = malloc(strlen("/home/utnso/inst1")+40+strlen(getenv("HOME"))+1);
+			*rutaArmada = 0;
+			for(int i = 0 ; i < tamanioTabla ; i++){
+
+				unDato = list_get( tabla, i );
+
+				strcpy(rutaArmada,"/home/utnso/inst1/");
+				strcat(rutaArmada,(const char*)unDato->clave);
+
+				int fd = open(rutaArmada, O_RDWR | O_CREAT, (mode_t)0600);
+				if(fd < 0){
+				//	log_error(logger,"Error al abrir la ruta, puede que el directorio %s no exista",parametros->puntoDeMontaje);
+					return EXIT_FAILURE;
+				}
+				lseek(fd, unDato->cantidadDeBytes-1, SEEK_SET);
+				write(fd, "", 1);
+				char *map = mmap(0, unDato->cantidadDeBytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+				memcpy(map, unDato->posicionMemoria, unDato->cantidadDeBytes);
+				msync(map, unDato->cantidadDeBytes, MS_SYNC);
+				munmap(map, unDato->cantidadDeBytes);
+				close(fd);
+				log_info(logger,"Se guardo un valor en archivo: %s",rutaArmada);
+				j++;
+
+				*rutaArmada = 0;
+
+			}
+			log_info(logger,"****Finaliza el proceso respaldo de Informacion..****");
+			log_info(logger,"**Se crearon %d archivo/s**",j);
+
+		//	pthread_mutex_unlock(&lock_dump);
+			free(rutaArmada);
+		}
+
+
+
+return EXIT_SUCCESS;
+}
 void testAgregarDatos(){
 
 	int cantidadEntradas = 3 ;
@@ -97,6 +156,97 @@ void testReemplazarDatos(){
 
 
 }
+
+void testCOMPACTAR(){
+
+	int cantidadEntradas = 8 ;
+	int tamanioEntradas = 10;
+	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
+	*storage =0;
+
+	char* posicionDeLectura = storage;
+	char* posicionFinDeMemoria = (storage+(cantidadEntradas*tamanioEntradas));
+
+	t_list* tabla = list_create();
+
+	t_list* registro = crear_registro(cantidadEntradas);
+
+	/*
+SET opcion1 fugazzetarellenagrande
+SET opcion2 promomuzzarella
+SET opcion3 pizzacuatroquesosgrande
+SET opcion1 napolitanagrande
+SET opcion3 pizzadepalmitos
+SET opcion4 pizzadecantimpalo*/
+
+	char clave1[40] = {"opcion1"}; char materia1[] = {"fugazzetarellenagrande"};
+	char clave2[40] = {"opcion2"}; char materia2[] = {"promomuzzarella"};
+	char clave3[40] = {"opcion3"}; char materia3[] = {"pizzacuatroquesosgrande"};
+	char clave4[40] = {"opcion1"}; char materia4[] = {"napolitanagrande"};
+	char clave5[40] = {"opcion3"}; char materia5[] = {"pizzadepalmitos"};
+	char clave6[40] = {"opcion4"}; char materia6[] = {"pizzadecantimpalo"};
+/*	char clave7[40] = {"nintendo:consola:wiiu"}; char materia7[] = {"RIP"};
+	char clave8[40] = {"nintendo:consola:nintendo64"}; char materia8[] = {"MarioKart"};
+	char clave9[40] = {"sony:consola:ps1"}; char materia9[] = {"FF7"};
+	char clave10[40] = {"nintendo:consola:nintendo64"}; char materia10[] = {"PkmnSnap"};
+	char clave11[40] = {"sony:consola:ps2"}; char materia11[] = {"GodOfWar"};
+	char clave12[40] = {"sony:consola:ps1"}; char materia12[] = {"FF8"};
+	char clave13[40] = {"sony:consola:ps3"}; char materia13[] = {"TLOU"};*/
+/*	char clave14[40] = {"K9521"}; char materia14[] = {"Matematica Superior"};
+	char clave15[40] = {"K2005"}; char materia15[] = {"Sistemas Operativos"};
+	char clave16[40] = {"K9521"}; char materia16[] = {"Matematica Superior"};
+	char clave17[40] = {"K2005"}; char materia17[] = {"Sistemas Operativos"};
+	char clave18[40] = {"K9521"}; char materia18[] = {"Matematica Superior"};
+	char clave19[40] = {"K2005"}; char materia19[] = {"Sistemas Operativos"};
+	char clave20[40] = {"K9521"}; char materia20[] = {"Matematica Superior"};
+	char clave21[40] = {"K2005"}; char materia21[] = {"Sistemas Operativos"};
+	char clave22[40] = {"K9521"}; char materia22[] = {"Matematica Superior"};*/
+
+
+	struct ClaveValor claveValor,claveValor2;
+	claveValor.cantidadEntradas = cantidadEntradas;
+
+	strcpy(claveValor.clave,clave1);
+	claveValor.valor = (char*)&materia1;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave2);
+	claveValor.valor = (char*)&materia2;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave3);
+	claveValor.valor = (char*)&materia3;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave4);
+	claveValor.valor = (char*)&materia4;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave5);
+	claveValor.valor = (char*)&materia5;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+//	respaldar_informaci(tabla);
+	strcpy(claveValor.clave,clave6);
+	claveValor.valor = (char*)&materia6;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+
+
+
+	respaldar_informaci(tabla);
+
+
+
+	liberar_registros(&registro);
+	liberar_recursos(&tabla);
+	free(storage);
+
+
+
+
+}
+
 
 void testFINAL(){
 
@@ -230,7 +380,8 @@ int correrTestsLRU(){
 	  CU_pSuite prueba = CU_add_suite("Suite de prueba LRU", NULL, NULL);
 	 // CU_add_test(prueba, "PrueboAgreagarDatosSinReemplazo",testAgregarDatos);
 	  //CU_add_test(prueba, "PrueboAgreagarDatosConReemplazo",testReemplazarDatos);
-	  CU_add_test(prueba, "PrueboFINAL",testFINAL);
+	//  CU_add_test(prueba, "PrueboFINAL",testFINAL);
+	  CU_add_test(prueba, "PrueboFINAL",testCOMPACTAR);
 
 	  CU_basic_set_mode(CU_BRM_VERBOSE);
 	  CU_basic_run_tests();
