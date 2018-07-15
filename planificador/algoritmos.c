@@ -132,7 +132,6 @@ void sjfsd(){
 			coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI,nodo_lista_ejecucion->cantidadDeLineas);
 
 
-
 			if(contestacionESI == 2) {
 				//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
 				nodo_lista_ejecucion->cantidadDeLineas --;
@@ -179,9 +178,6 @@ void sjfsd(){
 				sem_wait(&new_process);
 			}
 		}
-
-		//free(nodo_lista_ejecucion);
-		//free(clave1);//REVISAR SI ESTO SE HACE ACA
 	}
 }
 
@@ -253,7 +249,6 @@ void sjfcd(){
 
 				//Espero que la esi me conteste
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-				printf("RESULTADO RECV %d\n",result_connection);
 
 				if (result_connection <= 0) {
 					id_esi_global = nodo_lista_ejecucion->id_ESI;
@@ -413,7 +408,6 @@ void hrrn(){
 
 			//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 			result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
-			printf("RESULTADO SEND %d\n",result_send);
 			//aca tengo que verificar
 			if (result_send <= 0) {
 				nodo_lista_ejecucion->cantidadDeLineas = 0;
@@ -424,7 +418,6 @@ void hrrn(){
 
 			//Espero que la esi me conteste
 			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-			printf("RESULTADO RECV %d\n",result_connection);
 
 			if (result_connection <= 0) {
 				id_esi_global = nodo_lista_ejecucion->id_ESI;
@@ -602,11 +595,10 @@ void nodo_lista_claves_destroyer(claves * data){
 void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 
 	claves* clave1 = (claves*) malloc(sizeof(claves));
-	claves* clave2 = NULL;
+	memset(clave1, 0, sizeof(claves));
 	strcpy(clave1->claveAEjecutar,claveAEjecutar);
 	clave1->id_ESI = id_ESI;
 
-	clave2 = clave1;
 	if(esi_bloqueada_de_entrada==1){
 		strcpy(clave_bloqueada_global,claveAEjecutar);
 
@@ -615,6 +607,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 				//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
 				list_add(list_clave, (int*)id_ESI);
 				log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+				free(clave1);
 		} else {
 				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
 				printf("Entre en 2\n");
@@ -622,11 +615,12 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 				list_add(list_clave, (int*)id_ESI);
 				dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
 				log_info(logger, "Inserte la esi %d en la que de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+				free(clave1);
 		}
 	}
 	else{
 		if(respuesta_ESI==2){
-			list_add(claves_tomadas, (claves*)clave2);
+			list_add(claves_tomadas, (claves*)clave1);
 			log_info(logger, "La esi %d tomo la clave '%s'", id_ESI, claveAEjecutar);
 		}
 		else if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
@@ -634,12 +628,14 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 			//Si la lista ya existe, se pushea el nuevo id_ESI en la cola de la clave bloqueada
 			list_add(list_clave, (int*)id_ESI); //REVISAR si ese (int*) funca bien
 			log_info(logger, "La esi %d se sumara a esperar la liberacion de la clave '%s'", id_ESI, claveAEjecutar);
+			free(clave1);
 		} else {
 			//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la lista con su cola asociada
 			t_list * list_clave = list_create();
 			list_add(list_clave, (int*)id_ESI);
 			dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
 			log_info(logger, "La esi %d se sumara a esperar la liberacion de la clave '%s'", id_ESI, claveAEjecutar);
+			free(clave1);
 		}
 	}
 	//free(clave1);//REVISAR!!!
