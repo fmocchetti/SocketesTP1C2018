@@ -12,12 +12,6 @@ bool result_satisfy =false;
 char claveGlobal[100];
 
 void laWeaReplanificadoraFIFO(t_list * listaDestino, t_list *listaEntrada){
-    /*t_list * tempList = list_create();
-    tempList = list_take_and_remove(listaEntrada, 1);
-    list_add_all(listaDestino, tempList);
-    //list_destroy(tempList);
-    list_destroy_and_destroy_elements(tempList,(void*)element_destroyer);*/
-
     ESI* primerElemento = NULL;
     primerElemento = list_remove(listaEntrada,0);
     list_add(listaDestino,primerElemento);
