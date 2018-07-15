@@ -138,6 +138,7 @@ void thread_on_connection(int listen_sd) {
 		//Chequeo si el mensaje recibido de la ESI es el correcto
 		if(id_mensaje_esi != 18){
 			 _exit_with_error((int)socket, "id de mensaje incorrecto", NULL);
+			 _exit_with_error_and_close((int)socket_coord, "Desconexion con el coordinador, saliendo", NULL);
 		}
 
 

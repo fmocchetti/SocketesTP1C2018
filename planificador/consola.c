@@ -206,7 +206,6 @@ void kill(){
 	resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 	while(resultado_satisfy == 1){
 	//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-		printf("------RECIBI MENOS DE 0\n");
 		claves* clave_temporal = NULL;
 		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
 		ESI_STORE(clave_temporal->claveAEjecutar,0);
