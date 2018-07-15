@@ -8,9 +8,6 @@
 #include "coordinador.h"
 
 int informar_planificador(char * clave, unsigned char status) {
-	log_info(logger, "Esperando instancia");
-	sem_wait(&mutex_instancia);
-	log_info(logger, "Pase bloqueo de instancia");
 	thread_planificador->clave = clave;
 	thread_planificador->status = status;
 	sem_post(&mutex_planificador);
@@ -18,28 +15,46 @@ int informar_planificador(char * clave, unsigned char status) {
 	return 0;
 }
 
-
-
-int distribuir(char * clave, char * valor) {
-	t_instancia * instancia;
+t_instancia * distribuir(char * clave, char * valor) {
+	t_instancia * instancia = NULL;
 	char letra_inicial = NULL;
+	int indice_busqueda = 0;
 
-	if(!total_instancias) exit_gracefully(-1);
+	if(!total_instancias && !instancias_activas) {
+		log_error(logger, "No hay instancias disponibles, finalizando coordinador");
+		exit_gracefully(-1);
+	}
+
+	log_info(logger, "Voy a buscar a que instancia se la debo asignar");
 
 	switch(algoritmo_elegido) {
 		case EL:
-			log_info(logger, "Ultima instancia: %d", ultima_instancia);
-			log_info(logger, "Total instancias: %d", total_instancias);
-			ultima_instancia  %= total_instancias;
-			instancia = list_get(list_instances, ultima_instancia);
-			ultima_instancia++;
+			log_info(logger, "Selecciono por Equitative Load");
+			log_info(logger, "Ultima instancia: %d, total instancias: %d", ultima_instancia, total_instancias);
+			while(!instancia) {
+				ultima_instancia  %= instancias_activas;
+				instancia = list_get(list_instances, ultima_instancia);
+				ultima_instancia++;
+				if(!instancia->status)
+					instancia = NULL;
+			}
 			break;
 		case KE:
+			log_info(logger, "Selecciono por Clave");
 			letra_inicial = clave[0] - 96;
 			if(letra_inicial <= 0) letra_inicial = 1;
-			instancia = list_get(list_instances, letra_inicial / letras_instancia);
+			indice_busqueda = letra_inicial / letras_instancia;
+			log_info(logger, "Voy a buscar la instancia: %d", indice_busqueda);
+			while(!instancia) {
+				instancia = list_get(list_instances, indice_busqueda);
+				if(!instancia->status) {
+					indice_busqueda++;
+					instancia = NULL;
+				}
+			}
 			break;
 		case LSU:
+			log_info(logger, "Selecciono por Espacio Disponible");
 			instanciaLSU = buscarMasLibre(total_instancias);
 			instancia = list_get(list_instances, instanciaLSU);
 			instancia->entradasLibres -= 1;
@@ -53,19 +68,19 @@ int distribuir(char * clave, char * valor) {
 	instancia->operacion = 21;
 
 	sem_post(&(instancia->instance_sem));
-	return instancia->id - 1;
+	return instancia;
 }
 
 int modificar_valor_clave(char * clave, char * valor, int instancia) {
 	t_instancia * o_instancia;
 
 	log_info(logger, "Modificar valor %d", instancia);
-	log_info(logger, "Pase Mutex");
+	//log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
 	o_instancia->clave = clave;
 	o_instancia->valor = valor;
 	o_instancia->operacion = 22;
-    log_info(logger, "Desbloquie Mutex");
+    //log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
 	return instancia;
@@ -74,12 +89,12 @@ int modificar_valor_clave(char * clave, char * valor, int instancia) {
 int store_clave(char * clave, int instancia) {
 	t_instancia * o_instancia;
 	log_info(logger, "Store valor %d", instancia);
-	log_info(logger, "Pase Mutex");
+	//log_info(logger, "Pase Mutex");
 	o_instancia = list_get(list_instances, instancia);
 	log_debug(logger, "Clave a mandar a la instancia %s", clave);
 	o_instancia->clave = clave;
 	o_instancia->operacion = 23;
-	log_info(logger, "Desbloquie Mutex");
+	//log_info(logger, "Desbloquie Mutex");
 	sem_post(&(o_instancia->instance_sem));
 	log_info(logger, "Desbloquie instancia %d", instancia);
 	return instancia;
@@ -92,7 +107,8 @@ int buscarMasLibre(int totalInstancias){
 	totalInstancias--;
 	for(; totalInstancias >= 0; totalInstancias--){
 		instanciaA = list_get(list_instances, totalInstancias);
-		if(masEntradasLibres < instanciaA->entradasLibres){
+		log_info(logger, "Consultando la instancia: %d, con %d entradas libres y esta en estado: %d", instanciaA->id, instanciaA->entradasLibres, instanciaA->status);
+		if(instanciaA->status && masEntradasLibres < instanciaA->entradasLibres){
 			posicionMasLibre = totalInstancias;
 			masEntradasLibres = instanciaA->entradasLibres;
 		}
