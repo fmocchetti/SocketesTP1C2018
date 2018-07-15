@@ -106,8 +106,7 @@ void sjfsd(){
 				resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 				while(resultado_lista_satisfy == 1){
 					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					//claves* clave_temporal = (claves*) malloc(sizeof(claves));
-					claves* clave_temporal = NULL;//(claves*) malloc(sizeof(claves));
+					claves* clave_temporal = NULL;
 					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
 					ESI_STORE(clave_temporal->claveAEjecutar,0);
 					free(clave_temporal);
@@ -253,7 +252,6 @@ void sjfcd(){
 						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
 						ESI_STORE(clave_temporal->claveAEjecutar,0);
 						free(clave_temporal);
-						//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
 						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 					}
 
@@ -287,7 +285,6 @@ void sjfcd(){
 					//log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-					//list_clean_and_destroy_elements(ejecucion,(void*)element_destroyer);
 
 					if(list_size(listos)>=1){
 					replanificar = 1;
