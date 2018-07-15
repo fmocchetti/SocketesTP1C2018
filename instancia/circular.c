@@ -23,6 +23,7 @@ int calcular_cantidad_entradas(int longitudS,int tamEntrada){
 return resultado;
 }
 
+
 void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
 	int longitudS = strlen(claveValor->valor)+1;
@@ -45,8 +46,16 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 	if(existe_la_clave(*tabla,claveValor->clave)){
 
-		reemplazar_valor_de_clave_ya_existente(tabla,NULL,primeraPosicionMemoria,claveValor);
-		log_info(logger,"CIRC:Se encontro una clave ya existente y se reemplazo su valor");
+		log_info(logger,"CIRC: Se encontro una clave ya existente");
+
+		int check = reemplazar_valor_de_clave_ya_existente(tabla,NULL,primeraPosicionMemoria,claveValor);
+		if(check < 0){
+
+			log_info(logger,"CIRC: No se realizo el reemplazo, el valor nuevo ocupa mas entradas que el actual");
+			return -1;
+
+		}
+		log_info(logger,"CIRC: Se reemplazo su valor");
 
 	return 1;
 	}
@@ -60,37 +69,65 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 	//de la memoria
 	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
-			log_info(logger,"CIRC:Se prueba compactar");
+		log_info(logger,"CIRC:No hay lugar para el valor actual, se buscaran entradas libres");
 
-			compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+		if(hay_espacio_fragmentado_para_el_valor(tabla,claveValor)){
 
-			int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
+			log_info(logger,"CIRC:Hay entradas libres disponibles, se evaluara si son contiguas");
 
-			memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
+			char* punteroEntradaLibre = 0;
 
-			cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+				if(son_contiguas(tabla,claveValor,cantidadEntradasAOcupar,&punteroEntradaLibre, primeraPosicionMemoria)){
 
-			actualizarTabla(tabla,longitudS - espacioRestante);
+					log_info(logger,"CIRC:Las entradas son contiguas, se realizara la inserccion");
 
-			registrar_dato_en_tabla(tabla,&unDato);
-
-			*posicionDeLectura=primeraPosicionMemoria;
-
-			memcpy(*posicionDeLectura,((claveValor->valor)+espacioRestante),espacioAOcupar-espacioRestante);
-
-			*posicionDeLectura += (espacioAOcupar-espacioRestante);
+					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+					log_info(logger,"CIRC:Se guardo el valor en memoria");
+					cargar_info_en_dato(&unDato,*punteroEntradaLibre,claveValor);
+					registrar_dato_en_tabla(tabla,&unDato);
 
 
-			return 0;
-/*		}
+				    return 0;
+
+				}
+				else{
+
+					log_info(logger,"CIRC:Las entradas no son contiguas, se procedera a compactar");
+
+					//compactar ajusta el puntero posicionDeLectura
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+
+
+				}
+
+
+		}
 		else{
 
-			log_info(logger,"El valor no es Atomico, no se guardo el valor con CIRCULAR");
-			return -1;
+
+				int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
+
+				memcpy(*posicionDeLectura,claveValor->valor,espacioRestante);
+
+				cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+
+				actualizarTabla(tabla,longitudS - espacioRestante);
+
+				registrar_dato_en_tabla(tabla,&unDato);
+
+				*posicionDeLectura=primeraPosicionMemoria;
+
+				memcpy(*posicionDeLectura,((claveValor->valor)+espacioRestante),espacioAOcupar-espacioRestante);
+
+				*posicionDeLectura += (espacioAOcupar-espacioRestante);
+
+				return 0;
+
 		}
-*/
 	}
-	//guardo el dato entero en memoria si no entro en los if anteriores
+
+
+
 	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 
 	log_info(logger,"CIRC:Se guardo el valor en memoria");
@@ -101,6 +138,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 	*posicionDeLectura += espacioAOcupar;
 
+	log_info(logger,"CIRC: Se inserto el valor %s",claveValor->valor);
 
 return 0;
 }

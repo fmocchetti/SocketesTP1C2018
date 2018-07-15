@@ -34,7 +34,7 @@ int obtener_numero_entrada(t_list** registro);
 
 int calcular_entrada(char* primerPoscionMemoria,char* posicionDeLectura,int tamanioEntrada);
 
-void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,char* posicionDeLectura,int tamanioEntrada);
+void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,char* posicionDeLectura,int tamanioEntrada,int cantidadEntradasAOcupar);
 
 int SET_LRU(t_list** r,t_list** t,char* primPosMem,char** posLectura,char* posFinMem,struct ClaveValor* cV);
 

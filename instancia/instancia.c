@@ -64,7 +64,7 @@ return EXIT_SUCCESS;
 
 int main (int argc, char * argv[]) {
 
-
+#if 0
 	pthread_mutex_init(&lock_dump, NULL);
 
 	if(argc < 2) {
@@ -139,11 +139,11 @@ int main (int argc, char * argv[]) {
 
 		log_info(logger, "Cree la tabla");
 
-//		if(!strcmp((const char*)algoritmo,"LRU")){
-			t_list* registro = crear_registro(init.cantidad_entradas);
 
-			log_info(logger, "Cree registro de entradas");
-//		}
+		t_list* registro = crear_registro(init.cantidad_entradas);
+
+		log_info(logger, "Cree registro de entradas");
+
 
 
 		//creo thread dump
@@ -256,6 +256,7 @@ int main (int argc, char * argv[]) {
 					struct ClaveValor claveValor;
 
 					claveValor.tamanioEntrada = init.tamanioEntrada;
+					claveValor.cantidadEntradas = init.cantidad_entradas;
 
 
 					//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
@@ -287,10 +288,25 @@ int main (int argc, char * argv[]) {
 
 					log_info(logger, "Recibi clave y valor");
 
-					pthread_mutex_lock(&lock_dump);
-					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
-					//SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
-					pthread_mutex_unlock(&lock_dump);
+					if(!strcmp((const char*)algoritmo,"CIRC")){
+						pthread_mutex_lock(&lock_dump);
+						SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+						pthread_mutex_unlock(&lock_dump);
+
+					}
+					else if(!strcmp((const char*)algoritmo,"LRU")){
+						pthread_mutex_lock(&lock_dump);
+						SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+						pthread_mutex_unlock(&lock_dump);
+					}
+					else if(!strcmp((const char*)algoritmo,"BSU")){
+						pthread_mutex_lock(&lock_dump);
+						//BSU
+						pthread_mutex_unlock(&lock_dump);
+					}
+
+
+
 
 					log_info(logger,"El valor del storage es: %s",storage);
 
@@ -330,14 +346,14 @@ int main (int argc, char * argv[]) {
   /*******************************************************************************************************************/
 
 
-
+#endif
 
 
 //-----------ACA LOS TESTS-------------------------------------------------------------------------------------
 
 	//correrTestsCircular();
 
-	//correrTestsLRU();
+	correrTestsLRU();
 
     //correrTestsDump();
 

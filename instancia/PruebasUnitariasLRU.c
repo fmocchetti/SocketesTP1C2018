@@ -98,16 +98,139 @@ void testReemplazarDatos(){
 
 }
 
+void testFINAL(){
+
+	int cantidadEntradas = 8 ;
+	int tamanioEntradas = 10;
+	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
+	*storage =0;
+
+	char* posicionDeLectura = storage;
+	char* posicionFinDeMemoria = (storage+(cantidadEntradas*tamanioEntradas));
+
+	t_list* tabla = list_create();
+
+	t_list* registro = crear_registro(cantidadEntradas);
+
+	/*
+SET nintendo:consola:nes Mario
+SET nintendo:consola:snes SuperMario
+SET nintendo:consola:nintendo64 Mario64
+SET nintendo:consola:gamecube FinalFantasyTactics
+SET nintendo:consola:wii MarioGalaxy
+SET nintendo:consola:wii MarioGalaxy2
+SET nintendo:consola:wiiu RIP
+SET nintendo:consola:nintendo64 MarioKart
+SET sony:consola:ps1 FF7
+SET nintendo:consola:nintendo64 PkmnSnap
+SET sony:consola:ps2 GodOfWar
+SET sony:consola:ps1 FF8
+SET sony:consola:ps3 TLOU
+SET sony:consola:ps2 GodOfWar2
+SET sony:consola:ps4 Bloodborne
+SET sony:consola:ps3 GodOfWar3
+SET microsoft:consola:xbox Halo
+SET microsoft:consola:xbox360 Halo
+SET microsoft:consola:xboxone Halo
+SET nintendo:consola:switch ZeldaBOTW*/
+
+	char clave1[40] = {"nintendo:consola:nes"}; char materia1[] = {"Mario"};
+	char clave2[40] = {"nintendo:consola:snes"}; char materia2[] = {"SuperMario"};
+	char clave3[40] = {"nintendo:consola:nintendo64"}; char materia3[] = {"Mario64"};
+	char clave4[40] = {"nintendo:consola:gamecube"}; char materia4[] = {"FinalFantasyTactics"};
+	char clave5[40] = {"nintendo:consola:wii"}; char materia5[] = {"MarioGalaxy"};
+	char clave6[40] = {"nintendo:consola:wii"}; char materia6[] = {"MarioGalaxy2"};
+	char clave7[40] = {"nintendo:consola:wiiu"}; char materia7[] = {"RIP"};
+	char clave8[40] = {"nintendo:consola:nintendo64"}; char materia8[] = {"MarioKart"};
+	char clave9[40] = {"sony:consola:ps1"}; char materia9[] = {"FF7"};
+	char clave10[40] = {"nintendo:consola:nintendo64"}; char materia10[] = {"PkmnSnap"};
+	char clave11[40] = {"sony:consola:ps2"}; char materia11[] = {"GodOfWar"};
+	char clave12[40] = {"sony:consola:ps1"}; char materia12[] = {"FF8"};
+	char clave13[40] = {"sony:consola:ps3"}; char materia13[] = {"TLOU"};
+/*	char clave14[40] = {"K9521"}; char materia14[] = {"Matematica Superior"};
+	char clave15[40] = {"K2005"}; char materia15[] = {"Sistemas Operativos"};
+	char clave16[40] = {"K9521"}; char materia16[] = {"Matematica Superior"};
+	char clave17[40] = {"K2005"}; char materia17[] = {"Sistemas Operativos"};
+	char clave18[40] = {"K9521"}; char materia18[] = {"Matematica Superior"};
+	char clave19[40] = {"K2005"}; char materia19[] = {"Sistemas Operativos"};
+	char clave20[40] = {"K9521"}; char materia20[] = {"Matematica Superior"};
+	char clave21[40] = {"K2005"}; char materia21[] = {"Sistemas Operativos"};
+	char clave22[40] = {"K9521"}; char materia22[] = {"Matematica Superior"};*/
+
+
+	struct ClaveValor claveValor,claveValor2;
+	claveValor.cantidadEntradas = cantidadEntradas;
+
+	strcpy(claveValor.clave,clave1);
+	claveValor.valor = (char*)&materia1;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave2);
+	claveValor.valor = (char*)&materia2;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave3);
+	claveValor.valor = (char*)&materia3;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave4);
+	claveValor.valor = (char*)&materia4;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave5);
+	claveValor.valor = (char*)&materia5;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave6);
+	claveValor.valor = (char*)&materia6;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave7);
+	claveValor.valor = (char*)&materia7;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave8);
+	claveValor.valor = (char*)&materia8;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave9);
+	claveValor.valor = (char*)&materia9;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave10);
+	claveValor.valor = (char*)&materia10;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave11);
+	claveValor.valor = (char*)&materia11;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+	strcpy(claveValor.clave,clave12);
+	claveValor.valor = (char*)&materia12;
+	claveValor.tamanioEntrada = tamanioEntradas;
+	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+
+
+
+	liberar_registros(&registro);
+	liberar_recursos(&tabla);
+	free(storage);
+
+
+
+
+}
 
 
 int correrTestsLRU(){
 
-
+	configure_logger();
 	  CU_initialize_registry();
 
 	  CU_pSuite prueba = CU_add_suite("Suite de prueba LRU", NULL, NULL);
-	  CU_add_test(prueba, "PrueboAgreagarDatosSinReemplazo",testAgregarDatos);
-	  CU_add_test(prueba, "PrueboAgreagarDatosConReemplazo",testReemplazarDatos);
+	 // CU_add_test(prueba, "PrueboAgreagarDatosSinReemplazo",testAgregarDatos);
+	  //CU_add_test(prueba, "PrueboAgreagarDatosConReemplazo",testReemplazarDatos);
+	  CU_add_test(prueba, "PrueboFINAL",testFINAL);
 
 	  CU_basic_set_mode(CU_BRM_VERBOSE);
 	  CU_basic_run_tests();

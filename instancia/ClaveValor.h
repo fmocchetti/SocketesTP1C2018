@@ -14,6 +14,7 @@ struct ClaveValor{
 	char clave[40];
 	char * valor;
 	int tamanioEntrada;
+	int cantidadEntradas;
 
 };
 

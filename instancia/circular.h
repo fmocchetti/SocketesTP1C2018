@@ -30,4 +30,5 @@ int SET_circular(char** l,t_list** t,struct ClaveValor* cv,char* ppio,char* fin)
 int calcular_cantidad_entradas(int longitudS,int tamEntrada);
 
 
+
 #endif /* CIRCULAR_H_ */
