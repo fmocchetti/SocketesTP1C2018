@@ -840,6 +840,7 @@ void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi, i
 			//log_info(logger,"Haciendo SET de la clave '%s' \n", clave);
 			break;
 		default:
+			_exit_with_error(socket_ESI,"La ESI sera abortada ya que la instancia esta caida",NULL);
 			//TODO: Aca hace algo negro
 			break;
 	}
@@ -861,24 +862,30 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	esi_bloqueada_de_entrada = 1;
 	char* string = config_get_string_value(config_file, "claves_bloqueadas");
 
-	token = strtok(string, comma);
+	if(string == NULL){
+		log_info(logger,"Nada que bloquear por archivo de config");
+	}
 
-	while( token != NULL ) {
-	//printf( " %s\n", token );
-	queue_push(queue_clave_inicio,token);
-	token = strtok(NULL, comma);
-	   }
+	else{
+		token = strtok(string, comma);
 
-	tamanio_queue = queue_size(queue_clave_inicio);
-	send(socket,&mensaje_coord,1,0);
-	send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+		while( token != NULL ) {
+		//printf( " %s\n", token );
+		queue_push(queue_clave_inicio,token);
+		token = strtok(NULL, comma);
+		   }
 
-	while(!queue_is_empty(queue_clave_inicio)){
-		token = queue_pop(queue_clave_inicio);
-		tamanio_clave = strlen(token);
-		send(socket,&tamanio_clave,sizeof(int),0);
-		send(socket,token,tamanio_clave,0);
-		ESI_GET(token,-1,0);
+		tamanio_queue = queue_size(queue_clave_inicio);
+		send(socket,&mensaje_coord,1,0);
+		send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+
+		while(!queue_is_empty(queue_clave_inicio)){
+			token = queue_pop(queue_clave_inicio);
+			tamanio_clave = strlen(token);
+			send(socket,&tamanio_clave,sizeof(int),0);
+			send(socket,token,tamanio_clave,0);
+			ESI_GET(token,-1,0);
+		}
 	}
 	//free(token);
 	free(string);
