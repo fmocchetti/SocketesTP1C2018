@@ -14,10 +14,8 @@
 void* buscar(t_list *tabla,char* claveBuscada);
 
 void* liberar_recursos(t_list** tabla);
-/*
- * get_key busca por clave en la memoria y devuelve la posicion de memoria en donde
- * se encuentra dicho valor de la clave
- * */
+
+char* buscar_dato_por_posicion(t_list *tabla,char* posicion);
 
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 
@@ -29,6 +27,8 @@ int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir);
 int obtener_posicion_del_dato(t_list* tabla,struct Dato* unDato);
 
 int borrar_un_dato(t_list** tabla,struct Dato* unDato);
+
+int borrar_un_dato_y_liberar(t_list** tabla,struct Dato* unDato);
 
 int calcular_cant_entradas(int longitudS,int tamEntrada);//<-- esto no deberia estar aca
 

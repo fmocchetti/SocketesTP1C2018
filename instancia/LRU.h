@@ -19,8 +19,6 @@
 #include "socket_client.h"
 #include "Registro.h"
 
-//se repite en circular!!!------------------------------------
-bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria);
 
 t_list* crear_registro(int cantEntradas);
 
@@ -39,5 +37,7 @@ void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,c
 int SET_LRU(t_list** r,t_list** t,char* primPosMem,char** posLectura,char* posFinMem,struct ClaveValor* cV);
 
 char* obtener_entrada_menos_accedida(t_list** registro,char* primeraPosicionMemoria,int tamanioEntrada);
+
+int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, char*  primeraPosicionMemoria, int tamanioEntrada,int cantidadEntradasNecesariasLiberar);
 
 #endif /* LRU_H_ */

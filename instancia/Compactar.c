@@ -86,5 +86,7 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posici
 
 	*posicionDeLectura = posicionInsercion;
 
+	log_info(logger,"COMPACTAR: Se compacto el storage");
+
 return 0;
 }

@@ -16,6 +16,38 @@ char* obtener_entrada_menos_accedida(t_list** registro,char* primeraPosicionMemo
 return primeraPosicionMemoria + (numeroEntrada * tamanioEntrada);
 }
 
+int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, char*  primeraPosicionMemoria
+		, int tamanioEntrada,int cantidadEntradasNecesariasLiberar){
+
+
+
+	  int sizeTabla = list_size(*tabla);
+	  int i = 0, entradasLiberadas = 0;
+	  struct Dato* unDato;
+	  //int numeroEntrada = obtener_numero_entrada(registro);
+      //char* punteroAlValor = primeraPosicionMemoria + (numeroEntrada * tamanioEntrada);
+	  ordenar_registro(registro);
+	  while(i< sizeTabla && entradasLiberadas < cantidadEntradasNecesariasLiberar){
+
+			struct Registro* reg = list_get(*registro,i);
+			unDato = buscar_dato_por_posicion(*tabla,primeraPosicionMemoria + (reg->numeroEntrada * tamanioEntrada));
+			if(calcular_cantidad_entradas(unDato->cantidadDeBytes,tamanioEntrada)==1){ //es atomica
+
+				borrar_un_dato_y_liberar(tabla,unDato);
+				sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
+
+			}
+			i++;
+			entradasLiberadas++;
+
+	  }
+	  log_info(logger,"LRU: Se liberaron %d entradas atomicas menos accedidas",entradasLiberadas);
+return 0;
+}
+
+
+
+
 
 int calcular_entrada(char* primerPoscionMemoria,char* posicionDeLectura,int tamanioEntrada){
 
@@ -83,8 +115,6 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 					log_info(logger,"LRU: Se guardo el valor en memoria");
 					cargar_info_en_dato(&unDato,*punteroEntradaLibre,claveValor);
 					registrar_dato_en_tabla(tabla,&unDato);
-
-					//TODO: ARREGLAR SI SON MAS DE UNA ENTRADA
 					registrar_acceso_a_entrada(registro,primeraPosicionMemoria,punteroEntradaLibre,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
 
 
@@ -105,13 +135,41 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 		else{
 
 				log_info(logger,"LRU: No se encontraron entradas libres");
-	            char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
-	            log_info(logger,"LRU: Guardara el valor en entrada menos accedida, se pisara el valor: %s", posicionReemplazoEntrada);
-				memcpy(posicionReemplazoEntrada,claveValor->valor,longitudS);
-				cargar_info_en_dato(&unDato,*posicionReemplazoEntrada,claveValor);
-				registrar_dato_en_tabla(tabla,&unDato);
-				registrar_acceso_a_entrada(registro,primeraPosicionMemoria,posicionReemplazoEntrada,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+				liberar_entradas_atomicas_menos_accedidas(registro,tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+	            //char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
+	            log_info(logger,"LRU: Guardara el valor en entrada/s menos accedida/s, se chequara si son contiguas");
+				char* punteroEntradaLibre = 0;
 
+				if(son_contiguas(tabla,claveValor,cantidadEntradasAOcupar,&punteroEntradaLibre, primeraPosicionMemoria)){
+
+						log_info(logger,"LRU: Las entradas son contiguas, se realizara la inserccion");
+
+						memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+						log_info(logger,"LRU: Se guardo el valor en memoria");
+						cargar_info_en_dato(&unDato,*punteroEntradaLibre,claveValor);
+						registrar_dato_en_tabla(tabla,&unDato);
+						registrar_acceso_a_entrada(registro,primeraPosicionMemoria,punteroEntradaLibre,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+
+
+					    return 0;
+
+				}
+				else{
+
+						log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar");
+
+						//compactar ajusta el puntero posicionDeLectura
+						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+
+
+				}
+
+
+				memcpy(posicionDeLectura,claveValor->valor,longitudS);
+				cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+				registrar_dato_en_tabla(tabla,&unDato);
+				registrar_acceso_a_entrada(registro,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+				log_info(logger,"LRU: Se reemplazaron las entradas");
 
 		}
 

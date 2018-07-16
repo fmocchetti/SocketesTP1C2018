@@ -17,6 +17,24 @@ void* buscar(t_list *tabla,char* claveBuscada){
 return dato;
 }
 
+
+char* buscar_dato_por_posicion(t_list *tabla,char* posicion){
+	bool elemento_buscado(struct Dato* unDato) {
+
+	     return (unDato->posicionMemoria == posicion);
+
+
+	}
+	if (list_size(tabla) <= 0){
+		return NULL;
+	}
+	struct Dato* dato = (struct Dato*)list_find(tabla,elemento_buscado);
+
+return dato;
+
+}
+
+
 int calcular_cant_entradas(int longitudS,int tamEntrada){
 
 	int resto = longitudS % tamEntrada;
@@ -121,6 +139,20 @@ int borrar_un_dato(t_list** tabla,struct Dato* unDato){
 	if(posicion >= 0){
 
 		list_remove(*tabla,posicion);
+	return 0;
+	}
+
+return -1;
+}
+
+int borrar_un_dato_y_liberar(t_list** tabla,struct Dato* unDato){
+
+	int posicion = obtener_posicion_del_dato(*tabla,unDato);
+
+	if(posicion >= 0){
+		//coregir estoooo
+		//agregar remove and destro element
+		list_remove(*tabla,unDato);
 	return 0;
 	}
 
