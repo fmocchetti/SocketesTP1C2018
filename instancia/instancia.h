@@ -32,6 +32,7 @@
 #include "ReemplazoEntrada.h"
 #include "STORE.h"
 #include "ElLevantadorDeArchivos.h"
+#include "Compactar.h"
 
 
 

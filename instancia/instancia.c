@@ -338,6 +338,15 @@ int main (int argc, char * argv[]) {
 
 					free(ruta);
 				}
+				else if(identificador==200){ //compactar
+
+					pthread_mutex_lock(&lock_dump);
+
+					compactar(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,init.tamanioEntrada);
+
+					pthread_mutex_unlock(&lock_dump);
+
+				}
 				usleep(init.retardo * 1000);
 				identificador = 1;
 				send(server, &identificador, 1, 0);
