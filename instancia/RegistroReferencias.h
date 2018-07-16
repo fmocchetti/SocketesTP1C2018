@@ -15,6 +15,12 @@ struct Registro{
 
 };
 
+struct Registro_por_bytes{
+
+	unsigned int cantidadBytes;
+	unsigned int numeroEntrada;
+
+};
 
 
 #endif /* REGISTROREFERENCIAS_H_ */
