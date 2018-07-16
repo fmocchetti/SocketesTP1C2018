@@ -1,6 +1,5 @@
 #include "instancia.h"
 
-
 int respaldar_informacion_thread(parametros_dump* parametros){
 
 	while(1){
@@ -64,7 +63,7 @@ return EXIT_SUCCESS;
 
 int main (int argc, char * argv[]) {
 
-#if 0
+//#if 0
 	pthread_mutex_init(&lock_dump, NULL);
 
 	if(argc < 2) {
@@ -74,7 +73,7 @@ int main (int argc, char * argv[]) {
 
 	t_config * config_file = config_create(argv[1]);
 
-	int intervaloDump = atoi(config_get_string_value(config_file, "Intervalo_de_dump"));
+	int intervaloDump = config_get_int_value(config_file, "Intervalo_de_dump");
 	char* puntoMontaje = config_get_string_value(config_file, "Montaje");
 	char* algoritmo = config_get_string_value(config_file, "Algoritmo");
 	int nombre = config_get_int_value(config_file, "Nombre");
@@ -178,29 +177,38 @@ int main (int argc, char * argv[]) {
 
 		//-----------------------------------------------------------------------------------------------------------
 
-		/*
 
-		int cantidad_claves;
+
+		int cantidad_claves,seUso = 0;
 		t_dictionary* tablaDeRequeridas = dictionary_create();
 		recv(server,&identificador,1,0);
-		if(identificador == 200) {
+		log_info(logger, "Identificador %d", identificador);
+		if(identificador == 57) {
 			recv(server, &cantidad_claves, 4, 0);
 			for(int i=0; i < cantidad_claves; i++) {
-
 				recv(server, &size_clave, 4, 0);
 				clave = (char *)malloc (size_clave + 1);
 				recv(server, clave, size_clave, 0);
 				clave[size_clave] = '\0';
+				log_info(logger, "Levantando clave %s", clave);
 				dictionary_put(tablaDeRequeridas,clave,clave);
 			}
-
 			//para probar
 			//dictionary_put(tablaDeRequeridas,"futbol:ansaldi","futbol:ansaldi");
 			//dictionary_put(tablaDeRequeridas,"futbol:messi","futbol:messi");
 
 			levantar_archivos_a_memoria(&storage,init.tamanioEntrada,&tabla,tablaDeRequeridas,posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
+
+			dictionary_destroy_and_destroy_elements(tablaDeRequeridas,freeDeClaves);
+
+			seUso=1;
 		}
-*/
+
+		if(seUso==0){
+
+			dictionary_destroy(tablaDeRequeridas);
+
+		}
 
 
 		//-----------------------------------------------------------------------------------------------------------
@@ -227,7 +235,6 @@ int main (int argc, char * argv[]) {
 
 				log_info(logger, "Identificador %d", identificador);
 
-
 				//recibo clave
 				int rc = recv(server, &size_clave, 4, 0);
 
@@ -248,6 +255,7 @@ int main (int argc, char * argv[]) {
 				log_info(logger, "Clave %s", clave);
 
 				log_info(logger, "Identificador %d", identificador);
+
 
 				//TODO: Si es un get aca no tiene que recibir nada
 				if(identificador == 22){
@@ -346,14 +354,14 @@ int main (int argc, char * argv[]) {
   /*******************************************************************************************************************/
 
 
-#endif
+//#endif
 
 
 //-----------ACA LOS TESTS-------------------------------------------------------------------------------------
 
 	//correrTestsCircular();
 
-	correrTestsLRU();
+	//correrTestsLRU();
 
     //correrTestsDump();
 

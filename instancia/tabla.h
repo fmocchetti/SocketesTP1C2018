@@ -9,7 +9,7 @@
 #include <commons/collections/node.h>
 #include "Dato.h"
 
-
+void* freeDeClaves(char*);
 
 void* buscar(t_list *tabla,char* claveBuscada);
 

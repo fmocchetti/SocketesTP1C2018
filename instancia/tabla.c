@@ -145,6 +145,14 @@ int borrar_un_dato(t_list** tabla,struct Dato* unDato){
 return -1;
 }
 
+void* freeDeClaves(char * clave){
+
+
+	free(clave);
+
+
+}
+
 int borrar_un_dato_y_liberar(t_list** tabla,struct Dato* unDato){
 
 	int posicion = obtener_posicion_del_dato(*tabla,unDato);
