@@ -10,6 +10,7 @@ int main(int argc, char **argv){
 	esi->cantidadDeLineas = 0;
 	esi->operacion = 0;
 	unsigned char mensaje_a_planificador_de_mi_info = 18;
+	unsigned char finalizacion = 200;
 	FILE *script;
 	char *line = NULL;
 	size_t len = 0;
@@ -117,6 +118,9 @@ int main(int argc, char **argv){
 		}
 
 	}
+	solicitudDeEjecucionPlanificador(socket_planificador);
+	send(socket_planificador, &finalizacion, 1, 0);
+	//finalizacionESI(socket_planificador);
 
 	fclose(script);
 
@@ -125,7 +129,9 @@ int main(int argc, char **argv){
 
 
 	free(esi);
+
 	return EXIT_SUCCESS;
+
 
 }
 
@@ -159,6 +165,29 @@ bool solicitudDeEjecucionPlanificador(int socket){
 		printf("ERROR bad address\n");
 		exit(EXIT_FAILURE);
 	}else if(buffer != 1){
+		log_error(logger, "El buffer es %d", buffer);
+		return false;
+	}
+
+	//Si el buffer es 1 entonces es OK (segun el protocolo)
+	return true;
+}
+
+bool finalizacionESI(int socket){
+
+	unsigned char buffer;
+	int rc;
+
+	//recivo del planificador el ok para mandar la esi al coordinador
+	rc = recv(socket, &buffer, sizeof(buffer), 0);
+
+	if (rc == 0){
+		printf("Desconexion con el Planificador\n");
+		exit(EXIT_FAILURE);
+	}else if (rc == -1){
+		printf("ERROR bad address\n");
+		exit(EXIT_FAILURE);
+	}else if(buffer != 58){
 		log_error(logger, "El buffer es %d", buffer);
 		return false;
 	}

@@ -79,7 +79,7 @@ void _planificador(int socket_local) {
 				log_info(logger, "Voy a desbloquear la clave '%s'", clave);
 				if(dictionary_has_key(diccionario_claves, clave)) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
-					store_clave(clave, clave_diccionario->instancia);
+					store_clave(clave, (clave_diccionario->instancia - 1));
 					clave_diccionario->tomada = false;
 					log_error(logger, "clave desbloqueada");
 				} else {
