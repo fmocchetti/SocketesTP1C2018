@@ -19,7 +19,7 @@
 #include <pthread.h>
 #include "socket_client.h"
 #include "Compactar.h"
-
+#include "ReemplazoEntrada.h"
 
 bool no_hay_lugar(int tamanio,char* l,char* fin);
 

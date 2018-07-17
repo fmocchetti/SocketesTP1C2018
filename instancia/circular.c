@@ -83,7 +83,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
 					log_info(logger,"CIRC:Se guardo el valor en memoria");
-					cargar_info_en_dato(&unDato,*punteroEntradaLibre,claveValor);
+					cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 					registrar_dato_en_tabla(tabla,&unDato);
 
 

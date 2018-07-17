@@ -50,7 +50,7 @@ int calcular_cant_entradas(int longitudS,int tamEntrada){
 return resultado;
 }
 
-void ordenar_tabla(t_list** tabla,char* primeraPosicion){
+void* ordenar_tabla(t_list** tabla,char* primeraPosicion){
 
 	bool mas_proximas_al_comienzo(struct Dato* a,struct Dato* b){
 
@@ -60,6 +60,20 @@ void ordenar_tabla(t_list** tabla,char* primeraPosicion){
 		return(distanciaA < distanciaB);
 	}
 	list_sort(*tabla,mas_proximas_al_comienzo);
+
+}
+
+
+void* ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla){
+
+	bool mas_grandes_al_comienzo(struct Dato* a,struct Dato* b){
+
+		int catBytesA = a->cantidadDeBytes;
+		int catBytes = b->cantidadDeBytes;
+
+		return(catBytesA > catBytes);
+	}
+	list_sort(*tabla,mas_grandes_al_comienzo);
 
 }
 

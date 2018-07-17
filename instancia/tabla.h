@@ -23,8 +23,11 @@ int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir);
 
 int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir);
 
+bool existe_la_clave(t_list *tabla,char* claveBuscada);
 
 int obtener_posicion_del_dato(t_list* tabla,struct Dato* unDato);
+
+void* ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla);
 
 int borrar_un_dato(t_list** tabla,struct Dato* unDato);
 

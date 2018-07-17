@@ -33,6 +33,7 @@
 #include "STORE.h"
 #include "ElLevantadorDeArchivos.h"
 #include "Compactar.h"
+#include "BSU.h"
 
 
 

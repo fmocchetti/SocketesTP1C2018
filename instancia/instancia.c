@@ -8,7 +8,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 		pthread_mutex_lock(&lock_dump);
 
 
-		log_info(logger,"****Comienza el proceso respaldo de Informacion en: %s ****",parametros->puntoDeMontaje);
+		log_info(logger,"DUMP: ****Comienza el proceso respaldo de Informacion en: %s ****",parametros->puntoDeMontaje);
 
 		int tamanioTabla = list_size(parametros->tabla);
 		if(tamanioTabla <= 0){
@@ -32,7 +32,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 				int fd = open(rutaArmada, O_RDWR | O_CREAT, (mode_t)0600);
 				if(fd < 0){
-					log_error(logger,"Error al abrir la ruta, puede que el directorio %s no exista",parametros->puntoDeMontaje);
+					log_error(logger,"DUMP: Error al abrir la ruta, puede que el directorio %s no exista",parametros->puntoDeMontaje);
 					return EXIT_FAILURE;
 				}
 				lseek(fd, unDato->cantidadDeBytes-1, SEEK_SET);
@@ -48,8 +48,8 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 				*rutaArmada = 0;
 
 			}
-			log_info(logger,"****Finaliza el proceso respaldo de Informacion..****");
-			log_info(logger,"**Se crearon %d archivo/s**",j);
+			log_info(logger,"DUMP: ****Finaliza el proceso respaldo de Informacion..****");
+			log_info(logger,"DUMP: **Se crearon %d archivo/s**",j);
 
 			pthread_mutex_unlock(&lock_dump);
 			free(rutaArmada);
@@ -99,55 +99,55 @@ int main (int argc, char * argv[]) {
 
 		recv(server, &identificador, 1, 0);
 		int messageLength;
-		log_info(logger,"Recibi %d \n", identificador);
+		log_info(logger,"INSTANCIA %d: Recibi %d \n",nombre ,identificador);
 		recv(server, &messageLength, 4, 0);
-		log_info(logger,"Recibi %d \n", messageLength);
+		log_info(logger,"INSTANCIA %d: Recibi %d \n", nombre ,messageLength);
 		void * message = malloc(messageLength);
 		int rec =recv(server, message, messageLength, 0);
-		log_info(logger,"Recibi %d bytes", rec);
+		log_info(logger,"INSTANCIA %d: Recibi %d bytes",nombre , rec);
 
 		memcpy(&init.cantidad_entradas, message, 4);
-		log_info(logger,"Cantidad entradas: %d", init.cantidad_entradas);
+		log_info(logger,"INSTANCIA %d: Cantidad entradas: %d",nombre , init.cantidad_entradas);
 
 		memcpy(&init.tamanioEntrada, message+4, 4);
-		log_info(logger,"Tamanio entradas: %d", init.tamanioEntrada);
+		log_info(logger,"INSTANCIA %d: Tamanio entradas: %d",nombre , init.tamanioEntrada);
 
 		memcpy(&init.retardo, message+8, 4);
-		log_info(logger,"Retardo: %d", init.retardo);
+		log_info(logger,"INSTANCIA %d: Retardo: %d",nombre , init.retardo);
 
 		free(message);
 
-		log_info(logger, "Valores iniciales %d, %d, %d", init.cantidad_entradas, init.tamanioEntrada, init.retardo);
+		log_info(logger, "INSTANCIA %d: Valores iniciales %d, %d, %d",nombre , init.cantidad_entradas, init.tamanioEntrada, init.retardo);
 
-		log_info(logger, "Recibi la inicializacion");
-
-
+		log_info(logger, "INSTANCIA %d: Recibi la inicializacion",nombre);
 
 
 
-		log_info(logger,"Estado server %d \n", server);
+
+
+		log_info(logger,"INSTANCIA %d: Estado server %d \n",nombre , server);
 
 		// creo el storage, la tabla y el registro de entradas
 		char* storage = (char*)malloc(init.cantidad_entradas*init.tamanioEntrada);
 
-		log_info(logger, "Cree el storage tamaño: %d",init.cantidad_entradas*init.tamanioEntrada);
+		log_info(logger, "INSTANCIA %d: Cree el storage tamaño: %d",nombre ,init.cantidad_entradas*init.tamanioEntrada);
 
 		*storage = 0;
 
 		t_list* tabla = list_create();
 
-		log_info(logger, "Cree la tabla");
+		log_info(logger, "INSTANCIA %d: Cree la tabla",nombre);
 
 
 		t_list* registro = crear_registro(init.cantidad_entradas);
 
-		log_info(logger, "Cree registro de entradas");
+		log_info(logger, "INSTANCIA %d: Cree registro de entradas",nombre);
 
 
 
 		//creo thread dump
 
-		log_info(logger, "Creo el thread Dump");
+		log_info(logger, "INSTANCIA %d: Creo el thread Dump",nombre);
 
 		pthread_t threadDumpeador;
 
@@ -155,14 +155,14 @@ int main (int argc, char * argv[]) {
 
 		if(parametros == NULL){
 
-			log_error(logger,"No se ha podido alocar memoria para parametros del dump");
+			log_error(logger,"INSTANCIA %d: No se ha podido alocar memoria para parametros del dump",nombre);
 			return EXIT_FAILURE;
 		}
 		parametros->puntoDeMontaje = puntoMontaje;
 		parametros->tabla = tabla;
 		parametros->intervaloDeDump = intervaloDump;
 
-		log_info(logger, "Cargue los parametros");
+		log_info(logger, "INSTANCIA %d: Cargue los parametros",nombre);
 
 		char* posicionDeLectura = storage;
 
@@ -170,7 +170,7 @@ int main (int argc, char * argv[]) {
 
 
 		if( pthread_create(&threadDumpeador, NULL, (void *)respaldar_informacion_thread,parametros)) {
-			log_error(logger, "Error creating thread Dump");
+			log_error(logger, "INSTANCIA %d: Error creating thread Dump",nombre);
 		}
 
 
@@ -182,7 +182,7 @@ int main (int argc, char * argv[]) {
 		int cantidad_claves,seUso = 0;
 		t_dictionary* tablaDeRequeridas = dictionary_create();
 		recv(server,&identificador,1,0);
-		log_info(logger, "Identificador %d", identificador);
+		log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
 		if(identificador == 57) {
 			recv(server, &cantidad_claves, 4, 0);
 			for(int i=0; i < cantidad_claves; i++) {
@@ -190,7 +190,7 @@ int main (int argc, char * argv[]) {
 				clave = (char *)malloc (size_clave + 1);
 				recv(server, clave, size_clave, 0);
 				clave[size_clave] = '\0';
-				log_info(logger, "Levantando clave %s", clave);
+				log_info(logger, "INSTANCIA %d: Levantando clave %s",nombre , clave);
 				dictionary_put(tablaDeRequeridas,clave,clave);
 			}
 			//para probar
@@ -233,28 +233,28 @@ int main (int argc, char * argv[]) {
 
 				recv(server, &identificador, 1, 0);
 
-				log_info(logger, "Identificador %d", identificador);
+				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
 
 				//recibo clave
 				int rc = recv(server, &size_clave, 4, 0);
 
-				log_info(logger, "size_clave %d %d", size_clave, rc);
+				log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
 
 				clave = (char *)malloc(size_clave + 1);
 
 				if(clave == NULL){
-					log_error(logger,"No se pudo alocar memoria para la clave");
+					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
 					return EXIT_FAILURE;
 				}
 
 				rc = recv(server, clave, size_clave, 0);
-				log_info(logger, "Clave %d", rc);
+				log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
 
 				clave[size_clave] = '\0';
 
-				log_info(logger, "Clave %s", clave);
+				log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
 
-				log_info(logger, "Identificador %d", identificador);
+				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
 
 
 				//TODO: Si es un get aca no tiene que recibir nada
@@ -270,31 +270,31 @@ int main (int argc, char * argv[]) {
 					//OJO el campo claveValor.clave es char[40] tamaño fijado de la clave, en el tp  lo pide
 
 
-					log_info(logger, "Asigne tamanioClave %d" , size_clave);
+					log_info(logger, "INSTANCIA %d: Asigne tamanioClave %d" ,nombre , size_clave);
 
 					strcpy(claveValor.clave,clave);
 
 
-					log_info(logger, "Asigne clave: %s",clave);
+					log_info(logger, "INSTANCIA %d: Asigne clave: %s",nombre ,clave);
 
 
 
-					log_info(logger, "Asigne las estructuras");
+					log_info(logger, "INSTANCIA %d: Asigne las estructuras",nombre);
 
 					recv(server, &size_valor, 4, 0);
 					valor = malloc(size_valor + 1);
 					recv(server, valor, size_valor, 0);
 					valor[size_valor] = '\0';
-					log_info(logger, "Valor %s", valor);
+					log_info(logger, "INSTANCIA %d: Valor %s",nombre , valor);
 
 					claveValor.valor = valor;
 
-					log_info(logger, "Asigne valor: %s",valor);
+					log_info(logger, "INSTANCIA %d: Asigne valor: %s",nombre ,valor);
 
 
-					log_info(logger, "Valores iniciales %s, %s, %d", clave, valor, init.retardo);
+					log_info(logger, "INSTANCIA %d: Valores iniciales %s, %s, %d",nombre , clave, valor, init.retardo);
 
-					log_info(logger, "Recibi clave y valor");
+					log_info(logger, "INSTANCIA %d: Recibi clave y valor",nombre);
 
 					if(!strcmp((const char*)algoritmo,"CIRC")){
 						pthread_mutex_lock(&lock_dump);
@@ -309,14 +309,14 @@ int main (int argc, char * argv[]) {
 					}
 					else if(!strcmp((const char*)algoritmo,"BSU")){
 						pthread_mutex_lock(&lock_dump);
-						//BSU
+						SET_BSU(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 						pthread_mutex_unlock(&lock_dump);
 					}
 
 
 
 
-					log_info(logger,"El valor del storage es: %s",storage);
+					log_info(logger,"INSTANCIA %d: El valor del storage es: %s",nombre ,storage);
 
 					free(valor);
 
@@ -326,7 +326,7 @@ int main (int argc, char * argv[]) {
 					ruta = malloc(size_ruta);
 
 					if(ruta == NULL){
-						log_error(logger,"No se pudo alocar memoria para la ruta");
+						log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la ruta",nombre);
 						return EXIT_FAILURE;
 					}
 
@@ -347,12 +347,51 @@ int main (int argc, char * argv[]) {
 					pthread_mutex_unlock(&lock_dump);
 
 				}
+				else if(identificador == 300){// status consola
+
+					log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
+
+					int id;
+					char* clave;
+					struct Dato* unDato = buscar(tabla,clave);
+					if(clave == NULL){
+
+						log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
+						int id = 5000; //cambiar numeroo <------------------
+
+						//no se encontro la clave
+						send(server, &id, 1, 0);
+
+					}
+					else{
+
+
+						log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
+
+						//cmabiar numeroooooooooooo id <------------------
+						id = 6000;
+
+						int tamanioBuffer = 1+4+unDato->cantidadDeBytes;
+						log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
+						char* buffer = (char*) malloc (tamanioBuffer);
+						memcpy(buffer,&id,1);
+						memcpy(buffer+1,&unDato->cantidadDeBytes,4);
+						memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
+						send(server, &buffer, tamanioBuffer, 0);
+
+						free(buffer);
+
+					}
+
+
+
+				}
 				usleep(init.retardo * 1000);
 				identificador = 1;
 				send(server, &identificador, 1, 0);
-				log_info(logger, "Le informe al coordinador que termine status:%d", identificador);
+				log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status:%d",nombre , identificador);
 				free(clave);
-				log_info(logger, "Ya termine de ejecutar esa instruccion");
+				log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
 		}
 		//libero memoria
 	    //free(storage);//free(parametros);
