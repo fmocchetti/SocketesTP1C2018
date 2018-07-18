@@ -31,7 +31,8 @@ int main (int argc, char *argv[])
 	sem_init(&sem_pausar_planificacion, 0, 1);
 	sem_init(&sem_pausar_algoritmo, 0, 1);
 
-	config_file = config_create("planificador.conf");
+	//config_file = config_create("planificador.conf");
+	config_file = config_create(argv[1]);
 	//Configuro los logs a utilizar
 	configure_logger();
 	//configure_logger_consola();

@@ -193,6 +193,7 @@ int connect_to_server(char * ip, char * port) {
 	if(server_socket < 0) {
 		log_error(logger, "Failed creating socket %d\n", errno);
 		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+		//_exit_with_error_and_close(server_socket, "No me pude conectar al servidor", NULL);
 	}
 
 	int res = connect(server_socket, server_info->ai_addr, server_info->ai_addrlen);
@@ -200,11 +201,11 @@ int connect_to_server(char * ip, char * port) {
 	freeaddrinfo(server_info);  // No lo necesitamos mas
 
 	if (res < 0) {
-		_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+		//_exit_with_error(server_socket, "No me pude conectar al servidor", NULL);
+		_exit_with_error_and_close(server_socket, "No me pude conectar al coordinador", NULL);
 	}
 
 	log_info(logger, "Conectado!");
-
 	return server_socket;
 }
 
