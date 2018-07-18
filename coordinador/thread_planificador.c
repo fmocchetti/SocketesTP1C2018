@@ -67,7 +67,7 @@ void _planificador(int socket_local) {
 	        		}
 	        		sem_wait(&mutex_instancia);
 	        		log_info(logger, "Se almaceno la clave en la instancia %d", instancia_destino->id);
-	        		//free(clave);
+	        		//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
 				}
 				break;
 			case PLANIFICADOR_DESBLOQUEAR:
@@ -85,7 +85,7 @@ void _planificador(int socket_local) {
 				} else {
 					log_error(logger, "Intentando desbloquear una clave inexistente");
 				}
-				//free(clave);
+				//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
 				break;
 			case PLANIFICADOR_STATUS:
 				recv(socket_local, &size_clave, 4, 0);

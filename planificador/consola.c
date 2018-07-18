@@ -208,7 +208,7 @@ void kill(){
 	//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		claves* clave_temporal = NULL;
 		clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-		ESI_STORE(clave_temporal->claveAEjecutar,0);
+		ESI_STORE(clave_temporal->claveAEjecutar);
 		free(clave_temporal);
 		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 		}
@@ -217,7 +217,6 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		laWeaReplanificadoraFIFO(muertos,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
@@ -229,7 +228,6 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI_kill);
-		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
@@ -241,7 +239,6 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI_kill);
-		nodo_lista_ejecucion->cantidadDeLineas = 0;
 		list_add(muertos,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en bloqueados murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);

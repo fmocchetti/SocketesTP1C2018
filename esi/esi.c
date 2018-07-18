@@ -58,14 +58,14 @@ int main(int argc, char **argv){
 
 	//envio al planificador el id y la cantidad de lineas del archivo y espero la solicitud de ejecucion
 	send(socket_planificador, &mensaje_a_planificador_de_mi_info, 1, 0);
-    sd = send(socket_planificador, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+    /*sd = send(socket_planificador, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 	if (sd < 0){
 		printf("Error en enviar cantidadDeLineas al planificador\n");
 		exit(EXIT_FAILURE);
 	}
 
 	log_info(logger, "Le envie la cantidad de lineas al planificador");
-
+*/
 	//El machete estuvo aqui
 
 	read = getline(&line, &len, script);

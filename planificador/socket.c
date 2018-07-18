@@ -118,7 +118,6 @@ void thread_on_connection(int listen_sd) {
 		//-----------	Aca tendria que meter al cliente en la lista que corresponda ---------------------
 		unsigned char id_mensaje_esi;
 		ESI *esi= (ESI*) malloc(sizeof(ESI));
-		ESI *esi2= (ESI*) malloc(sizeof(ESI));
 
 
 		// Le indico a la nueva ESI el ID que le corresponde
@@ -137,18 +136,23 @@ void thread_on_connection(int listen_sd) {
 
 		//Chequeo si el mensaje recibido de la ESI es el correcto
 		if(id_mensaje_esi != 18){
+
+			list_destroy_and_destroy_elements(listos,(void*)element_destroyer);
+			list_destroy_and_destroy_elements(bloqueados,(void*)element_destroyer);
+			list_destroy_and_destroy_elements(ejecucion,(void*)element_destroyer);
+			list_destroy_and_destroy_elements(terminados,(void*)element_destroyer);
 			 _exit_with_error((int)socket, "id de mensaje incorrecto", NULL);
 			 _exit_with_error_and_close((int)socket_coord, "Desconexion con el coordinador, saliendo", NULL);
 		}
 
-
+/*
 		//Si lo es, sigo recibiendo
 
 		rc = recv(new_sd, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas),0);
 		if (rc <= 0) {
 			_exit_with_error(new_sd, "El socket murio", NULL);
 		}
-
+*/
 		//esi->rafaga = calculoProxRafaga((float)alpha,(float)estimacion_inicial,(float)esi->cantidadDeLineas);
 
 		esi->lineas_ejecutadas = 0;
@@ -156,24 +160,11 @@ void thread_on_connection(int listen_sd) {
 		esi->rafaga = esi->estimacion_rafaga;
 		esi->espera = 0;
 
-		//esi->rafaga = calculoProxRafaga((float)alpha,esi->estimacion_rafaga,(float)esi->lineas_ejecutadas);
-		printf("!!!!!!!!!!!!!!!!!!!!!estimacion rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->estimacion_rafaga);
-		printf("!!!!!!!!!!!!!!!!!!!!!rafaga de %f!!!!!!!!!!!!!!!!!!\n",esi->rafaga);
-
-		esi2->socket_esi = esi->socket_esi;
-		esi2->id_ESI = esi->id_ESI;
-		printf("id esi %d\n",esi2->id_ESI);
-		esi2->cantidadDeLineas = esi->cantidadDeLineas;
-		esi2->rafaga = esi->rafaga;
-		esi2->lineas_ejecutadas = esi->lineas_ejecutadas;
-		esi2->estimacion_rafaga = esi->estimacion_rafaga;
-		esi2->espera = esi->espera;
-
-		free(esi);
+		printf("id esi %d\n",esi->id_ESI);
 
 		//agrego el nuevo proceso a la cola de listos
 		printf("Agregando a la lista de ready\n");
-		list_add(listos, (ESI*)esi2);
+		list_add(listos, (ESI*)esi);
 		printf("Agregado!\n");
 		//esi2 = (ESI*) list_get(listos, 0);
 		//printf("Cantidad de lineas por ejecutar: %d\n", esi->cantidadDeLineas);
@@ -181,7 +172,6 @@ void thread_on_connection(int listen_sd) {
 		//semaforo para indicar que hay un nuevo proceso listo para su ejecucion
 		sem_post(&new_process);
 		replanificar = 1;
-
         free(buffer);
 	}
 }

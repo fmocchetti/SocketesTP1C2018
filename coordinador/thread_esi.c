@@ -87,6 +87,7 @@ void _esi(int socket_local) {
         		instancia = NULL;
         		informar_planificador(clave, COORDINADOR_GET);
         		log_info(log_operaciones, "ESI %d - GET %s", id_esi, clave);
+        		//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
         		break;
         	case ESI_SET:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -130,6 +131,8 @@ void _esi(int socket_local) {
 					informar_planificador(clave, COORDINADOR_ERROR);
         		log_info(log_operaciones, "ESI %d - SET %s %s", id_esi, clave, valor);
         		instancia = NULL;
+        		//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
+        		//free(valor);//////////TE AGREGUE ESTE FREE CHANGUI
         	    break;
         	case ESI_STORE:
         		rc = recv(socket_local, &message_length, 4, 0);
@@ -171,6 +174,7 @@ void _esi(int socket_local) {
 					informar_planificador(clave, COORDINADOR_ERROR);
         		log_info(log_operaciones, "ESI %d - STORE %s", id_esi, clave);
         		instancia = NULL;
+        		//free(clave);
         	    break;
         	default:
         		break;

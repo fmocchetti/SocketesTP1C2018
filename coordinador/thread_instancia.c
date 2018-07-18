@@ -11,6 +11,7 @@ void inicializar_instancia (int socket) {
 	memcpy(buffer+13, &retardo, 4);
 	send(socket, buffer, 5 + messageLength, 0);
 	log_info(logger, "Inicializacion enviada correctamente");
+	//free(buffer);//////////TE AGREGUE ESTE FREE CHANGUI
 }
 
 bool find_instancia(void * element) {
