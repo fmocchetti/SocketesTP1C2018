@@ -103,9 +103,10 @@ int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,
 		}
 		else{
 
-				log_info(logger,"BSU: No se encontraron entradas libres");
-				liberar_entradas_atomicas_con_valores_mas_grandes(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
-	            log_info(logger,"BSU: Guardara el valor en entrada/s en las cuales el contenido ocupe mas espacio, se chequara si son contiguas");
+				log_info(logger,"BSU: No se encontraron entradas libres suficientes, se liberaran entradas atomicas con mas bytes");
+				int entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
+				liberar_entradas_atomicas_con_valores_mas_grandes(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
+	            log_info(logger,"BSU: Se liberaron entrasdas, se chequara si son contiguas");
 				char* punteroEntradaLibre = 0;
 
 				if(son_contiguas(tabla,claveValor,cantidadEntradasAOcupar,&punteroEntradaLibre, primeraPosicionMemoria)){

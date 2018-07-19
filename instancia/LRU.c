@@ -135,7 +135,8 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 		else{
 
 				log_info(logger,"LRU: No se encontraron entradas libres");
-				liberar_entradas_atomicas_menos_accedidas(registro,tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+				int entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
+				liberar_entradas_atomicas_menos_accedidas(registro,tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
 	            //char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
 	            log_info(logger,"LRU: Guardara el valor en entrada/s menos accedida/s, se chequara si son contiguas");
 				char* punteroEntradaLibre = 0;

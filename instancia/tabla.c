@@ -184,7 +184,7 @@ return -1;
 
 void* liberar_recursos(t_list** tabla){
 
-	void liberar_dato(struct Dato* unDato){
+	void* liberar_dato(struct Dato* unDato){
 		free(unDato);
 
 	}

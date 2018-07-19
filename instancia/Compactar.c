@@ -42,6 +42,8 @@ return false;
 
 bool hay_espacio_fragmentado_para_el_valor(t_list** tabla,struct ClaveValor* cv){
 
+	//me fijo si los datos de la tabla ocupan todas las entradas existentes
+
 	int tamEntrada = cv->tamanioEntrada;
 	int cantEntradas = cv->cantidadEntradas;
 	int tamanio = list_size(*tabla);

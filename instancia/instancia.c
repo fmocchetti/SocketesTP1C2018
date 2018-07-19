@@ -389,7 +389,7 @@ int main (int argc, char * argv[]) {
 				usleep(init.retardo * 1000);
 				identificador = 1;
 				send(server, &identificador, 1, 0);
-				log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status:%d",nombre , identificador);
+				log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
 				free(clave);
 				log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
 		}

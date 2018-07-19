@@ -5,7 +5,7 @@
 // chequeo si el espacio libre es menor al tamaño requerido
 bool no_hay_lugar(int tamanio,char* posicionDeLectura,char* posicionFinalMemoria){
 
-return ((posicionFinalMemoria - posicionDeLectura)<tamanio);
+return ((posicionFinalMemoria - posicionDeLectura) < tamanio);
 }
 
 int calcular_cantidad_entradas(int longitudS,int tamEntrada){
@@ -33,6 +33,33 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 	strcpy((char*)(unDato->clave),claveValor->clave);
 	//memcpy((unDato->clave),claveValor->clave,40);
 }
+
+int liberar_entradas_atomicas(t_list**tabla,char*  primeraPosicionMemoria,int tamanioEntrada,int cantidadEntradasNecesariasLiberar){
+
+	  int sizeTabla = list_size(*tabla);
+	  int i = 0, entradasLiberadas = 0;
+	  struct Dato* unDato;
+	  while(i< sizeTabla && entradasLiberadas < cantidadEntradasNecesariasLiberar){
+
+		    unDato  = list_get(*tabla,i);
+			if(calcular_cantidad_entradas(unDato->cantidadDeBytes,tamanioEntrada) == 1){ //es atomica
+
+				borrar_un_dato_y_liberar(tabla,unDato);
+				sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
+
+			}
+			i++;
+			entradasLiberadas++;
+
+	  }
+	  log_info(logger,"CIRC: Se liberaron %d entradas atomicas",entradasLiberadas);
+return 0;
+
+
+}
+
+
+
 
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
 int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
@@ -62,27 +89,28 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 	//si se termino la memoria vuelvo al principio
 	if(*posicionDeLectura==posicionFinalMemoria){
 
-		*posicionDeLectura=primeraPosicionMemoria;
+		*posicionDeLectura = primeraPosicionMemoria;
+
 
 	}
 	//si no hay lugar para todo el string lo parto y coloco lo que entra y el resto al principio
 	//de la memoria
 	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
-		log_info(logger,"CIRC:No hay lugar para el valor actual, se buscaran entradas libres");
+		log_info(logger,"CIRC: No hay lugar para el valor actual, se buscaran entradas libres");
 
 		if(hay_espacio_fragmentado_para_el_valor(tabla,claveValor)){
 
-			log_info(logger,"CIRC:Hay entradas libres disponibles, se evaluara si son contiguas");
+			log_info(logger,"CIRC: Hay entradas libres disponibles, se evaluara si son contiguas");
 
 			char* punteroEntradaLibre = 0;
 
 				if(son_contiguas(tabla,claveValor,cantidadEntradasAOcupar,&punteroEntradaLibre, primeraPosicionMemoria)){
 
-					log_info(logger,"CIRC:Las entradas son contiguas, se realizara la inserccion");
+					log_info(logger,"CIRC: Las entradas son contiguas, se realizara la inserccion");
 
 					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
-					log_info(logger,"CIRC:Se guardo el valor en memoria");
+					log_info(logger,"CIRC: Se guardo el valor en memoria");
 					cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 					registrar_dato_en_tabla(tabla,&unDato);
 
@@ -92,7 +120,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 				}
 				else{
 
-					log_info(logger,"CIRC:Las entradas no son contiguas, se procedera a compactar");
+					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar");
 
 					//compactar ajusta el puntero posicionDeLectura
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
@@ -103,6 +131,48 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 		}
 		else{
+
+				log_info(logger,"CIRC: No hay entradas libres suficientes, se liberaran entradas atomicas");
+
+				int entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
+
+				int control = liberar_entradas_atomicas(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
+				if(control < 0 ){
+
+					log_info(logger,"CIRC: No se encontraron entradas atomicas para liberar");
+					return -1;
+
+				}
+				log_info(logger,"CIRC: Se liberaron entradas, se comprobara si son contiguas");
+
+				char* punteroEntradaLibre = 0;
+
+				if(son_contiguas(tabla,claveValor,cantidadEntradasAOcupar,&punteroEntradaLibre, primeraPosicionMemoria)){
+
+					log_info(logger,"CIRC: Las entradas son contiguas, se realizara la inserccion");
+
+					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+					log_info(logger,"CIRC: Se guardo el valor en memoria");
+					cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
+					registrar_dato_en_tabla(tabla,&unDato);
+
+
+				    return 0;
+
+				}
+				else{
+
+					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar");
+
+					//compactar ajusta el puntero posicionDeLectura
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+
+
+				}
+
+
+
+			/*
 
 
 				int espacioRestante = posicionFinalMemoria-*posicionDeLectura;
@@ -122,7 +192,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 				*posicionDeLectura += (espacioAOcupar-espacioRestante);
 
 				return 0;
-
+*/
 		}
 	}
 
@@ -130,7 +200,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 
-	log_info(logger,"CIRC:Se guardo el valor en memoria");
+	log_info(logger,"CIRC: Se guardo el valor en memoria");
 
 
 	cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
@@ -139,6 +209,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 	*posicionDeLectura += espacioAOcupar;
 
 	log_info(logger,"CIRC: Se inserto el valor %s",claveValor->valor);
+
 
 return 0;
 }
