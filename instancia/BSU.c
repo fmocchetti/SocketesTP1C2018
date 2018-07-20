@@ -136,7 +136,8 @@ int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,
 				memcpy(posicionDeLectura,claveValor->valor,longitudS);
 				cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 				registrar_dato_en_tabla(tabla,&unDato);
-				log_info(logger,"BSU: Se reemplazaron las entradas");
+				log_info(logger,"BSU: Se sobre-escribieron las entradas");
+				return 0;
 
 		}
 

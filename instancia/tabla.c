@@ -18,20 +18,20 @@ return dato;
 }
 
 
-char* buscar_dato_por_posicion(t_list *tabla,char* posicion){
+struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion){
+
 	bool elemento_buscado(struct Dato* unDato) {
 
 	     return (unDato->posicionMemoria == posicion);
 
-
 	}
 	if (list_size(tabla) <= 0){
+
 		return NULL;
 	}
 	struct Dato* dato = (struct Dato*)list_find(tabla,elemento_buscado);
 
 return dato;
-
 }
 
 

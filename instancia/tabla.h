@@ -15,7 +15,7 @@ void* buscar(t_list *tabla,char* claveBuscada);
 
 void* liberar_recursos(t_list** tabla);
 
-char* buscar_dato_por_posicion(t_list *tabla,char* posicion);
+struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion);
 
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 

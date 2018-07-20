@@ -322,11 +322,6 @@ int main (int argc, char * argv[]) {
 						pthread_mutex_unlock(&lock_dump);
 					}
 
-
-
-
-					log_info(logger,"INSTANCIA %d: El valor del storage es: %s",nombre ,storage);
-
 					free(valor);
 
 				} else if(identificador==23) {//store
