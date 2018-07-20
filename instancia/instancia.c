@@ -79,7 +79,7 @@ int main (int argc, char * argv[]) {
 	int nombre = config_get_int_value(config_file, "Nombre");
 
 	valores_iniciales init;
-		char identificador = 0;
+		unsigned char identificador = 0;
 		char * clave= 0;
 		char * valor= 0;
 		char * ruta= 0;
@@ -235,6 +235,15 @@ int main (int argc, char * argv[]) {
 
 				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
 
+
+				if(identificador == 21) {
+					identificador = 42;
+					send(server, &identificador, 1, 0);
+					log_info(logger, "INSTANCIA %d: Keep alive coordinador",nombre);
+					continue;
+				}
+
+
 				//recibo clave
 				int rc = recv(server, &size_clave, 4, 0);
 
@@ -351,10 +360,10 @@ int main (int argc, char * argv[]) {
 
 					log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
 
-					int id;
-					char* clave;
+					unsigned char id;
+
 					struct Dato* unDato = buscar(tabla,clave);
-					if(clave == NULL){
+					if(unDato == NULL){
 
 						log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
 						int id = 5000; //cambiar numeroo <------------------
