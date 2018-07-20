@@ -255,6 +255,7 @@ void status(int socket){
 	int key_long = 0;
 	int instanciaAGuardar = 0;
 	unsigned char contestacionCoord = 0;
+	char * valorClave;
 	unsigned char pedirStatus = 98; // definir que numero es de protocolo
 
 	printf("inserte clave\n");
@@ -264,21 +265,33 @@ void status(int socket){
 	tamanio_clave = strlen(key);
 	send(socket_coord,&tamanio_clave,4,0);
 	send(socket_coord,key,tamanio_clave,0);
-/*
-	resultado_clave = recv(socket, &contestacionCoord, 1,0);
-	if(resultado_clave == 90){ //protocolo 90 porque pinto
-		recv(socket, &key_long, sizeof(int),0);
-		char * valorClave = malloc(key_long);
-		recv(socket, &valorClave, sizeof(key_long),0);
-		log_info(logger,"El valor de la clave es '%s'",valorClave);
+
+	resultado_clave = recv(socket_coord, &contestacionCoord, 1,0);
+	printf("CONTESTACION ES %d\n\n",contestacionCoord);
+	if(contestacionCoord == 100){
+		recv(socket_coord, &instanciaAGuardar, sizeof(int),0);
+		recv(socket_coord, &key_long, sizeof(int),0);
+		if(key_long!=255){
+			valorClave = malloc(key_long+1);
+			recv(socket_coord, valorClave, key_long, 0);
+			valorClave[key_long] = '\0';
+			log_info(logger,"El valor de la clave es '%s'",valorClave);
+		}
+
+		log_info(logger,"La instancia es %d y el valor asignado a la clave es '%s'",instanciaAGuardar,valorClave);
+
 	}
-	else{
+	else if(contestacionCoord == 99){
 		log_info(logger,"La clave no esta en ninguna instancia");
-		recv(socket, &instanciaAGuardar, sizeof(int),0);
+		//PABLOOOOOO
+		recv(socket_coord, &instanciaAGuardar, sizeof(int),0);
 		log_info(logger,"La instancia donde se guardaria seria %d",instanciaAGuardar);
 	}
+	else{
+		log_info(logger,"No hay instancias disponibles");
+	}
 	//Aviso cuales ESIs esperan esta clave
-	listar_tomadas(key);*/
+	listar_tomadas(key);
 }
 
 void deadlock(){

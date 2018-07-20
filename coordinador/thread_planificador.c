@@ -112,7 +112,11 @@ void _planificador(int socket_local) {
 					log_info(logger, "La clave %s tiene el valor %s", o_instancia->clave, o_instancia->valor);
 					identificador = PLANIFICADOR_CLAVE_EXISTENTE;
 
-					size_value = strlen(o_instancia->valor);
+					if(o_instancia->valor)
+						size_value = strlen(o_instancia->valor);
+					else
+						size_value = 0;
+
 					messageLength = size_value + 4 + 1 + 4;
 					char * response = (char *) malloc(messageLength);
 
@@ -140,10 +144,10 @@ void _planificador(int socket_local) {
 						identificador = PLANIFICADOR_SIMULACION;
 
 						memcpy(response, &identificador, 1);
-						memcpy(response, &(o_instancia->id), 4);
+						memcpy(response+1, &(o_instancia->id), 4);
 
 						send(socket_local, response, 5, 0);
-						log_info(logger, "Enviandole simulacion al planificador");
+						log_info(logger, "Enviandole simulacion al planificador, la instancia es %d", o_instancia->id);
 						free(response);
 					}
 
