@@ -141,6 +141,28 @@ void _instancia(int socket_local) {
 	        continue;
 		}
 
+		if(local_struct->operacion == INSTANCIA_COMPACTAR) {
+			identificador = local_struct->operacion;
+			rc = send(socket_local, &identificador, 1, 0);
+
+			log_info(logger, "El send me dice %d", rc);
+	        if (rc <= 0) {
+	        	log_error(logger, "  recv() failed");
+	        	close_conn = TRUE;
+	        	break;
+	        }
+
+	        rc=recv(socket_local, &identificador, 1, 0);
+	        if (rc <= 0) {
+				log_error(logger, "  recv() failed");
+				close_conn = TRUE;
+				break;
+			}
+
+	        log_info(logger, "Mando a compactar las instancias");
+	        sem_post(&mutex_instancia);
+	        continue;
+		}
 
 		size_clave = strlen(local_struct->clave);
 		messageLength = 5 + size_clave;
@@ -196,8 +218,25 @@ void _instancia(int socket_local) {
 			}
         }
 
+
         log_info(logger, "La instancia termino de procesar");
         sem_post(&mutex_instancia);
+
+        if(id_response == INSTANCIA_COMPACTAR) {
+            log_info(logger, "Las instancias necesitan compactar");
+
+            void compactarInstancias(void * element) {
+            	t_instancia * instancia = (t_instancia *) element;
+            	if(instancia->status) {
+            		instancia->operacion = INSTANCIA_COMPACTAR;
+            		sem_post(&(instancia->instance_sem));
+            	}
+            }
+
+            list_iterate(list_instances, (void *)compactarInstancias);
+
+        }
+
 
         //pthread_mutex_unlock(&mutex);
 	}
