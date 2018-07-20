@@ -351,7 +351,7 @@ int main (int argc, char * argv[]) {
 					pthread_mutex_unlock(&lock_dump);
 
 				}
-				else if(identificador == 300){// status consola
+				else if(identificador == 201){// status consola
 
 					log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
 
@@ -361,7 +361,7 @@ int main (int argc, char * argv[]) {
 					if(unDato == NULL){
 
 						log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
-						int id = 5000; //cambiar numeroo <------------------
+						id = 202;
 
 						//no se encontro la clave
 						send(server, &id, 1, 0);
@@ -372,16 +372,17 @@ int main (int argc, char * argv[]) {
 
 						log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
 
-						//cmabiar numeroooooooooooo id <------------------
-						id = 6000;
 
-						int tamanioBuffer = 1+4+unDato->cantidadDeBytes;
+						id = 203;
+
+						int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
 						log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
 						char* buffer = (char*) malloc (tamanioBuffer);
+						*buffer = 0;
 						memcpy(buffer,&id,1);
-						memcpy(buffer+1,&unDato->cantidadDeBytes,4);
+						memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
 						memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
-						send(server, &buffer, tamanioBuffer, 0);
+						send(server, buffer, tamanioBuffer, 0);
 
 						free(buffer);
 
