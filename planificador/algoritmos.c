@@ -605,7 +605,33 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 	clave1->id_ESI = id_ESI;
 	id_esi_global = id_ESI;
 
-	if(esi_bloqueada_de_entrada==1){
+	if(esi_bloqueada_de_entrada==2){
+		strcpy(clave_bloqueada_global,claveAEjecutar);
+		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
+				t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
+				if(!list_is_empty(list_clave)){
+					if(list_any_satisfy(list_clave,(void*)identificador_clave_por_idESI)){
+						log_info(logger,"La esi '%d' ya se encuentra bloqueada esperando el recurso");
+					}
+					//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+					else{
+						list_add(list_clave, (int*)id_ESI);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
+		} else {
+				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+				printf("Entre en 2\n");
+				t_list * list_clave = list_create();
+				list_add(list_clave, (int*)id_ESI);
+				dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+				log_info(logger, "Inserte la esi %d en la que de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+				free(clave1);
+		}
+	}
+
+	else if(esi_bloqueada_de_entrada==1){
 		strcpy(clave_bloqueada_global,claveAEjecutar);
 		if(list_any_satisfy(claves_tomadas, (void*) identificador_clave)){
 			if(list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI)){
@@ -895,7 +921,7 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	char *token = "";
 	const char comma[2] = ",";
 	//char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
-	esi_bloqueada_de_entrada = 1;
+	esi_bloqueada_de_entrada = 2;
 	char* string = config_get_string_value(config_file, "claves_bloqueadas");
 
 	if(string == NULL){
