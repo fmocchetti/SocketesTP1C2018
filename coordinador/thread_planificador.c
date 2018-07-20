@@ -2,7 +2,7 @@
 
 void _planificador(int socket_local) {
 	int rc = 0, close_conn = 0;
-	int size_clave = 0, cantidad_claves = 0;
+	int size_clave = 0, size_value = 0, cantidad_claves = 0;
 	t_instancia * instancia_destino = NULL;
 	unsigned char identificador = 0;
 	char * clave = NULL;
@@ -110,22 +110,44 @@ void _planificador(int socket_local) {
 					sem_wait(&mutex_status);
 
 					log_info(logger, "La clave %s tiene el valor %s", o_instancia->clave, o_instancia->valor);
+					identificador = PLANIFICADOR_CLAVE_EXISTENTE;
 
+					size_value = strlen(o_instancia->valor);
+					messageLength = size_value + 4 + 1 + 4;
+					char * response = (char *) malloc(messageLength);
 
-					/*log_info(logger, "Enviandole al planificador %d bytes", messageLength);
-					send(socket_local, mensajes, messageLength, 0);
-					free(mensajes);*/
+					memcpy(response, &identificador, 1);
+					memcpy(response+1, &(o_instancia->id), 4);
+					if(size_value > 0) {
+						memcpy(response+5, &(size_value), 4);
+						memcpy(response+9, o_instancia->valor, size_value);
+					} else {
+						size_value = 255;
+						memcpy(response+5, &(size_value), 4);
+					}
 
-
-					//preguntar a instancia el valor
-					//ver en que instancia esta
-					//simular distribucion
-
+					send(socket_local, response, messageLength, 0);
+					log_info(logger, "Enviandole al planificador %d bytes", messageLength);
+					free(response);
 				} else {
+					t_instancia * o_instancia = simular(clave);
+
+					if(!o_instancia) {
+						identificador = PLANIFICADOR_NO_INSTANCIAS;
+						send(socket_local, &identificador, 1, 0);
+					} else {
+						char * response = (char *) malloc(5);
+						identificador = PLANIFICADOR_SIMULACION;
+
+						memcpy(response, &identificador, 1);
+						memcpy(response, &(o_instancia->id), 4);
+
+						send(socket_local, response, 5, 0);
+						log_info(logger, "Enviandole simulacion al planificador");
+						free(response);
+					}
 
 				}
-
-
 				break;
         }
 	}
