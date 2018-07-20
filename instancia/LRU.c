@@ -160,7 +160,7 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 						log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar");
 
 						//compactar ajusta el puntero posicionDeLectura
-						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+						compactar(tabla,primeraPosicionMemoria,&posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
 
 
 				}

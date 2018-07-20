@@ -226,15 +226,44 @@ SET opcion4 pizzadecantimpalo*/
 	claveValor.valor = (char*)&materia5;
 	claveValor.tamanioEntrada = tamanioEntradas;
 	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
-//	respaldar_informaci(tabla);
+	//respaldar_informaci(tabla);
+/*
+	log_info(logger,"%s",storage);
+	log_info(logger,"%s",storage+30);
+	log_info(logger,"%s",storage+50);
+*//*
+	struct Dato* d,*d2,*d3;
+
+	d = list_get(tabla,0);
+	d2 = list_get(tabla,1);
+	d3 = list_get(tabla,2);
+
+
+
+	log_info(logger,"%s",d->posicionMemoria);
+	log_info(logger,"%s",d2->posicionMemoria);
+	log_info(logger,"%s",d3->posicionMemoria);
+
+*/
 	strcpy(claveValor.clave,clave6);
 	claveValor.valor = (char*)&materia6;
 	claveValor.tamanioEntrada = tamanioEntradas;
 	SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 
 
+	struct Dato* d,*d2,*d3;
 
-	respaldar_informaci(tabla);
+	d = list_get(tabla,0);
+	d2 = list_get(tabla,1);
+	d3 = list_get(tabla,2);
+
+
+
+	log_info(logger,"%s",d->posicionMemoria);
+	log_info(logger,"%s",d2->posicionMemoria);
+	log_info(logger,"%s",d3->posicionMemoria);
+
+	//respaldar_informaci(tabla);
 
 
 

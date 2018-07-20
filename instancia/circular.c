@@ -31,7 +31,7 @@ void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct Clav
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
 	strcpy((char*)(unDato->clave),claveValor->clave);
-	//memcpy((unDato->clave),claveValor->clave,40);
+
 }
 
 int liberar_entradas_atomicas(t_list**tabla,char*  primeraPosicionMemoria,int tamanioEntrada,int cantidadEntradasNecesariasLiberar){
@@ -86,6 +86,7 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 	return 1;
 	}
+	/*
 	//si se termino la memoria vuelvo al principio
 	if(*posicionDeLectura==posicionFinalMemoria){
 
@@ -93,6 +94,8 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 
 
 	}
+	*/
+
 	//si no hay lugar para todo el string lo parto y coloco lo que entra y el resto al principio
 	//de la memoria
 	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){

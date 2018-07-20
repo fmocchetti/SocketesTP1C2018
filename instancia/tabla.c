@@ -119,12 +119,12 @@ return 0;
 
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
-	struct Dato* unDatos = (struct Dato*)malloc(sizeof(struct Dato));
-	unDatos->cantidadDeBytes = unDato->cantidadDeBytes;
-	memcpy(unDatos->clave, unDato->clave,sizeof(unDato->clave));
-	unDatos->posicionMemoria = unDato->posicionMemoria;
+	struct Dato* otroDato = (struct Dato*)malloc(sizeof(struct Dato));
+	otroDato->cantidadDeBytes = unDato->cantidadDeBytes;
+	memcpy(otroDato->clave, unDato->clave,sizeof(unDato->clave));
+	otroDato->posicionMemoria = unDato->posicionMemoria;
 
-	list_add(*tabla,unDatos);
+	list_add(*tabla,otroDato);
 
 }
 
@@ -171,10 +171,16 @@ int borrar_un_dato_y_liberar(t_list** tabla,struct Dato* unDato){
 
 	int posicion = obtener_posicion_del_dato(*tabla,unDato);
 
+	void* liberar_dato(struct Dato* unDato){
+
+		free(unDato);
+
+	}
+
 	if(posicion >= 0){
-		//coregir estoooo
-		//agregar remove and destro element
-		list_remove(*tabla,unDato);
+
+		list_destroy_and_destroy_elements(*tabla,liberar_dato);
+
 	return 0;
 	}
 

@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "socket_client.h"
 #include "ClaveValor.h"
+#include "circular.h"
 
 int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posicionFin,int tamEntrada);
 

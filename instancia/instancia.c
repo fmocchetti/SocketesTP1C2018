@@ -23,7 +23,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 			char* rutaArmada = malloc(strlen(parametros->puntoDeMontaje)+40+strlen(getenv("HOME"))+1);
 			*rutaArmada = 0;
-			for(int i = 0 ; i < tamanioTabla ; i++){
+			for(int i = 0 ; i < (tamanioTabla-1); i++){
 
 				unDato = list_get( parametros->tabla, i );
 

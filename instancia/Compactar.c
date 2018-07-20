@@ -61,32 +61,38 @@ return (cantEntradas > entradasNetasNecesarias);
 
 int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posicionFin,int tamEntrada){
 
-	char* posicionInsercion = storage;
+	char** posicionInsercion = &storage;
 
-	ordenar_tabla(tabla,posicionInsercion);
+	ordenar_tabla(tabla,*posicionInsercion);
 
 	int tamanio = list_size(*tabla);
 
 	struct Dato* unDato;
 
-	int espacioAOcupar;
+	int espacioAOcupar,entradasAOcupar;
 
-	log_info(logger,"COMPACTAR: compactando storage...");
+	log_info(logger,"COMPACTAR: compactando storage");
 
-	for(int i=0 ; i < tamanio ; i++){
+	for(int i = 0 ; i < tamanio ; i++){
+
+
+		log_info(logger,".");
 
 		unDato = list_get(*tabla,i);
 
-		espacioAOcupar = calcular_cantidad_entradas(unDato->cantidadDeBytes,tamEntrada)*(tamEntrada);
+		entradasAOcupar = calcular_cantidad_entradas(unDato->cantidadDeBytes,tamEntrada);
 
-		memcpy(posicionInsercion,unDato->posicionMemoria,unDato->cantidadDeBytes);
-		unDato->posicionMemoria = posicionInsercion;
+		espacioAOcupar = entradasAOcupar * tamEntrada;
 
-		posicionInsercion += espacioAOcupar;
+		memcpy(*posicionInsercion,(const char*)unDato->posicionMemoria,unDato->cantidadDeBytes);
+
+		unDato->posicionMemoria = *posicionInsercion;
+
+		*posicionInsercion += espacioAOcupar;
 
 	}
 
-	*posicionDeLectura = posicionInsercion;
+	*posicionDeLectura = *posicionInsercion;
 
 	log_info(logger,"COMPACTAR: Se compacto el storage");
 
