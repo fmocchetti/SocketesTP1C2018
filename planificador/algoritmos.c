@@ -90,13 +90,13 @@ void sjfsd(){
 				//agrego a bloqueados en caso de recibir otra contestacion de la ESI
 				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
 				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
-				//nodo_lista_ejecucion->lineas_ejecutadas ++;
-				//log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas ++;
+				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
 				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
-				/*nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
 				nodo_lista_ejecucion->lineas_ejecutadas = 0;
 				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
-				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);*/
+				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 				break;
 			}
