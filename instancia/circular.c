@@ -26,7 +26,7 @@ return resultado;
 
 void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
@@ -62,12 +62,12 @@ return 0;
 
 
 //ingreso un valor en memoria con logica circular y registro en la tabla de entradas dicha insercion
-int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
+int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct ClaveValor* claveValor,char* primeraPosicionMemoria,char* posicionFinalMemoria){
 
 
 	struct Dato unDato;
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 
@@ -123,9 +123,15 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 				}
 				else{
 
-					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar");
+					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
 
 					//compactar ajusta el puntero posicionDeLectura
+					if(server >=0 ){
+						unsigned char id = 200;
+						send(server,&id,1,0);
+
+					}
+
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
 
 
@@ -165,7 +171,12 @@ int SET_circular(char** posicionDeLectura,t_list** tabla,struct ClaveValor* clav
 				}
 				else{
 
-					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar");
+					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
+					if(server >=0 ){
+						unsigned char id = 200;
+						send(server,&id,1,0);
+
+					}
 
 					//compactar ajusta el puntero posicionDeLectura
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);

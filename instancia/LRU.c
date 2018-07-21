@@ -78,7 +78,7 @@ void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,c
  * Retorna cero si pudo hacer la insercion o -1 en caso contrario (las entradas que hay son todas no atomicas)
  * */
 
-int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
+int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 		char** posicionDeLectura,char* posicionFinalMemoria,struct ClaveValor* claveValor){
 
 
@@ -132,9 +132,15 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 				}
 				else{
 
-					log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar");
+					log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
 
 					//compactar ajusta el puntero posicionDeLectura
+					if(server >=0 ){
+						unsigned char id = 200;
+						send(server,&id,1,0);
+
+					}
+
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
 
 
@@ -166,9 +172,15 @@ int SET_LRU(t_list** registro,t_list** tabla,char* primeraPosicionMemoria,
 				}
 				else{
 
-						log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar");
+						log_info(logger,"LRU: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
 
 						//compactar ajusta el puntero posicionDeLectura
+						if(server >=0 ){
+							unsigned char id = 200;
+							send(server,&id,1,0);
+
+						}
+
 						compactar(tabla,primeraPosicionMemoria,&posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
 
 

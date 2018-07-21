@@ -23,7 +23,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 			char* rutaArmada = malloc(strlen(parametros->puntoDeMontaje)+40+strlen(getenv("HOME"))+1);
 			*rutaArmada = 0;
-			for(int i = 0 ; i < (tamanioTabla-1); i++){
+			for(int i = 0 ; i < (tamanioTabla); i++){
 
 				unDato = list_get( parametros->tabla, i );
 
@@ -243,30 +243,31 @@ int main (int argc, char * argv[]) {
 				continue;
 			}
 
-			//recibo clave
-			int rc = recv(server, &size_clave, 4, 0);
-
-			log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
-
-			clave = (char *)malloc(size_clave + 1);
-
-			if(clave == NULL){
-				log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
-				return EXIT_FAILURE;
-			}
-
-			rc = recv(server, clave, size_clave, 0);
-			log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
-
-			clave[size_clave] = '\0';
-
-			log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
-
-			log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
-
 
 			//TODO: Si es un get aca no tiene que recibir nada
 			if(identificador == 22){
+
+				//recibo clave
+				int rc = recv(server, &size_clave, 4, 0);
+
+				log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
+
+				clave = (char *)malloc(size_clave + 1);
+
+				if(clave == NULL){
+					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
+					return EXIT_FAILURE;
+				}
+
+				rc = recv(server, clave, size_clave, 0);
+				log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
+
+				clave[size_clave] = '\0';
+
+				log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
+
+				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
+
 
 				//lleno estructura que le paso al set_cicular
 				struct ClaveValor claveValor;
@@ -306,18 +307,18 @@ int main (int argc, char * argv[]) {
 
 				if(!strcmp((const char*)algoritmo,"CIRC")){
 					pthread_mutex_lock(&lock_dump);
-					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+					SET_circular(server,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 					pthread_mutex_unlock(&lock_dump);
 
 				}
 				else if(!strcmp((const char*)algoritmo,"LRU")){
 					pthread_mutex_lock(&lock_dump);
-					SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					SET_LRU(server,&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
 				else if(!strcmp((const char*)algoritmo,"BSU")){
 					pthread_mutex_lock(&lock_dump);
-					SET_BSU(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					SET_BSU(server,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
 
@@ -325,6 +326,26 @@ int main (int argc, char * argv[]) {
 
 			} else if(identificador==23) {//store
 
+				//recibo clave
+				int rc = recv(server, &size_clave, 4, 0);
+
+				log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
+
+				clave = (char *)malloc(size_clave + 1);
+
+				if(clave == NULL){
+					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
+					return EXIT_FAILURE;
+				}
+
+				rc = recv(server, clave, size_clave, 0);
+				log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
+
+				clave[size_clave] = '\0';
+
+				log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
+
+				log_info(logger, "INSTANCIA %d: Identificador %d",nombre , identificador);
 
 				ruta = malloc(size_ruta);
 
@@ -352,17 +373,40 @@ int main (int argc, char * argv[]) {
 			}
 			else if(identificador == 201){// status consola
 
+
+				//recibo clave
+				int rc = recv(server, &size_clave, 4, 0);
+
+				log_info(logger, "INSTANCIA %d: size_clave %d %d",nombre , size_clave, rc);
+
+				clave = (char *)malloc(size_clave + 1);
+
+				if(clave == NULL){
+					log_error(logger,"INSTANCIA %d: No se pudo alocar memoria para la clave",nombre);
+					return EXIT_FAILURE;
+				}
+
+				rc = recv(server, clave, size_clave, 0);
+				log_info(logger, "INSTANCIA %d: Clave %d",nombre , rc);
+
+				clave[size_clave] = '\0';
+
+				log_info(logger, "INSTANCIA %d: Clave %s",nombre , clave);
+
+
 				log_info(logger, "INSTANCIA %d: Me pidieron el valor de una clave, se buscara si existe",nombre);
 
 				unsigned char id;
-
+				pthread_mutex_lock(&lock_dump);
 				struct Dato* unDato = buscar(tabla,clave);
+				pthread_mutex_unlock(&lock_dump);
 				if(unDato == NULL){
 
 					log_info(logger, "INSTANCIA %d: La clave no se encontro en la tabla, le aviso al coordinador que no existe",nombre);
 					id = 202;
 					//no se encontro la clave
 					send(server, &id, 1, 0);
+					continue;
 
 				}
 				else{
@@ -373,12 +417,15 @@ int main (int argc, char * argv[]) {
 					log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
 					char* buffer = (char*) malloc (tamanioBuffer);
 					*buffer = 0;
+
 					memcpy(buffer,&id,1);
 					memcpy(buffer+1,&(unDato->cantidadDeBytes),4);
 					memcpy(buffer+5,unDato->posicionMemoria,unDato->cantidadDeBytes);
 
-					send(server, buffer, tamanioBuffer, 0);
+					rc = send(server, buffer, tamanioBuffer, 0);
+					log_info(logger, "INSTANCIA %d: Enviados %d bytes al coordinador", nombre, rc);
 					free(buffer);
+					continue;
 				}
 
 
@@ -387,8 +434,10 @@ int main (int argc, char * argv[]) {
 			usleep(init.retardo * 1000);
 			identificador = 1;
 			send(server, &identificador, 1, 0);
+
+			log_error(logger, "MANDO UN 1");
 			log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
-			free(clave);
+			//free(clave);
 			log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
 		}
 

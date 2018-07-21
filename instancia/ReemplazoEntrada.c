@@ -16,7 +16,7 @@ int reemplazar_valor_de_clave_ya_existente(t_list** tabla,t_list** registro,char
 
 	struct Dato* unDato = buscar(*tabla,claveValor->clave);
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 	int cantidadEntradasValorNuevo = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int cantidadEntradasValorExistente = calcular_cantidad_entradas(unDato->cantidadDeBytes,claveValor->tamanioEntrada);
 

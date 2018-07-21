@@ -19,7 +19,7 @@
 #include "socket_client.h"
 
 
-int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,char** posicionDeLectura,char* posicionFinalMemoria,struct ClaveValor* claveValor);
+int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,char** posicionDeLectura,char* posicionFinalMemoria,struct ClaveValor* claveValor);
 
 int liberar_entradas_atomicas_con_valores_mas_grandes(t_list** tabla, char*  primeraPosicionMemoria, int tamanioEntrada,int cantidadEntradasNecesariasLiberar);
 

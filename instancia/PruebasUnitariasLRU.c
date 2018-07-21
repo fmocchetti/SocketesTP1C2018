@@ -3,6 +3,7 @@
 #include "LRU.h"
 #include "tabla.h"
 #include "Dump.h"
+#if 0
 int respaldar_informaci(t_list* tabla){
 
 
@@ -156,9 +157,9 @@ void testReemplazarDatos(){
 
 
 }
-
+#endif
 void testCOMPACTAR(){
-
+#if 0
 	int cantidadEntradas = 8 ;
 	int tamanioEntradas = 10;
 	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
@@ -272,13 +273,13 @@ SET opcion4 pizzadecantimpalo*/
 	free(storage);
 
 
-
+#endif 0
 
 }
 
 
 void testFINAL(){
-
+#if 0
 	int cantidadEntradas = 8 ;
 	int tamanioEntradas = 10;
 	char* storage = (char*)malloc(cantidadEntradas*tamanioEntradas);
@@ -397,7 +398,7 @@ SET nintendo:consola:switch ZeldaBOTW*/
 
 
 
-
+#endif
 }
 
 
