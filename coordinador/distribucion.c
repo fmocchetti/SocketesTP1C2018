@@ -33,7 +33,7 @@ t_instancia * simular(char * clave) {
 			log_info(logger, "Selecciono por Equitative Load");
 			log_info(logger, "Ultima instancia: %d, total instancias: %d", ultima_instancia, total_instancias);
 			while(!instancia) {
-				simular  %= instancias_activas;
+				simular  %= total_instancias;
 				instancia = list_get(list_instances, simular);
 				simular++;
 				if(!instancia->status)
@@ -65,9 +65,9 @@ t_instancia * simular(char * clave) {
 	return instancia;
 }
 
-t_instancia * distribuir(char * clave, char * valor) {
+t_instancia * distribuir(char * clave, char * valor, int existia) {
 	t_instancia * instancia = NULL;
-	char letra_inicial = NULL;
+	char letra_inicial = 0;
 	int indice_busqueda = 0;
 
 	if(!total_instancias && !instancias_activas) {
@@ -80,9 +80,10 @@ t_instancia * distribuir(char * clave, char * valor) {
 	switch(algoritmo_elegido) {
 		case EL:
 			log_info(logger, "Selecciono por Equitative Load");
-			log_info(logger, "Ultima instancia: %d, total instancias: %d", ultima_instancia, total_instancias);
+			log_info(logger, "Ultima instancia: %d, total instancias: %d, instancias_activas: %d", ultima_instancia, total_instancias, instancias_activas);
 			while(!instancia) {
-				ultima_instancia  %= instancias_activas;
+				ultima_instancia  %= total_instancias;
+				//log_info(logger, "Voy a probar con: %d", ultima_instancia);
 				instancia = list_get(list_instances, ultima_instancia);
 				ultima_instancia++;
 				if(!instancia->status)
@@ -105,9 +106,16 @@ t_instancia * distribuir(char * clave, char * valor) {
 			break;
 		case LSU:
 			log_info(logger, "Selecciono por Espacio Disponible");
-			instanciaLSU = buscarMasLibre(total_instancias);
-			instancia = list_get(list_instances, instanciaLSU);
-			instancia->entradasLibres -= 1;
+			while(!instancia) {
+				instanciaLSU = buscarMasLibre(total_instancias);
+				instancia = list_get(list_instances, instanciaLSU);
+				if(!instancia->status) {
+					instancia = NULL;
+				} else {
+					if(!existia)
+						instancia->entradasLibres -= 1;
+				}
+			}
 			break;
 	}
 

@@ -30,9 +30,10 @@ void consola(){
  	} else if(!strncmp(input,"continuar", 9)){
  		continuar();
  	} else if(!strncmp(input,"bloquear", 8)){
- 		esi_bloqueada_de_entrada = 1;
+ 		//esi_bloqueada_de_entrada = 1;
  		bloquear(socket_coord);
- 		esi_bloqueada_de_entrada = 0;
+ 		//esi_bloqueada_de_entrada = 0;
+
  	} else if(!strncmp(input,"desbloquear", 11)){
  		desbloquear();
  	} else if(!strncmp(input,"listar", 6)){
@@ -118,17 +119,9 @@ void bloquear(int socket){
 	printf("inserte id\n");
 	scanf("%d",&id);
 
-	send(socket,&mensaje_coord,1,0);
-	send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
-
-	tamanio_clave = strlen(key);
-	printf("largo de la clave %d\n", tamanio_clave);
-	send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
-	send(socket,key,tamanio_clave,0);
-
-	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
-	ESI_GET(key,id,0);
-
+	//log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
+	//ESI_GET(key,id,0);
+	ESI_GET_BLOQUEAR(key, id, 0, socket_coord);
 }
 
 void desbloquear(){
@@ -217,7 +210,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		laWeaReplanificadoraFIFO(terminados,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
@@ -228,7 +221,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI_kill);
-		list_add(muertos,nodo_lista_ejecucion);
+		list_add(terminados,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
@@ -239,7 +232,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI_kill);
-		list_add(muertos,nodo_lista_ejecucion);
+		list_add(terminados,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en bloqueados murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}

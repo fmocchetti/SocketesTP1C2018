@@ -76,6 +76,7 @@ void desbloquear_del_diccionario(char *,int);
 void aplicarHRRN(ESI*);
 void obtenerPrioridad();
 void envejecerLista(int);
+void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI, int socket);
 
 
 

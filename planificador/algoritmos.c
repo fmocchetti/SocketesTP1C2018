@@ -86,6 +86,21 @@ void sjfsd(){
 				sem_wait(&sem_pausar_algoritmo);
 			}
 
+			if(nodo_lista_ejecucion->bloquear ==1){
+				//agrego a bloqueados en caso de recibir un bloquear por consola
+				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+				nodo_lista_ejecucion->lineas_ejecutadas ++;
+				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas = 0;
+				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+				break;
+			}
+
 			//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 			result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 			//aca tengo que verificar
@@ -136,6 +151,7 @@ void sjfsd(){
 						free(clave_temporal);
 						resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 						}
+					sem_post(&new_process);
 					laWeaReplanificadoraFIFO(terminados,ejecucion);
 					estadoListas();
 					//}
@@ -167,7 +183,7 @@ void sjfsd(){
 		}
 	}
 		else{
-			log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
+			//log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
 			sem_getvalue(&new_process,&sem_value2);
 			for(l = 0;l<sem_value2;l++){
 				sem_wait(&new_process);
@@ -597,6 +613,133 @@ void nodo_lista_claves_destroyer(claves * data){
 }
 
 
+void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI, int socket){
+	claves* clave1 = (claves*) malloc(sizeof(claves));
+	memset(clave1, 0, sizeof(claves));
+	strcpy(clave1->claveAEjecutar,claveAEjecutar);
+	clave1->id_ESI = id_ESI;
+	id_esi_global = id_ESI;
+	ESI* esi = NULL;
+	unsigned char mensaje_coord = 35;
+	int cantidad_bloqueados = 1;
+	int tamanio_clave = 0;
+
+	strcpy(clave_bloqueada_global,claveAEjecutar);
+	if(list_any_satisfy(claves_tomadas, (void*) identificador_clave)){
+		if(list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI)){
+			log_info(logger,"La esi ya tiene tomada la clave");
+		}
+		else{
+			if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
+
+				t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
+				if(!list_is_empty(list_clave)){
+					if(list_any_satisfy(list_clave,(void*)identificador)){
+						log_info(logger,"La esi ya se encuentra bloqueada esperando un recurso");
+					}
+					//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+
+					else{
+						if(list_any_satisfy(listos,(void*)identificador_ESI)){
+							esi = list_find(listos,(void*)identificador_ESI);
+							if(esi->bloquear == 1){
+								log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+								free(clave1);
+							}
+							else{
+								esi->bloquear = 1;
+								list_add(list_clave, (int*)id_ESI);
+								log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+								free(clave1);
+							}
+						}
+						else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+							esi = list_find(listos,(void*)identificador_ESI);
+							if(esi->bloquear == 1){
+								log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+								free(clave1);
+							}
+							else{
+								esi->bloquear = 1;
+								list_add(list_clave, (int*)id_ESI);
+								log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+								free(clave1);
+							}
+						}
+						else{
+							log_info(logger, "La ESI no existe");
+						}
+					}
+				}
+			}
+			else {
+				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+				if(list_any_satisfy(listos,(void*)identificador_ESI)){
+					esi = list_find(listos,(void*)identificador_ESI);
+					if(esi->bloquear == 1){
+						log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+						free(clave1);
+					}
+					else{
+						esi->bloquear = 1;
+						t_list * list_clave = list_create();
+						list_add(list_clave, &id_ESI);
+						dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
+				else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+					esi = list_find(listos,(void*)identificador_ESI);
+					if(esi->bloquear == 1){
+						log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+						free(clave1);
+					}
+					else{
+						esi->bloquear = 1;
+						t_list * list_clave = list_create();
+						list_add(list_clave, (int*)id_ESI);
+						dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
+				else{
+					log_info(logger, "La ESI no existe");
+				}
+			}
+		}
+	}
+	else{
+		if(list_any_satisfy(listos,(void*)identificador_ESI)){
+			send(socket,&mensaje_coord,1,0);
+			send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
+			tamanio_clave = strlen(claveAEjecutar);
+			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+			send(socket,claveAEjecutar,tamanio_clave,0);
+			send(socket,&id_ESI,sizeof(int),0);
+			list_add(claves_tomadas,clave1);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
+			//free(clave1);
+		}
+		else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+			send(socket,&mensaje_coord,1,0);
+			send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
+			tamanio_clave = strlen(claveAEjecutar);
+			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+			send(socket,claveAEjecutar,tamanio_clave,0);
+			send(socket,&id_ESI,sizeof(int),0);
+			log_info(logger, "ENTRE A 1");
+			list_add(claves_tomadas,clave1);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
+			//free(clave1);
+		}
+		else{
+			log_info(logger, "La ESI no existe");
+		}
+	}
+}
+
 void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 
 	claves* clave1 = (claves*) malloc(sizeof(claves));
@@ -668,6 +811,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 		}
 		else{
 			list_add(claves_tomadas,clave1);
+			log_info(logger, "La clave '%s' pasara a bloquearse por el sistema ", claveAEjecutar);
 		}
 
 	}
@@ -817,6 +961,7 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 					if(resultado_lista_satisfy ==1){
 						esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
 						log_info(logger,"Procesos removido de bloqueados %d",esi1->id_ESI);
+						esi1->bloquear = 0;
 						list_add(listos, (ESI*)esi1);
 						log_info(logger,"Procesos agregado a la lista de listos %d",esi1->id_ESI);
 						//seteo los semaforos para el sjfcd
@@ -921,7 +1066,7 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	char *token = "";
 	const char comma[2] = ",";
 	//char string[100] = config_get_string_value(config_file, "claves_bloqueadas");
-	esi_bloqueada_de_entrada = 2;
+	esi_bloqueada_de_entrada = 1;
 	char* string = config_get_string_value(config_file, "claves_bloqueadas");
 
 	if(string == NULL){

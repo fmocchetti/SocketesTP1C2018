@@ -60,6 +60,9 @@ void _instancia(int socket_local) {
 	unsigned char buffer = 0, identificador = 0, id_response = 0;
 	char * mensajes = NULL;
 	t_instancia * local_struct;
+   int s;
+   int optval;
+   socklen_t optlen = sizeof(optval);
 
 	rc = recv(socket_local, &identificador_instancia, sizeof(identificador_instancia), 0);
 	if (rc == 0) {
@@ -120,7 +123,6 @@ void _instancia(int socket_local) {
 		//pthread_mutex_lock(&mutex);
 		log_info(logger, "Pase el Mutex de la instancia");
 
-
 		if(local_struct->operacion == ESI_GET) {
 			identificador = local_struct->operacion;
 			rc = send(local_struct->socket_instancia, &identificador, 1, 0);
@@ -134,19 +136,19 @@ void _instancia(int socket_local) {
 
 	        log_info(logger, "Le mande a la instancia un %d", identificador);
 
-	        rc=recv(local_struct->socket_instancia, &identificador, 1, 0);
+	        /*rc=recv(local_struct->socket_instancia, &identificador, 1, 0);
 	        if (rc <= 0) {
 				log_error(logger, "  recv() failed");
 				close_conn = TRUE;
 				break;
 			}
 
-	        log_info(logger, "La instancia termino de procesar");
-	        sem_post(&mutex_instancia);
-	        continue;
-		}
+	        if(identificador != 42) {
+	        	log_error(logger, "La instancia me mando basura");
+	        }
 
-		if(local_struct->operacion == INSTANCIA_COMPACTAR) {
+	        log_info(logger, "La instancia termino de procesar %d", identificador);*/
+		}else if(local_struct->operacion == INSTANCIA_COMPACTAR) {
 			identificador = local_struct->operacion;
 			rc = send(local_struct->socket_instancia, &identificador, 1, 0);
 
@@ -165,40 +167,38 @@ void _instancia(int socket_local) {
 			}
 
 	        log_info(logger, "Mando a compactar las instancias, %d", identificador);
-	        sem_post(&mutex_instancia);
-	        continue;
+		} else {
+			size_clave = strlen(local_struct->clave);
+			messageLength = 5 + size_clave;
+			if(local_struct->operacion == ESI_SET) {
+				size_valor = strlen(local_struct->valor);
+				messageLength += 4 + size_valor;
+			}
+
+			mensajes = (char *) malloc (messageLength);
+			memcpy(mensajes, &(local_struct->operacion), 1);
+			memcpy(mensajes+1, &size_clave, 4);
+
+			log_info(logger,"Clave a mandar %s", local_struct->clave);
+			memcpy(mensajes+5, local_struct->clave, size_clave);
+			if(local_struct->operacion == ESI_SET) {
+				memcpy(mensajes+size_clave+5, &size_valor, 4);
+				log_info(logger,"Valor a mandar %s", local_struct->valor);
+				memcpy(mensajes+size_clave+9, local_struct->valor, size_valor);
+			}
+
+			log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
+			rc = send(local_struct->socket_instancia, mensajes, messageLength, 0);
+
+			log_info(logger, "El send me dice %d", rc);
+			if (rc <= 0) {
+				log_error(logger, "  recv() failed");
+				close_conn = TRUE;
+				break;
+			}
+
+			free(mensajes);
 		}
-
-		size_clave = strlen(local_struct->clave);
-		messageLength = 5 + size_clave;
-		if(local_struct->operacion == ESI_SET) {
-			size_valor = strlen(local_struct->valor);
-			messageLength += 4 + size_valor;
-		}
-
-		mensajes = (char *) malloc (messageLength);
-		memcpy(mensajes, &(local_struct->operacion), 1);
-		memcpy(mensajes+1, &size_clave, 4);
-
-		log_info(logger,"Clave a mandar %s", local_struct->clave);
-		memcpy(mensajes+5, local_struct->clave, size_clave);
-		if(local_struct->operacion == ESI_SET) {
-			memcpy(mensajes+size_clave+5, &size_valor, 4);
-			log_info(logger,"Valor a mandar %s", local_struct->valor);
-			memcpy(mensajes+size_clave+9, local_struct->valor, size_valor);
-		}
-
-		log_info(logger, "Enviandole a la instancia %d bytes", messageLength);
-		rc = send(local_struct->socket_instancia, mensajes, messageLength, 0);
-
-		log_info(logger, "El send me dice %d", rc);
-        if (rc <= 0) {
-        	log_error(logger, "  recv() failed");
-        	close_conn = TRUE;
-        	break;
-        }
-
-		free(mensajes);
         rc = recv(local_struct->socket_instancia, &id_response, 1, 0);
         if (rc <= 0) {
         	log_error(logger, "  recv() failed");
@@ -239,6 +239,7 @@ void _instancia(int socket_local) {
             }
 
             list_iterate(list_instances, (void *)compactarInstancias);
+            rc = recv(local_struct->socket_instancia, &id_response, 1, 0);
 
         }
 

@@ -412,7 +412,6 @@ int main (int argc, char * argv[]) {
 				else{
 					log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
 					id = 203;
-					unDato->cantidadDeBytes -= 1;
 					int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
 					log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
 					char* buffer = (char*) malloc (tamanioBuffer);
@@ -434,6 +433,8 @@ int main (int argc, char * argv[]) {
 			usleep(init.retardo * 1000);
 			identificador = 1;
 			send(server, &identificador, 1, 0);
+
+			log_error(logger, "MANDO UN 1");
 			log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
 			//free(clave);
 			log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
