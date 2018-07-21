@@ -159,6 +159,7 @@ void thread_on_connection(int listen_sd) {
 		esi->estimacion_rafaga = (float)estimacion_inicial;
 		esi->rafaga = esi->estimacion_rafaga;
 		esi->espera = 0;
+		esi->bloquear = 0;
 
 		printf("id esi %d\n",esi->id_ESI);
 

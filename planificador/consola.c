@@ -30,9 +30,10 @@ void consola(){
  	} else if(!strncmp(input,"continuar", 9)){
  		continuar();
  	} else if(!strncmp(input,"bloquear", 8)){
- 		esi_bloqueada_de_entrada = 1;
+ 		//esi_bloqueada_de_entrada = 1;
  		bloquear(socket_coord);
- 		esi_bloqueada_de_entrada = 0;
+ 		//esi_bloqueada_de_entrada = 0;
+
  	} else if(!strncmp(input,"desbloquear", 11)){
  		desbloquear();
  	} else if(!strncmp(input,"listar", 6)){
@@ -127,8 +128,8 @@ void bloquear(int socket){
 	send(socket,key,tamanio_clave,0);
 
 	log_info(logger, "Proceso Bloqueado key:%s, id:%d\n", key, id);
-	ESI_GET(key,id,0);
-
+	//ESI_GET(key,id,0);
+	ESI_GET_BLOQUEAR(key, id, 0, socket_coord);
 }
 
 void desbloquear(){
