@@ -39,6 +39,14 @@ int calcular_cant_entradas(int longitudS,int tamEntrada){
 
 	int resto = longitudS % tamEntrada;
 	int resultado = longitudS / tamEntrada;
+
+	if(longitudS==0){
+
+		return longitudS;
+
+	}
+
+
 	if(tamEntrada > longitudS){
 
 		return 1;
@@ -68,8 +76,8 @@ void* ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla){
 
 	bool mas_grandes_al_comienzo(struct Dato* a,struct Dato* b){
 
-		int catBytesA = a->cantidadDeBytes;
-		int catBytes = b->cantidadDeBytes;
+		unsigned int catBytesA = a->cantidadDeBytes;
+		unsigned int catBytes = b->cantidadDeBytes;
 
 		return(catBytesA > catBytes);
 	}
@@ -179,7 +187,8 @@ int borrar_un_dato_y_liberar(t_list** tabla,struct Dato* unDato){
 
 	if(posicion >= 0){
 
-		list_destroy_and_destroy_elements(*tabla,liberar_dato);
+		list_remove_and_destroy_element(*tabla,posicion,(void*)liberar_dato);
+
 
 	return 0;
 	}

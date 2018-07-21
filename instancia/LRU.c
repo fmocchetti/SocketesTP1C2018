@@ -24,8 +24,6 @@ int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, 
 	  int sizeTabla = list_size(*tabla);
 	  int i = 0, entradasLiberadas = 0;
 	  struct Dato* unDato;
-	  //int numeroEntrada = obtener_numero_entrada(registro);
-      //char* punteroAlValor = primeraPosicionMemoria + (numeroEntrada * tamanioEntrada);
 	  ordenar_registro(registro);
 	  while(i< sizeTabla && entradasLiberadas < cantidadEntradasNecesariasLiberar){
 
@@ -38,10 +36,10 @@ int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, 
 
 					borrar_un_dato_y_liberar(tabla,unDato);
 					sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
-
+					entradasLiberadas++;
 				}
 
-				entradasLiberadas++;
+
 
 			}
 			i++;
@@ -84,7 +82,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 	struct Dato unDato;
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 
@@ -160,9 +158,9 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 						log_info(logger,"LRU: Las entradas son contiguas, se realizara la inserccion");
 
-						memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+						memcpy(punteroEntradaLibre,claveValor->valor,longitudS);
 						log_info(logger,"LRU: Se guardo el valor en memoria");
-						cargar_info_en_dato(&unDato,*punteroEntradaLibre,claveValor);
+						cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 						registrar_dato_en_tabla(tabla,&unDato);
 						registrar_acceso_a_entrada(registro,primeraPosicionMemoria,punteroEntradaLibre,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
 

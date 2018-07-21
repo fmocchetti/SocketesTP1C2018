@@ -22,7 +22,39 @@ bool son_contiguas(t_list** tabla,struct ClaveValor* cv,int cantidadEntradasAOcu
 		unDato = list_get(*tabla,i);
 		datoSiguiente = list_get(*tabla,i+1);
 		entradasOcupadasPorValor = calcular_cant_entradas(unDato->cantidadDeBytes,tamanioEntrada);
-		entradasIntermedias = calcular_cant_entradas(datoSiguiente->posicionMemoria - unDato->posicionMemoria,tamanioEntrada);
+		entradasIntermedias = calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada);
+		//el premer dato no esta al comienzo de la memoria, quedo un espacio
+		if(i==0 && (unDato->posicionMemoria != primeraPosicionMemoria)){
+
+			entradasOcupadasPorValor = calcular_cant_entradas(unDato->cantidadDeBytes,tamanioEntrada);
+			entradasIntermedias = calcular_cant_entradas(datoSiguiente->posicionMemoria - primeraPosicionMemoria,tamanioEntrada);
+			if(entradasIntermedias > entradasOcupadasPorValor){
+
+				if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
+
+					*punteroEntradaLibre = primeraPosicionMemoria;
+					return true;
+
+				}
+
+			}
+
+
+		}
+		else if(i==tamanio-2){
+			entradasOcupadasPorValor = calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada);
+			entradasIntermedias = calcular_cant_entradas((primeraPosicionMemoria+(cantidadEntradas*tamanioEntrada)) - datoSiguiente->posicionMemoria,tamanioEntrada);
+			if(entradasIntermedias > entradasOcupadasPorValor){
+
+				if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
+
+					*punteroEntradaLibre = datoSiguiente->posicionMemoria + (calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada)*tamanioEntrada);
+					return true;
+
+				}
+
+			}
+		}
 		if(entradasIntermedias > entradasOcupadasPorValor){
 
 			if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
@@ -61,7 +93,7 @@ return (cantEntradas > entradasNetasNecesarias);
 
 int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posicionFin,int tamEntrada){
 
-	char** posicionInsercion = &storage;
+	char* posicionInsercion = storage;
 
 	ordenar_tabla(tabla,*posicionInsercion);
 
@@ -84,15 +116,15 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posici
 
 		espacioAOcupar = entradasAOcupar * tamEntrada;
 
-		memcpy(*posicionInsercion,(const char*)unDato->posicionMemoria,unDato->cantidadDeBytes);
+		memmove(posicionInsercion,(const char*)unDato->posicionMemoria,unDato->cantidadDeBytes);
 
 		unDato->posicionMemoria = *posicionInsercion;
 
-		*posicionInsercion += espacioAOcupar;
+		posicionInsercion += espacioAOcupar;
 
 	}
 
-	*posicionDeLectura = *posicionInsercion;
+	*posicionDeLectura = posicionInsercion;
 
 	log_info(logger,"COMPACTAR: Se compacto el storage");
 

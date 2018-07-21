@@ -12,6 +12,10 @@ int calcular_cantidad_entradas(int longitudS,int tamEntrada){
 
 	int resto = longitudS % tamEntrada;
 	int resultado = longitudS / tamEntrada;
+	if(longitudS == 0){
+
+		return 0;
+	}
 	if(tamEntrada > longitudS){
 
 		return 1;
@@ -112,7 +116,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 					log_info(logger,"CIRC: Las entradas son contiguas, se realizara la inserccion");
 
-					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+					memmove(punteroEntradaLibre,claveValor->valor,longitudS);
 					log_info(logger,"CIRC: Se guardo el valor en memoria");
 					cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 					registrar_dato_en_tabla(tabla,&unDato);
@@ -160,7 +164,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 					log_info(logger,"CIRC: Las entradas son contiguas, se realizara la inserccion");
 
-					memcpy(*punteroEntradaLibre,claveValor->valor,longitudS);
+					memmove(punteroEntradaLibre,claveValor->valor,longitudS);
 					log_info(logger,"CIRC: Se guardo el valor en memoria");
 					cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 					registrar_dato_en_tabla(tabla,&unDato);
