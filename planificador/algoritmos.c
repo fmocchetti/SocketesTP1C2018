@@ -719,7 +719,7 @@ void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta
 			send(socket,claveAEjecutar,tamanio_clave,0);
 			send(socket,&id_ESI,sizeof(int),0);
 			list_add(claves_tomadas,clave1);
-			log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
 			//free(clave1);
 		}
 		else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
@@ -731,7 +731,7 @@ void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta
 			send(socket,&id_ESI,sizeof(int),0);
 			log_info(logger, "ENTRE A 1");
 			list_add(claves_tomadas,clave1);
-			log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
 			//free(clave1);
 		}
 		else{
@@ -811,6 +811,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 		}
 		else{
 			list_add(claves_tomadas,clave1);
+			log_info(logger, "La clave '%s' pasara a bloquearse por el sistema ", claveAEjecutar);
 		}
 
 	}
