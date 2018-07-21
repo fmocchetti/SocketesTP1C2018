@@ -65,7 +65,7 @@ t_instancia * simular(char * clave) {
 	return instancia;
 }
 
-t_instancia * distribuir(char * clave, char * valor) {
+t_instancia * distribuir(char * clave, char * valor, int existia) {
 	t_instancia * instancia = NULL;
 	char letra_inicial = 0;
 	int indice_busqueda = 0;
@@ -106,9 +106,16 @@ t_instancia * distribuir(char * clave, char * valor) {
 			break;
 		case LSU:
 			log_info(logger, "Selecciono por Espacio Disponible");
-			instanciaLSU = buscarMasLibre(total_instancias);
-			instancia = list_get(list_instances, instanciaLSU);
-			instancia->entradasLibres -= 1;
+			while(!instancia) {
+				instanciaLSU = buscarMasLibre(total_instancias);
+				instancia = list_get(list_instances, instanciaLSU);
+				if(!instancia->status) {
+					instancia = NULL;
+				} else {
+					if(!existia)
+						instancia->entradasLibres -= 1;
+				}
+			}
 			break;
 	}
 

@@ -53,7 +53,7 @@ void _esi(int socket_local) {
         			} else {
         				log_info(logger, "La clave '%s' no esta tomada", clave);
         				while(!instancia) {
-							instancia = distribuir(clave, NULL);
+							instancia = distribuir(clave, NULL, 1);
 							log_info(logger, "Esperando instancia");
 							sem_wait(&mutex_instancia);
 							if(!instancia->status) {
@@ -71,7 +71,7 @@ void _esi(int socket_local) {
         		} else {
         			log_info(logger, "No existe la clave '%s' en el diccionario", clave);
     				while(!instancia) {
-						instancia = distribuir(clave, NULL);
+						instancia = distribuir(clave, NULL, 0);
 						log_info(logger, "Esperando instancia");
 						sem_wait(&mutex_instancia);
 						if(!instancia->status) {
@@ -113,7 +113,15 @@ void _esi(int socket_local) {
         				//informar esi error
         			}else {
         				instancia = modificar_valor_clave(clave, valor, clave_diccionario->instancia);
-        				identificador = ESI_OK;
+						log_info(logger, "Esperando instancia");
+						sem_wait(&mutex_instancia);
+						if(!instancia || !instancia->status) {
+							dictionary_remove(diccionario_claves, clave);
+							identificador = ESI_ERROR;
+						} else {
+							identificador = ESI_OK;
+						}
+						log_info(logger, "Informo a la ESI %d", identificador);
 						send(socket_local, &identificador, 1, 0);
         				//informar esi todo ok
         			}
@@ -123,8 +131,6 @@ void _esi(int socket_local) {
 					send(socket_local, &identificador, 1, 0);
         			log_error(logger, "Intentando hacer un SET a una clave inexistente");
         		}
-        		log_info(logger, "Esperando instancia");
-				sem_wait(&mutex_instancia);
 				if(instancia && instancia->status)
 					informar_planificador(clave, COORDINADOR_SET);
 				else
@@ -155,7 +161,15 @@ void _esi(int socket_local) {
 						instancia = store_clave(clave, clave_diccionario->instancia);
 						//informar esi todo ok
 						//informar planificador que clave se libero (ESI_STORE, clave)
-						identificador = ESI_OK;
+						log_info(logger, "Esperando instancia");
+						sem_wait(&mutex_instancia);
+						if(!instancia || !instancia->status) {
+							dictionary_remove(diccionario_claves, clave);
+							identificador = ESI_ERROR;
+						} else {
+							identificador = ESI_OK;
+						}
+						log_info(logger, "Informo a la ESI %d", identificador);
 						send(socket_local, &identificador, 1, 0);
 						clave_diccionario->tomada = false;
 						clave_diccionario->esi = -1;
@@ -166,8 +180,6 @@ void _esi(int socket_local) {
 					send(socket_local, &identificador, 1, 0);
 					log_error(logger, "Intentando hacer un STORE a una clave inexistente");
 				}
-        		log_info(logger, "Esperando instancia");
-				sem_wait(&mutex_instancia);
 				if(instancia && instancia->status)
 					informar_planificador(clave, COORDINADOR_STORE);
 				else
