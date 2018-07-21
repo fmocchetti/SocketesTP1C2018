@@ -412,7 +412,6 @@ int main (int argc, char * argv[]) {
 				else{
 					log_info(logger, "INSTANCIA %d: Se encontro la clave, se le enviara el valor al cordiador",nombre);
 					id = 203;
-					unDato->cantidadDeBytes -= 1;
 					int tamanioBuffer = 1 + 4 + unDato->cantidadDeBytes;
 					log_info(logger, "INSTANCIA %d: ¡Se encontro la clave!, se le enviaran %d bytes al coordinador",nombre,tamanioBuffer);
 					char* buffer = (char*) malloc (tamanioBuffer);

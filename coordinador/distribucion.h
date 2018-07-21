@@ -15,7 +15,7 @@ int instanciaLSU;
 int letras_instancia;
 
 int informar_planificador(char * clave, unsigned char status);
-t_instancia *  distribuir(char *, char *);
+t_instancia *  distribuir(char *, char *, int);
 int modificar_valor_clave(char * clave, char * valor, int instancia);
 int store_clave(char * clave, int instancia);
 int buscarMasLibre(int totalInstancias);
