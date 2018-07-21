@@ -183,7 +183,7 @@ void sjfsd(){
 		}
 	}
 		else{
-			log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
+			//log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
 			sem_getvalue(&new_process,&sem_value2);
 			for(l = 0;l<sem_value2;l++){
 				sem_wait(&new_process);
