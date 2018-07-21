@@ -26,7 +26,7 @@ return resultado;
 
 void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
@@ -67,7 +67,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 	struct Dato unDato;
 
-	int longitudS = strlen(claveValor->valor)+1;
+	int longitudS = strlen(claveValor->valor);
 	int cantidadEntradasAOcupar = calcular_cantidad_entradas(longitudS,claveValor->tamanioEntrada);
 	int espacioAOcupar = cantidadEntradasAOcupar*(claveValor->tamanioEntrada);
 
