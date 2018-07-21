@@ -22,14 +22,14 @@ void testAgregarCircular(){
 	claveValor.tamanioEntrada = tamanioEntradas;
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
 	claveValor2.valor = (char*)&otraMateria;
 	claveValor2.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
 	struct Dato* unDato = (struct Dato*)list_get(tabla,0);
@@ -90,14 +90,14 @@ void testSetYRegistrarObtenerClave(){
 
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
 	claveValor2.valor = (char*)&otraMateria;
 	claveValor2.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
 	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
@@ -133,14 +133,14 @@ void testSetYRegistrarObtenerValor(){
 	claveValor.tamanioEntrada = tamanioEntradas;
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
 	claveValor2.valor = (char*)&otraMateria;
 	claveValor2.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
 	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
@@ -177,7 +177,7 @@ void testSetYRegistrarObtenerDireccion(){
 	claveValor.tamanioEntrada = tamanioEntradas;
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
@@ -186,7 +186,7 @@ void testSetYRegistrarObtenerDireccion(){
 
 	char* posicionDondeGuardoElSegundoValor = posicionDeLectura;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 
 	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
@@ -219,20 +219,20 @@ void testSobreescribirMemoriaYRegistrar(){
 	claveValor.tamanioEntrada = tamanioEntradas;
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
 	claveValor2.valor = (char*)&otraMateria;
 	claveValor2.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 	strcpy(claveValor3.clave,tercerClave);
 	claveValor3.valor = (char*)&tercerMateria;
 	claveValor3.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor3,storage,posicionFinDeMemoria);
+	SET_circular( 1,&posicionDeLectura,&tabla,&claveValor3,storage,posicionFinDeMemoria);
 
 
 	CU_ASSERT_EQUAL(list_size(tabla),2);

@@ -89,7 +89,7 @@ int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,t_list** tabla
 
 	    		    claveValor.tamanioEntrada = tamanioEntrada;
 
-					SET_circular(&posicionDeLectura,tabla,&claveValor,storage,posicionFinDeMemoria);
+					SET_circular(-1,&posicionDeLectura,tabla,&claveValor,storage,posicionFinDeMemoria);
 
 					free(claveValor.valor);
 

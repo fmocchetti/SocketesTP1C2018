@@ -32,7 +32,7 @@ void testStore(){
 
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 

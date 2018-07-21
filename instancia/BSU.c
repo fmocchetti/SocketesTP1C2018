@@ -38,7 +38,7 @@ return 0;
 
 
 
-int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,
+int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 		char** posicionDeLectura,char* posicionFinalMemoria,struct ClaveValor* claveValor){
 
 
@@ -92,7 +92,13 @@ int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,
 				}
 				else{
 
-					log_info(logger,"BSU: Las entradas no son contiguas, se procedera a compactar");
+					log_info(logger,"BSU: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
+					if(server >=0 ){
+						unsigned char id = 200;
+						send(server,&id,1,0);
+
+					}
+
 
 					//compactar ajusta el puntero posicionDeLectura
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
@@ -124,7 +130,13 @@ int SET_BSU(t_list** tabla,char* primeraPosicionMemoria,
 				}
 				else{
 
-						log_info(logger,"BSU: Las entradas no son contiguas, se procedera a compactar");
+						log_info(logger,"BSU: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
+
+						if(server >=0 ){
+							unsigned char id = 200;
+							send(server,&id,1,0);
+
+						}
 
 						//compactar ajusta el puntero posicionDeLectura
 						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);

@@ -306,18 +306,18 @@ int main (int argc, char * argv[]) {
 
 				if(!strcmp((const char*)algoritmo,"CIRC")){
 					pthread_mutex_lock(&lock_dump);
-					SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+					SET_circular(server,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 					pthread_mutex_unlock(&lock_dump);
 
 				}
 				else if(!strcmp((const char*)algoritmo,"LRU")){
 					pthread_mutex_lock(&lock_dump);
-					SET_LRU(&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					SET_LRU(server,&registro,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
 				else if(!strcmp((const char*)algoritmo,"BSU")){
 					pthread_mutex_lock(&lock_dump);
-					SET_BSU(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
+					SET_BSU(server,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
 
