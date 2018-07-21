@@ -210,7 +210,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		laWeaReplanificadoraFIFO(muertos,ejecucion);
+		laWeaReplanificadoraFIFO(terminados,ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
@@ -221,7 +221,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(listos,identificador_ESI_kill);
-		list_add(muertos,nodo_lista_ejecucion);
+		list_add(terminados,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en listos murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
@@ -232,7 +232,7 @@ void kill(){
 	if(resultado_satisfy==1){
 		ESI *nodo_lista_ejecucion = NULL;
 		nodo_lista_ejecucion = list_remove_by_condition(bloqueados,identificador_ESI_kill);
-		list_add(muertos,nodo_lista_ejecucion);
+		list_add(terminados,nodo_lista_ejecucion);
 		_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en bloqueados murio", NULL);
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
