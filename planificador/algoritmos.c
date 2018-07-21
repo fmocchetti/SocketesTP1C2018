@@ -87,7 +87,7 @@ void sjfsd(){
 			}
 
 			if(nodo_lista_ejecucion->bloquear ==1){
-				//agrego a bloqueados en caso de recibir otra contestacion de la ESI
+				//agrego a bloqueados en caso de recibir un bloquear por consola
 				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
 				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
 				nodo_lista_ejecucion->lineas_ejecutadas ++;
