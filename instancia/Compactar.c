@@ -13,9 +13,85 @@ bool son_contiguas(t_list** tabla,struct ClaveValor* cv,int cantidadEntradasAOcu
 	int tamanioEntrada = cv->tamanioEntrada;
 	int cantidadEntradas = cv->cantidadEntradas;
 	int tamanio = list_size(*tabla);
-	struct Dato* unDato,*datoSiguiente;
-	int entradasOcupadasPorValor = 0,entradasIntermedias = 0, contadorEntradasContiguas = 0;
-	ordenar_tabla(tabla,primeraPosicionMemoria);
+	struct Dato* unDato;
+	//int entradasOcupadasPorValor = 0,entradasIntermedias = 0;
+	int entradasLibresContiguas = 0;
+
+	char* principioMemoria = primeraPosicionMemoria;
+
+	char* finDeMemoria = primeraPosicionMemoria + (tamanioEntrada*cantidadEntradas);
+
+	int i = 0,cantidadDeEntradasQueOcupa = 0;
+
+	*punteroEntradaLibre = primeraPosicionMemoria;
+
+	while(i < cantidadEntradas){
+
+		unDato = buscar_dato_por_posicion(*tabla,primeraPosicionMemoria + (tamanioEntrada*i));
+
+
+		if(unDato==NULL){
+
+			if(cantidadDeEntradasQueOcupa > 0){
+
+				cantidadDeEntradasQueOcupa -= 1;
+
+
+			}
+			else{
+
+				entradasLibresContiguas += 1;
+
+			}
+
+
+		}
+		else{
+
+			entradasLibresContiguas = 0;
+			cantidadDeEntradasQueOcupa = calcular_cant_entradas(unDato->cantidadDeBytes,tamanioEntrada)-1;
+		}
+		if(entradasLibresContiguas==cantidadEntradasAOcupar){
+
+			*punteroEntradaLibre = primeraPosicionMemoria + (tamanioEntrada*(i+1))-(tamanioEntrada*entradasLibresContiguas);
+			return true;
+
+		}
+		i++;
+	}
+
+return false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//ordenar_tabla(tabla,primeraPosicionMemoria);
+/*
+	for(int i =0;i<tamanio;i++){
+		unDato = list_get(*tabla,i);
+		char* a = (char*) malloc(unDato->cantidadDeBytes+1);
+		memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
+		a[unDato->cantidadDeBytes+1] = '\0';
+		log_error(logger,"%s",a);
+
+	}
+	if(cantidadEntradasAOcupar == 1){
+		return true;
+	}
 
 	for(int i=0 ; i < (tamanio-1) ; i++ ){
 
@@ -68,6 +144,7 @@ bool son_contiguas(t_list** tabla,struct ClaveValor* cv,int cantidadEntradasAOcu
 
 	}
 return false;
+*/
 }
 
 
@@ -91,11 +168,22 @@ bool hay_espacio_fragmentado_para_el_valor(t_list** tabla,struct ClaveValor* cv)
 return (cantEntradas > entradasNetasNecesarias);
 }
 
-int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posicionFin,int tamEntrada){
+int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada){
+
+	t_list* tablaAux = copiar(*tabla);
+
+
 
 	char* posicionInsercion = storage;
 
-	ordenar_tabla(tabla,*posicionInsercion);
+
+	log_info(logger,"COMPACTAR: Voy a ordenar la tabla");
+
+	ordenar_tabla(&tablaAux,posicionInsercion);
+
+	log_info(logger,"COMPACTAR: -------------------------------------");
+
+	ordenar_tabla(&tablaAux,posicionInsercion);
 
 	int tamanio = list_size(*tabla);
 
@@ -108,25 +196,52 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posici
 	for(int i = 0 ; i < tamanio ; i++){
 
 
-		log_info(logger,".");
-
-		unDato = list_get(*tabla,i);
+		unDato = list_get(tablaAux,i);
 
 		entradasAOcupar = calcular_cantidad_entradas(unDato->cantidadDeBytes,tamEntrada);
 
 		espacioAOcupar = entradasAOcupar * tamEntrada;
+/*
+		char* a = malloc(unDato->cantidadDeBytes+1);
+		a[unDato->cantidadDeBytes]='\0';
+		memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
 
-		memmove(posicionInsercion,(const char*)unDato->posicionMemoria,unDato->cantidadDeBytes);
+*/
 
-		unDato->posicionMemoria = *posicionInsercion;
+		if(storage != unDato->posicionMemoria){
+
+			char* a = malloc(unDato->cantidadDeBytes+1);
+			memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
+			a[unDato->cantidadDeBytes]='\0';
+
+			log_info(logger,"COMPACTAR: moviendo valor %s",a);
+
+			memmove(posicionInsercion,(const char*)a,unDato->cantidadDeBytes);
+
+
+
+			unDato->posicionMemoria = posicionInsercion;
+			free(a);
+
+		}
+
+
+
+
+
+
 
 		posicionInsercion += espacioAOcupar;
+
+	//	free(a);
 
 	}
 
 	*posicionDeLectura = posicionInsercion;
 
 	log_info(logger,"COMPACTAR: Se compacto el storage");
+
+	liberar_recursos(&tablaAux);
 
 return 0;
 }

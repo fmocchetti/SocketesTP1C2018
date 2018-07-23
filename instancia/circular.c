@@ -30,11 +30,12 @@ return resultado;
 
 void cargar_info_en_dato(struct Dato* unDato,char* posicionDeLectura,struct ClaveValor* claveValor){
 
-	int longitudS = strlen(claveValor->valor);
+	unsigned int longitudS = strlen(claveValor->valor);
 
 	(unDato)->posicionMemoria = posicionDeLectura;
 	(unDato)->cantidadDeBytes = longitudS;
-	strcpy((char*)(unDato->clave),claveValor->clave);
+	//strcpy((char*)(unDato->clave),claveValor->clave);
+	unDato->clave = claveValor->clave;
 
 }
 
@@ -50,15 +51,21 @@ int liberar_entradas_atomicas(t_list**tabla,char*  primeraPosicionMemoria,int ta
 
 				borrar_un_dato_y_liberar(tabla,unDato);
 				sizeTabla = list_size(*tabla);// chequear si no cambia el size cuando borro el dato
+				entradasLiberadas++;
 
 			}
 			i++;
-			entradasLiberadas++;
+
 
 	  }
 	  log_info(logger,"CIRC: Se liberaron %d entradas atomicas",entradasLiberadas);
-return 0;
 
+if(entradasLiberadas<cantidadEntradasNecesariasLiberar){
+	return -1;
+}
+else{
+	return 0;
+}
 
 }
 
@@ -100,8 +107,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 	}
 	*/
 
-	//si no hay lugar para todo el string lo parto y coloco lo que entra y el resto al principio
-	//de la memoria
+
 	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
 		log_info(logger,"CIRC: No hay lugar para el valor actual, se buscaran entradas libres");
@@ -129,14 +135,14 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
 
-					//compactar ajusta el puntero posicionDeLectura
+					/*//compactar ajusta el puntero posicionDeLectura
 					if(server >=0 ){
 						unsigned char id = 200;
 						send(server,&id,1,0);
 
 					}
-
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+*/
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
 
 
 				}
@@ -176,14 +182,15 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 				else{
 
 					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
-					if(server >=0 ){
+			/*		if(server >=0 ){
 						unsigned char id = 200;
 						send(server,&id,1,0);
 
 					}
+*/
 
 					//compactar ajusta el puntero posicionDeLectura
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,posicionFinalMemoria,claveValor->tamanioEntrada);
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
 
 
 				}
@@ -218,15 +225,24 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 
-	log_info(logger,"CIRC: Se guardo el valor en memoria");
-
-
 	cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 	registrar_dato_en_tabla(tabla,&unDato);
 
 	*posicionDeLectura += espacioAOcupar;
 
 	log_info(logger,"CIRC: Se inserto el valor %s",claveValor->valor);
+/*
+	//si se termino la memoria vuelvo al principio
+	if(*posicionDeLectura==posicionFinalMemoria){
+
+		log_info(logger,"CIRC: El puntero llego a fin de memoria");
+
+		*posicionDeLectura = primeraPosicionMemoria;
+
+
+	}
+
+*/
 
 
 return 0;

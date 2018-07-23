@@ -8,12 +8,17 @@
 #include <commons/collections/dictionary.h>
 #include <commons/collections/node.h>
 #include "Dato.h"
+#include "socket_client.h"
 
 void* freeDeClaves(char*);
 
+void ordenar_tabla(t_list** tabla,char* primeraPosicion);
+
+t_list* copiar(t_list* tabla);
+
 void* buscar(t_list *tabla,char* claveBuscada);
 
-void* liberar_recursos(t_list** tabla);
+void liberar_recursos(t_list** tabla);
 
 struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion);
 
@@ -27,7 +32,7 @@ bool existe_la_clave(t_list *tabla,char* claveBuscada);
 
 int obtener_posicion_del_dato(t_list* tabla,struct Dato* unDato);
 
-void* ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla);
+void ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla);
 
 int borrar_un_dato(t_list** tabla,struct Dato* unDato);
 

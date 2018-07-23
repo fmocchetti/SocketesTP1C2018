@@ -13,7 +13,7 @@
 #include "ClaveValor.h"
 #include "circular.h"
 
-int compactar(t_list** tabla,char* storage,char** posicionDeLectura,char* posicionFin,int tamEntrada);
+int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada);
 
 bool hay_espacio_fragmentado_para_el_valor(t_list** tabla,struct ClaveValor* cv);
 

@@ -49,7 +49,7 @@ void ordenar_registro(t_list** registro){
 
 	bool menos_accedida_al_comienzo(struct Registro* a,struct Registro* b){
 
-		return(a->referenciado < b->referenciado);
+		return(a->referenciado > b->referenciado);
 	}
 	list_sort(*registro,menos_accedida_al_comienzo);
 

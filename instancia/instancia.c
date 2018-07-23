@@ -23,7 +23,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 			char* rutaArmada = malloc(strlen(parametros->puntoDeMontaje)+40+strlen(getenv("HOME"))+1);
 			*rutaArmada = 0;
-			for(int i = 0 ; i < (tamanioTabla); i++){
+			for(int i = 0 ; i < tamanioTabla; i++){
 
 				unDato = list_get( parametros->tabla, i );
 
@@ -128,7 +128,8 @@ int main (int argc, char * argv[]) {
 		log_info(logger,"INSTANCIA %d: Estado server %d \n",nombre , server);
 
 		// creo el storage, la tabla y el registro de entradas
-		char* storage = (char*)malloc(init.cantidad_entradas*init.tamanioEntrada);
+		char* storage = (char*)malloc((init.cantidad_entradas*init.tamanioEntrada)+init.cantidad_entradas);
+		//char* storage = (char*)calloc(init.cantidad_entradas,init.tamanioEntrada);
 
 		log_info(logger, "INSTANCIA %d: Cree el storage tamaño: %d",nombre ,init.cantidad_entradas*init.tamanioEntrada);
 
@@ -281,7 +282,7 @@ int main (int argc, char * argv[]) {
 
 				log_info(logger, "INSTANCIA %d: Asigne tamanioClave %d" ,nombre , size_clave);
 
-				strcpy(claveValor.clave,clave);
+				claveValor.clave = clave;
 
 
 				log_info(logger, "INSTANCIA %d: Asigne clave: %s",nombre ,clave);
@@ -321,7 +322,18 @@ int main (int argc, char * argv[]) {
 					SET_BSU(server,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
-
+				t_list* tablaAux = list_duplicate(tabla);
+				for(int i=0;i<list_size(tabla);i++){
+					ordenar_tabla(&tablaAux,storage);
+					struct Dato* unDato = list_get(tablaAux,i);
+					char* a = (char*)malloc(unDato->cantidadDeBytes+1);
+					memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
+					a[unDato->cantidadDeBytes] = '\0';
+					printf("%s -- ",a);
+					free(a);
+				}
+				//liberar_recursos(&tablaAux);
+				free(tablaAux);
 				free(valor);
 
 			} else if(identificador==23) {//store
@@ -366,7 +378,7 @@ int main (int argc, char * argv[]) {
 
 				pthread_mutex_lock(&lock_dump);
 
-				compactar(&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,init.tamanioEntrada);
+				compactar(&tabla,storage,&posicionDeLectura,init.tamanioEntrada);
 
 				pthread_mutex_unlock(&lock_dump);
 
@@ -434,7 +446,6 @@ int main (int argc, char * argv[]) {
 			identificador = 1;
 			send(server, &identificador, 1, 0);
 
-			log_error(logger, "MANDO UN 1");
 			log_info(logger, "INSTANCIA %d: Le informe al coordinador que termine status %d",nombre , identificador);
 			//free(clave);
 			log_info(logger, "INSTANCIA %d: Ya termine de ejecutar esa instruccion",nombre);
