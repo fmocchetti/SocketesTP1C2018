@@ -11,7 +11,7 @@
 // algo asi pienso que deberia recibir del coordinador
 struct ClaveValor{
 
-	char clave[40];
+	char* clave;
 	char * valor;
 	int tamanioEntrada;
 	int cantidadEntradas;
