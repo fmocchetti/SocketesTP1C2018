@@ -124,6 +124,8 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 
 
+
+
 	if(existe_la_clave(*tabla,claveValor->clave)){
 
 
@@ -140,7 +142,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 	return 0;
 	}
-	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
+//	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
 
 		log_info(logger,"LRU: No hay lugar para el valor actual, se buscaran entradas libres");
 
@@ -184,9 +186,16 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 		else{
 
 				log_info(logger,"LRU: No se encontraron entradas libres");
-				int entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
-				liberar_entradas_atomicas_menos_accedidas(registro,tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
-	            //char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
+				int entradasLibres = calcular_cant_entradas_libres(*tabla,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
+				int check = liberar_entradas_atomicas_menos_accedidas(registro,tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
+
+				if(check<0){
+
+					log_error(logger,"LRU: No se encontraron entradas atomicas para reemplazar");
+					exit(-1);
+				}
+
+				//char * posicionReemplazoEntrada = obtener_entrada_menos_accedida(registro,primeraPosicionMemoria,claveValor->tamanioEntrada);
 	            log_info(logger,"LRU: Guardara el valor en entrada/s menos accedida/s, se chequara si son contiguas");
 				char* punteroEntradaLibre = 0;
 
@@ -194,7 +203,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 						log_info(logger,"LRU: Las entradas son contiguas, se realizara la inserccion");
 
-						memcpy(punteroEntradaLibre,claveValor->valor,longitudS);
+						memmove(punteroEntradaLibre,claveValor->valor,longitudS);
 						log_info(logger,"LRU: Se guardo el valor %s en memoria",claveValor->valor);
 						cargar_info_en_dato(&unDato,punteroEntradaLibre,claveValor);
 						registrar_dato_en_tabla(tabla,&unDato);
@@ -230,14 +239,19 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 		}
 
-	}
+		memcpy(*posicionDeLectura,claveValor->valor,longitudS);
+		cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
+		registrar_dato_en_tabla(tabla,&unDato);
+		registrar_acceso_a_entrada(registro,primeraPosicionMemoria,*posicionDeLectura,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
+
+//	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
-	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
+/*	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 	log_info(logger,"LRU:Se guardo el valor: %s",claveValor->valor);
 	cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 	registrar_dato_en_tabla(tabla,&unDato);
 	registrar_acceso_a_entrada(registro,primeraPosicionMemoria,*posicionDeLectura,claveValor->tamanioEntrada,cantidadEntradasAOcupar);
-
+*/
 	*posicionDeLectura += espacioAOcupar;
 
 

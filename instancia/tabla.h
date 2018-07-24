@@ -18,6 +18,8 @@ t_list* copiar(t_list* tabla);
 
 void* buscar(t_list *tabla,char* claveBuscada);
 
+int calcular_cant_entradas_libres(t_list *tabla,int tamEntrada,int cantEntradas);
+
 void liberar_recursos(t_list** tabla);
 
 struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion);

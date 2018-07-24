@@ -193,6 +193,8 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 
 	log_info(logger,"COMPACTAR: compactando storage");
 
+
+
 	for(int i = 0 ; i < tamanio ; i++){
 
 
@@ -208,7 +210,8 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 
 */
 
-		if(storage != unDato->posicionMemoria){
+	//	if(storage != unDato->posicionMemoria){
+			struct Dato dato;
 
 			char* a = malloc(unDato->cantidadDeBytes+1);
 			memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
@@ -217,13 +220,16 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 			log_info(logger,"COMPACTAR: moviendo valor %s",a);
 
 			memmove(posicionInsercion,(const char*)a,unDato->cantidadDeBytes);
-
-
-
-			unDato->posicionMemoria = posicionInsercion;
+			borrar_un_dato(tabla,unDato);
+			dato.clave=unDato->clave;
+			dato.cantidadDeBytes=unDato->cantidadDeBytes;
+			dato.posicionMemoria = posicionInsercion;
+			registrar_dato_en_tabla(tabla,&dato);
+			//unDato->posicionMemoria = posicionInsercion;
+			log_error(logger,"COMPACTAR LE ASIGNO %p",posicionInsercion);
 			free(a);
 
-		}
+//		}
 
 
 
@@ -232,6 +238,7 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 
 
 		posicionInsercion += espacioAOcupar;
+		log_error(logger,"COMPACTAR punteroLectura %p",posicionInsercion);
 
 	//	free(a);
 
@@ -241,7 +248,7 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 
 	log_info(logger,"COMPACTAR: Se compacto el storage");
 
-	liberar_recursos(&tablaAux);
+
 
 return 0;
 }

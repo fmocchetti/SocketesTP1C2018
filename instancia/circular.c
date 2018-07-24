@@ -108,7 +108,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 	*/
 
 
-	if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
+	//if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
 		log_info(logger,"CIRC: No hay lugar para el valor actual, se buscaran entradas libres");
 
@@ -219,7 +219,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 				return 0;
 */
 		}
-	}
+//	}
 
 
 

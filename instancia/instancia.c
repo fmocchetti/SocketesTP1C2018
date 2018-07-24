@@ -128,7 +128,7 @@ int main (int argc, char * argv[]) {
 		log_info(logger,"INSTANCIA %d: Estado server %d \n",nombre , server);
 
 		// creo el storage, la tabla y el registro de entradas
-		char* storage = (char*)malloc((init.cantidad_entradas*init.tamanioEntrada)+init.cantidad_entradas);
+		char* storage = (char*)malloc((init.cantidad_entradas*init.tamanioEntrada));
 		//char* storage = (char*)calloc(init.cantidad_entradas,init.tamanioEntrada);
 
 		log_info(logger, "INSTANCIA %d: Cree el storage tamaño: %d",nombre ,init.cantidad_entradas*init.tamanioEntrada);
@@ -294,8 +294,11 @@ int main (int argc, char * argv[]) {
 				recv(server, &size_valor, 4, 0);
 				valor = malloc(size_valor + 1);
 				recv(server, valor, size_valor, 0);
+
+
 				valor[size_valor] = '\0';
 				log_info(logger, "INSTANCIA %d: Valor %s",nombre , valor);
+
 
 				claveValor.valor = valor;
 
@@ -323,13 +326,16 @@ int main (int argc, char * argv[]) {
 					pthread_mutex_unlock(&lock_dump);
 				}
 				t_list* tablaAux = list_duplicate(tabla);
+				//log_error(logger,"punteroLectura %p, punteroFin %p",posicionDeLectura,posicionFinDeMemoria);
+				ordenar_tabla(&tablaAux,storage);
 				for(int i=0;i<list_size(tabla);i++){
-					ordenar_tabla(&tablaAux,storage);
+
 					struct Dato* unDato = list_get(tablaAux,i);
 					char* a = (char*)malloc(unDato->cantidadDeBytes+1);
 					memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
 					a[unDato->cantidadDeBytes] = '\0';
 					printf("%s -- ",a);
+					//printf("de:%s in:%p fin %p  \n",a,unDato->posicionMemoria,unDato->posicionMemoria+unDato->cantidadDeBytes);
 					free(a);
 				}
 				//liberar_recursos(&tablaAux);

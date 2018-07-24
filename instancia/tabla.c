@@ -34,6 +34,18 @@ struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion){
 return dato;
 }
 
+int calcular_cant_entradas_libres(t_list *tabla,int tamEntrada,int cantEntradas){
+	int tam = list_size(tabla);
+	int cantEntradasOcupadas=0;
+	for(int i = 0;i<tam;i++){
+
+		struct Dato* unDato = list_get(tabla,i);
+		cantEntradasOcupadas += calcular_cant_entradas(unDato->cantidadDeBytes,tamEntrada);
+	}
+
+return (cantEntradas - cantEntradasOcupadas);
+}
+
 
 int calcular_cant_entradas(int longitudS,int tamEntrada){
 
@@ -134,7 +146,9 @@ void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 	//memcpy(otroDato->clave, unDato->clave,/*sizeof(unDato->clave)*/40);
 	otroDato->clave = unDato->clave;
 	otroDato->posicionMemoria = unDato->posicionMemoria;
-	otroDato->posicionMemoria[otroDato->cantidadDeBytes]='\0';
+
+
+	//log_error(logger,"voy a guardar el dato %s en posicion de memoria %p  ",otroDato->posicionMemoria,otroDato->posicionMemoria);
 
 	list_add(*tabla,otroDato);
 
