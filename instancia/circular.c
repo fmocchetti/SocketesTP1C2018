@@ -60,12 +60,14 @@ int liberar_entradas_atomicas(t_list**tabla,char*  primeraPosicionMemoria,int ta
 	  }
 	  log_info(logger,"CIRC: Se liberaron %d entradas atomicas",entradasLiberadas);
 
-if(entradasLiberadas<cantidadEntradasNecesariasLiberar){
-	return -1;
-}
-else{
-	return 0;
-}
+	  if(entradasLiberadas == cantidadEntradasNecesariasLiberar){
+
+	  	return 0;
+	  }
+	  else{
+
+	  	return -1;
+	  }
 
 }
 
@@ -110,7 +112,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 	//if( no_hay_lugar( espacioAOcupar, *posicionDeLectura, posicionFinalMemoria) ){
 
-		log_info(logger,"CIRC: No hay lugar para el valor actual, se buscaran entradas libres");
+		log_info(logger,"CIRC: Se buscaran entradas libres");
 
 		if(hay_espacio_fragmentado_para_el_valor(tabla,claveValor)){
 
@@ -153,13 +155,14 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 				log_info(logger,"CIRC: No hay entradas libres suficientes, se liberaran entradas atomicas");
 
-				int entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
+				int entradasLibres = calcular_cant_entradas_libres(*tabla,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 				int control = liberar_entradas_atomicas(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
 				if(control < 0 ){
 
-					log_info(logger,"CIRC: No se encontraron entradas atomicas para liberar");
-					return -1;
+					log_error(logger,"CIRC: No se encontraron entradas atomicas para liberar");
+					exit(-1);
+
 
 				}
 				log_info(logger,"CIRC: Se liberaron entradas, se comprobara si son contiguas");

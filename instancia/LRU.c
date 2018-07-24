@@ -44,12 +44,13 @@ int liberar_entradas_atomicas_menos_accedidas(t_list** registro,t_list** tabla, 
 
 	  }
 	  log_info(logger,"LRU: Se liberaron %d entradas atomicas menos accedidas",entradasLiberadas);
+	  free(registroAux);
 	  if(entradasLiberadas == cantidadEntradasNecesariasLiberar){
-		free(registroAux);
+
 	  	return 0;
 	  }
 	  else{
-		  free(registroAux);
+
 	  	return -1;
 	  }
 }
@@ -191,7 +192,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 				if(check<0){
 
-					log_error(logger,"LRU: No se encontraron entradas atomicas para reemplazar");
+					log_error(logger,"LRU: No se encontraron entradas atomicas para liberar");
 					exit(-1);
 				}
 
