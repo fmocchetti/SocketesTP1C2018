@@ -203,8 +203,6 @@ void sjfsd(){
 }
 
 void sjfcd(){
-	log_info(logger,"Estas en SJFCD");
-
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char permisoDeFinalizacion = 58;
 	unsigned char contestacionESI = 0;
@@ -381,8 +379,6 @@ void sjfcd(){
 }
 
 void hrrn(){
-	log_info(logger,"Estas en HRRN");
-
 	unsigned char permisoDeEjecucion = 1;
 	unsigned char permisoDeFinalizacion = 58;
 	unsigned char contestacionESI = 0;
