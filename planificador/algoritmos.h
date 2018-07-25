@@ -39,6 +39,7 @@ sem_t sem_pausar_algoritmo;
 //pthread_mutex_t mutex_ejecucionn = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t mutex_ejecucion;
 t_dictionary * claves_bloqueadas;
+int contador_movidos_a_listos;
 int replanificar;
 int socket_coord;
 int esi_bloqueada_de_entrada;
