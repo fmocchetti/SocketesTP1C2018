@@ -737,7 +737,7 @@ void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta
 					else{
 						esi->bloquear = 1;
 						t_list * list_clave = list_create();
-						list_add(list_clave, &id_ESI);
+						list_add(list_clave,(int*)id_ESI);
 						dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
 						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
 						free(clave1);
