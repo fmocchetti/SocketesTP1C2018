@@ -260,6 +260,23 @@ void sjfcd(){
 			//Si la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
 			//if(nodo_lista_ejecucion->cantidadDeLineas >0) {
 
+			//Para bloquear!
+			if(nodo_lista_ejecucion->bloquear ==1){
+				//agrego a bloqueados en caso de recibir un bloquear por consola
+				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+				nodo_lista_ejecucion->lineas_ejecutadas ++;
+				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas = 0;
+				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+				break;
+			}
+
+
 				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 				if (result_send <= 0) {
@@ -430,6 +447,22 @@ void hrrn(){
 				if(sem_value<1){
 					sem_wait(&sem_pausar_algoritmo);
 					//break;
+				}
+
+				//Para bloquear!!
+				if(nodo_lista_ejecucion->bloquear ==1){
+					//agrego a bloqueados en caso de recibir un bloquear por consola
+					log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+					//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+					//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+					nodo_lista_ejecucion->lineas_ejecutadas = 0;
+					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+					log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+					break;
 				}
 
 				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
@@ -896,6 +929,7 @@ void ESI_STORE(char *claveAEjecutar){
 				if(resultado_lista_satisfy ==1){
 					esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
 					log_info(logger,"Proceso removido de bloqueados '%d'",esi1->id_ESI);
+					esi1->bloquear = 0;
 					list_add(listos, (ESI*)esi1);
 					log_info(logger,"Proceso agregado a la lista de listos '%d'",esi1->id_ESI);
 					//seteo los semaforos para el sjfcd
