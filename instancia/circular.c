@@ -137,13 +137,13 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
 
-					/*//compactar ajusta el puntero posicionDeLectura
+					//compactar ajusta el puntero posicionDeLectura
 					if(server >=0 ){
 						unsigned char id = 200;
 						send(server,&id,1,0);
 
 					}
-*/
+
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
 
 
@@ -185,12 +185,12 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 				else{
 
 					log_info(logger,"CIRC: Las entradas no son contiguas, se procedera a compactar, le aviso al cordi");
-			/*		if(server >=0 ){
+					if(server >=0 ){
 						unsigned char id = 200;
 						send(server,&id,1,0);
 
 					}
-*/
+
 
 					//compactar ajusta el puntero posicionDeLectura
 					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);

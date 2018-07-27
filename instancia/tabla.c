@@ -3,9 +3,11 @@
 
 void* buscar(t_list *tabla,char* claveBuscada){
 
-	bool elemento_buscado(struct Dato* unDato) {
+	bool elemento_buscado(void* unDato) {
 
-	     return (!strcmp((const char*)unDato->clave,(const char*)claveBuscada));
+		struct Dato* dato = (struct Dato*) unDato;
+
+	     return (!strcmp((const char*)dato->clave,(const char*)claveBuscada));
 
 
 	}
@@ -20,9 +22,11 @@ return dato;
 
 struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion){
 
-	bool elemento_buscado(struct Dato* unDato) {
+	bool elemento_buscado(void* unDato) {
 
-	     return (unDato->posicionMemoria == posicion);
+		struct Dato* dato = (struct Dato*) unDato;
+
+	     return (dato->posicionMemoria == posicion);
 
 	}
 	if (list_size(tabla) <= 0){
@@ -72,7 +76,10 @@ return resultado;
 
 void ordenar_tabla(t_list** tabla,char* primeraPosicion){
 
-	bool mas_proximas_al_comienzo(struct Dato* a,struct Dato* b){
+	bool mas_proximas_al_comienzo(void* a1,void* b1){
+
+		struct Dato* a = (struct Dato*) a1;
+		struct Dato* b = (struct Dato*) b1;
 
 		int distanciaA = a->posicionMemoria - primeraPosicion;
 		int distanciaB = b->posicionMemoria - primeraPosicion;
@@ -88,7 +95,10 @@ void ordenar_tabla(t_list** tabla,char* primeraPosicion){
 
 void ordenar_tabla_por_valores_de_mayor_bytes(t_list** tabla){
 
-	bool mas_grandes_al_comienzo(struct Dato* a,struct Dato* b){
+	bool mas_grandes_al_comienzo(void* a1,void* b1){
+
+		struct Dato* a = (struct Dato*) a1;
+		struct Dato* b = (struct Dato*) b1;
 
 		unsigned int catBytesA = a->cantidadDeBytes;
 		unsigned int catBytes = b->cantidadDeBytes;
@@ -185,8 +195,8 @@ int borrar_un_dato(t_list** tabla,struct Dato* unDato){
 return -1;
 }
 
-void* freeDeClaves(char * clave){
-
+void freeDeClaves(void * c){
+	char* clave = (char*) c;
 
 	free(clave);
 

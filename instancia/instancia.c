@@ -10,7 +10,7 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 		log_info(logger,"DUMP: ****Comienza el proceso respaldo de Informacion en: %s ****",parametros->puntoDeMontaje);
 
-		int tamanioTabla = list_size(parametros->tabla);
+		int tamanioTabla = list_size(*parametros->tabla);
 		if(tamanioTabla <= 0){
 			log_info(logger,"**La tabla se encontro vacia, no hay nada para respaldar**");
 			pthread_mutex_unlock(&lock_dump);
@@ -21,11 +21,11 @@ int respaldar_informacion_thread(parametros_dump* parametros){
 
 			int j =0;
 
-			char* rutaArmada = malloc(strlen(parametros->puntoDeMontaje)+40+strlen(getenv("HOME"))+1);
+			char* rutaArmada = malloc(strlen(parametros->puntoDeMontaje)+40+200);
 			*rutaArmada = 0;
 			for(int i = 0 ; i < tamanioTabla; i++){
 
-				unDato = list_get( parametros->tabla, i );
+				unDato = list_get( *parametros->tabla, i );
 
 				strcpy(rutaArmada,parametros->puntoDeMontaje);
 				strcat(rutaArmada,(const char*)unDato->clave);
@@ -160,7 +160,7 @@ int main (int argc, char * argv[]) {
 			return EXIT_FAILURE;
 		}
 		parametros->puntoDeMontaje = puntoMontaje;
-		parametros->tabla = tabla;
+		parametros->tabla = &tabla;
 		parametros->intervaloDeDump = intervaloDump;
 
 		log_info(logger, "INSTANCIA %d: Cargue los parametros",nombre);
@@ -193,12 +193,13 @@ int main (int argc, char * argv[]) {
 				clave[size_clave] = '\0';
 				log_info(logger, "INSTANCIA %d: Levantando clave %s",nombre , clave);
 				dictionary_put(tablaDeRequeridas,clave,clave);
+				free(clave);
 			}
 			//para probar
 			//dictionary_put(tablaDeRequeridas,"futbol:ansaldi","futbol:ansaldi");
 			//dictionary_put(tablaDeRequeridas,"futbol:messi","futbol:messi");
 
-			levantar_archivos_a_memoria(&storage,init.tamanioEntrada,&tabla,tablaDeRequeridas,posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
+			levantar_archivos_a_memoria(&storage,init.tamanioEntrada,init.cantidad_entradas,&tabla,tablaDeRequeridas,&posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
 
 			dictionary_destroy_and_destroy_elements(tablaDeRequeridas,freeDeClaves);
 

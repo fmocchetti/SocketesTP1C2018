@@ -23,7 +23,7 @@
 #include <pthread.h>
 
 typedef struct{
-	t_list* tabla;
+	t_list** tabla;
 	char* puntoDeMontaje;
 	unsigned int intervaloDeDump;
 }parametros_dump;

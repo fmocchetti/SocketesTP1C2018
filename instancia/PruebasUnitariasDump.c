@@ -45,7 +45,7 @@ void testDumpear(){
 	respaldar_informacion(tabla,"",logger);
 
 
-	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
+
 
 
 	CU_ASSERT_STRING_EQUAL(1,1);

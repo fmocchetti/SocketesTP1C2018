@@ -31,7 +31,14 @@ int liberar_entradas_atomicas_con_valores_mas_grandes(t_list** tabla, char*  pri
 
 	  }
 	  log_info(logger,"BSU: Se liberaron %d entradas atomicas de valor de mayor bytes",entradasLiberadas);
-return 0;
+	  if(entradasLiberadas == cantidadEntradasNecesariasLiberar){
+
+	  	return 0;
+	  }
+	  else{
+
+	  	return -1;
+	  }
 }
 
 
@@ -66,9 +73,9 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 
 	return 0;
 	}
-	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
+//	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
 
-		log_info(logger,"BSU: No hay lugar para el valor actual, se buscaran entradas libres");
+		//log_info(logger,"BSU: No hay lugar para el valor actual, se buscaran entradas libres");
 
 		if(hay_espacio_fragmentado_para_el_valor(tabla,claveValor)){
 
@@ -108,7 +115,7 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 
 		}
 		else{
-
+/*
 				log_info(logger,"BSU: No se encontraron entradas libres suficientes, se liberaran entradas atomicas con mas bytes");
 				int entradasLibres;
 				if(posicionFinalMemoria==*posicionDeLectura){
@@ -118,8 +125,18 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 
 					entradasLibres = calcular_cant_entradas(posicionFinalMemoria - *posicionDeLectura,claveValor->tamanioEntrada);
 				}
+*/
 
-				liberar_entradas_atomicas_con_valores_mas_grandes(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
+
+				log_info(logger,"BSU: No se encontraron entradas libres");
+				int entradasLibres = calcular_cant_entradas_libres(*tabla,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
+				int check = liberar_entradas_atomicas_con_valores_mas_grandes(tabla,primeraPosicionMemoria,claveValor->tamanioEntrada,cantidadEntradasAOcupar-entradasLibres);
+				if(check<0){
+
+					log_error(logger,"LRU: No se encontraron entradas atomicas para liberar");
+					exit(-1);
+				}
+
 	            log_info(logger,"BSU: Se liberaron entradas, se chequara si son contiguas");
 				char* punteroEntradaLibre = 0;
 
@@ -152,16 +169,16 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 
 				}
 
-/*
+
 				memmove(*posicionDeLectura,claveValor->valor,longitudS);
 				cargar_info_en_dato(&unDato,*posicionDeLectura,claveValor);
 				registrar_dato_en_tabla(tabla,&unDato);
 				log_info(logger,"BSU: Se sobre-escribieron las entradas");
 				return 0;
-*/
+
 		}
 
-	}
+//	}
 	//guardo el dato entero en memoria si no entro en los if anteriores
 	memcpy(*posicionDeLectura,claveValor->valor,longitudS);
 	log_info(logger,"BSU:Se guardo el valor: %s",claveValor->valor);

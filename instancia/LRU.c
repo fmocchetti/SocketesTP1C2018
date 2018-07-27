@@ -145,7 +145,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 	}
 //	if(no_hay_lugar(espacioAOcupar, *posicionDeLectura, posicionFinalMemoria)){
 
-		log_info(logger,"LRU: No hay lugar para el valor actual, se buscaran entradas libres");
+		//log_info(logger,"LRU: No hay lugar para el valor actual, se buscaran entradas libres");
 
 		if(hay_espacio_fragmentado_para_el_valor(tabla,claveValor)){
 

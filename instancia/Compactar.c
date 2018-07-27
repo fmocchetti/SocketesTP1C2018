@@ -12,14 +12,14 @@ bool son_contiguas(t_list** tabla,struct ClaveValor* cv,int cantidadEntradasAOcu
 
 	int tamanioEntrada = cv->tamanioEntrada;
 	int cantidadEntradas = cv->cantidadEntradas;
-	int tamanio = list_size(*tabla);
+	//int tamanio = list_size(*tabla);
 	struct Dato* unDato;
 	//int entradasOcupadasPorValor = 0,entradasIntermedias = 0;
 	int entradasLibresContiguas = 0;
 
-	char* principioMemoria = primeraPosicionMemoria;
+	//char* principioMemoria = primeraPosicionMemoria;
 
-	char* finDeMemoria = primeraPosicionMemoria + (tamanioEntrada*cantidadEntradas);
+	//char* finDeMemoria = primeraPosicionMemoria + (tamanioEntrada*cantidadEntradas);
 
 	int i = 0,cantidadDeEntradasQueOcupa = 0;
 

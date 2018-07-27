@@ -10,7 +10,7 @@
 #include "Dato.h"
 #include "socket_client.h"
 
-void* freeDeClaves(char*);
+void freeDeClaves(void*);
 
 void ordenar_tabla(t_list** tabla,char* primeraPosicion);
 
