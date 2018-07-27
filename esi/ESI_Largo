@@ -1,6 +1,5 @@
 GET e3:sony:juegos
 GET e3:microsoft:juegos
-GET pepito
 SET e3:sony:juegos TLOU2
 SET e3:sony:juegos Spiderman
 SET e3:sony:juegos GhostOfTsushima

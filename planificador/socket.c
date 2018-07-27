@@ -171,7 +171,9 @@ void thread_on_connection(int listen_sd) {
 		//printf("Cantidad de lineas por ejecutar: %d\n", esi->cantidadDeLineas);
 
 		//semaforo para indicar que hay un nuevo proceso listo para su ejecucion
-		sem_post(&new_process);
+		if(list_size(listos) <= 1){
+			sem_post(&new_process);
+		}
 		replanificar = 1;
         free(buffer);
 	}
