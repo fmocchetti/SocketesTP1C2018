@@ -94,17 +94,12 @@ void registrar_acceso_a_entrada(t_list** registro,char* primeraPosicionMemoria,c
 
 
 	log_info(logger,"REGISTRO: El estado actual de las entradas es: ");
-	for(int j=0;j<cantidadEntradas;j++){
-
-		printf("Entrada %d--",j);
-
-
-	}
 	printf("\n");
 	for(int j=0;j<cantidadEntradas;j++){
 		struct Registro* reg = list_get(*registro, j);
 
-		printf("Referen: %d--",reg->referenciado);
+		printf("Entrada %d --> ",reg->numeroEntrada);
+		printf("Ref: %d \n",reg->referenciado);
 
 	}
 	printf("\n");

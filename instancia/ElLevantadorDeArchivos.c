@@ -39,7 +39,7 @@ char* obtener_valor_de_archivo(char* clave , char* ruta){
   	valor[size]='\0';
 	log_info(logger,"UPDATEADOR: El valor obtenido es: %s",valor);
 
-	munmap(valor, size);
+	munmap(val, size);
 
 	close(fd);
 	free(path);

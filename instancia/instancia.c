@@ -201,7 +201,7 @@ int main (int argc, char * argv[]) {
 
 			levantar_archivos_a_memoria(&storage,init.tamanioEntrada,init.cantidad_entradas,&tabla,tablaDeRequeridas,&posicionDeLectura,posicionFinDeMemoria,puntoMontaje);
 
-			dictionary_destroy_and_destroy_elements(tablaDeRequeridas,freeDeClaves);
+			//dictionary_destroy_and_destroy_elements(tablaDeRequeridas,freeDeClaves);
 
 			seUso=1;
 		}
@@ -326,21 +326,60 @@ int main (int argc, char * argv[]) {
 					SET_BSU(server,&tabla,storage,&posicionDeLectura,posicionFinDeMemoria,&claveValor);
 					pthread_mutex_unlock(&lock_dump);
 				}
+
+				//MUESTRA ESTADO DE TABLA --------------------------------------------------------------------------------------------------
+
 				t_list* tablaAux = list_duplicate(tabla);
 				//log_error(logger,"punteroLectura %p, punteroFin %p",posicionDeLectura,posicionFinDeMemoria);
+				printf("\n");
+				log_info(logger,"ESTADO DE TABLA:");
+				printf("\n");
 				ordenar_tabla(&tablaAux,storage);
-				for(int i=0;i<list_size(tabla);i++){
+				int i=0,z=0;
+				while(i<list_size(tabla)){
+
 
 					struct Dato* unDato = list_get(tablaAux,i);
 					char* a = (char*)malloc(unDato->cantidadDeBytes+1);
-					memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
-					a[unDato->cantidadDeBytes] = '\0';
-					printf("%s -- ",a);
+					int cantEntradas = calcular_cant_entradas(unDato->cantidadDeBytes,claveValor.tamanioEntrada);
+
+					if(cantEntradas>1){
+						for(int j = 0;j<cantEntradas;j++){
+							z+=j;
+							if(j==(cantEntradas-1)){
+								int resto = unDato->cantidadDeBytes % claveValor.tamanioEntrada;
+								memcpy(a,unDato->posicionMemoria+(claveValor.tamanioEntrada*j),resto);
+								a[resto] = '\0';
+							}
+							else{
+
+								memcpy(a,unDato->posicionMemoria+(claveValor.tamanioEntrada*j),claveValor.tamanioEntrada);
+								a[claveValor.tamanioEntrada] = '\0';
+							}
+
+
+							printf("Entrada %d. %s \n",z,a);
+							*a=0;
+
+						}
+					}
+					else{
+						memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
+						a[unDato->cantidadDeBytes] = '\0';
+						printf("Entrada %d. %s \n",z,a);
+					}
+					z++;
+					i++;
+
 					//printf("de:%s in:%p fin %p  \n",a,unDato->posicionMemoria,unDato->posicionMemoria+unDato->cantidadDeBytes);
 					free(a);
 				}
+				printf("\n");
 				//liberar_recursos(&tablaAux);
 				free(tablaAux);
+
+				//FIN: MUESTRA ESTADO DE TABLA --------------------------------------------------------------------------------------------------
+
 				free(valor);
 
 			} else if(identificador==23) {//store

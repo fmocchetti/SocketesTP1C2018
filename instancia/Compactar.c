@@ -62,89 +62,6 @@ bool son_contiguas(t_list** tabla,struct ClaveValor* cv,int cantidadEntradasAOcu
 
 return false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	//ordenar_tabla(tabla,primeraPosicionMemoria);
-/*
-	for(int i =0;i<tamanio;i++){
-		unDato = list_get(*tabla,i);
-		char* a = (char*) malloc(unDato->cantidadDeBytes+1);
-		memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
-		a[unDato->cantidadDeBytes+1] = '\0';
-		log_error(logger,"%s",a);
-
-	}
-	if(cantidadEntradasAOcupar == 1){
-		return true;
-	}
-
-	for(int i=0 ; i < (tamanio-1) ; i++ ){
-
-		unDato = list_get(*tabla,i);
-		datoSiguiente = list_get(*tabla,i+1);
-		entradasOcupadasPorValor = calcular_cant_entradas(unDato->cantidadDeBytes,tamanioEntrada);
-		entradasIntermedias = calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada);
-		//el premer dato no esta al comienzo de la memoria, quedo un espacio
-		if(i==0 && (unDato->posicionMemoria != primeraPosicionMemoria)){
-
-			entradasOcupadasPorValor = calcular_cant_entradas(unDato->cantidadDeBytes,tamanioEntrada);
-			entradasIntermedias = calcular_cant_entradas(datoSiguiente->posicionMemoria - primeraPosicionMemoria,tamanioEntrada);
-			if(entradasIntermedias > entradasOcupadasPorValor){
-
-				if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
-
-					*punteroEntradaLibre = primeraPosicionMemoria;
-					return true;
-
-				}
-
-			}
-
-
-		}
-		else if(i==tamanio-2){
-			entradasOcupadasPorValor = calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada);
-			entradasIntermedias = calcular_cant_entradas((primeraPosicionMemoria+(cantidadEntradas*tamanioEntrada)) - datoSiguiente->posicionMemoria,tamanioEntrada);
-			if(entradasIntermedias > entradasOcupadasPorValor){
-
-				if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
-
-					*punteroEntradaLibre = datoSiguiente->posicionMemoria + (calcular_cant_entradas(datoSiguiente->cantidadDeBytes,tamanioEntrada)*tamanioEntrada);
-					return true;
-
-				}
-
-			}
-		}
-		if(entradasIntermedias > entradasOcupadasPorValor){
-
-			if(cantidadEntradasAOcupar == (entradasIntermedias - entradasOcupadasPorValor)){
-
-				*punteroEntradaLibre = unDato->posicionMemoria + (entradasOcupadasPorValor * tamanioEntrada);
-				return true;
-
-			}
-
-		}
-
-	}
-return false;
-*/
 }
 
 
@@ -203,14 +120,7 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 		entradasAOcupar = calcular_cantidad_entradas(unDato->cantidadDeBytes,tamEntrada);
 
 		espacioAOcupar = entradasAOcupar * tamEntrada;
-/*
-		char* a = malloc(unDato->cantidadDeBytes+1);
-		a[unDato->cantidadDeBytes]='\0';
-		memcpy(a,unDato->posicionMemoria,unDato->cantidadDeBytes);
 
-*/
-
-	//	if(storage != unDato->posicionMemoria){
 			struct Dato dato;
 
 			char* a = malloc(unDato->cantidadDeBytes+1);
@@ -229,18 +139,9 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 			log_error(logger,"COMPACTAR LE ASIGNO %p",posicionInsercion);
 			free(a);
 
-//		}
-
-
-
-
-
-
-
 		posicionInsercion += espacioAOcupar;
 		log_error(logger,"COMPACTAR punteroLectura %p",posicionInsercion);
 
-	//	free(a);
 
 	}
 

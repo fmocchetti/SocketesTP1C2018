@@ -252,6 +252,7 @@ void liberar_recursos(t_list** tabla){
 
 		struct Dato* unDato = (struct Dato*)d;
 
+		free(unDato->clave);
 		free(unDato);
 
 	}
