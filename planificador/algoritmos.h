@@ -49,6 +49,7 @@ int id_esi_global_kill;
 int alpha;
 int estimacion_inicial;
 int algoritmo_elegido;
+int cantidad_bloqueadas_de_entrada;
 enum {SJFSD , SJFCD, HRRN};
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
@@ -56,7 +57,7 @@ void estadoListas();
 void fifo();
 bool identificador_ESI(void*);
 bool identificador_ESI_kill(void*);
-
+bool identificador_deadlock(void*);
 bool sort_by_estimacion(void*, void*);
 bool sort_by_aging(void *, void *);
 void element_destroyer(void *);
@@ -78,6 +79,7 @@ void aplicarHRRN(ESI*);
 void obtenerPrioridad();
 void envejecerLista(int);
 void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI, int socket);
+
 
 
 
