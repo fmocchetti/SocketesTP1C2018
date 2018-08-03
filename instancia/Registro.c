@@ -24,8 +24,11 @@ return lista;
 
 void* liberar_registros(t_list** registro){
 
-	void liberar_dato(struct Registro* unDato){
-		free(unDato);
+	void liberar_dato(void* unDato){
+
+		struct Registro*  reg = (struct Registro*) unDato;
+
+		free(reg);
 
 	}
 
@@ -35,7 +38,9 @@ return NULL;
 
 void* obtener_registro(t_list* registro,int numEntrada){
 
-	bool buscar_registro(struct Registro* reg) {
+	bool buscar_registro(void* reg1) {
+
+		struct Registro* reg = (struct Registro*) reg1;
 
 	     return ((reg->numeroEntrada) == numEntrada);
 
@@ -47,9 +52,12 @@ return reg;
 
 void ordenar_registro(t_list** registro){
 
-	bool menos_accedida_al_comienzo(struct Registro* a,struct Registro* b){
+	bool menos_accedida_al_comienzo(void* a1,void* b1){
 
-		return(a->referenciado < b->referenciado);
+		struct Registro*  a = (struct Registro* ) a1;
+		struct Registro*  b = (struct Registro* ) b1;
+
+		return(a->referenciado > b->referenciado);
 	}
 	list_sort(*registro,menos_accedida_al_comienzo);
 

@@ -23,30 +23,28 @@ void estadoListas(){
     int cantidadEjecucion = 0;
     int cantidadBloqueados = 0;
     int cantidadTerminados = 0;
-    int cantidadMuertos = 0;
     cantidadEjecucion = list_size(ejecucion);
     cantidadListos = list_size(listos);
     cantidadBloqueados = list_size(bloqueados);
     cantidadTerminados = list_size(terminados);
-    cantidadMuertos = list_size(muertos);
     printf("Procesos en la cola de listos %d\n",cantidadListos);
     printf("Procesos en la cola de ejecucion %d\n",cantidadEjecucion);
     printf("Procesos en la cola de bloqueados %d\n",cantidadBloqueados);
     printf("Procesos en la cola de terminados %d\n",cantidadTerminados);
-    printf("Procesos en la cola de muertos %d\n",cantidadMuertos);
-
 }
 
 void sjfsd(){
 	int sem_value = 0;
 	int sem_value2 = 0;
 	unsigned char permisoDeEjecucion = 1;
+	unsigned char permisoDeFinalizacion = 58;
 	unsigned char contestacionESI = 0;
 	int resultado_lista = 0;
 	int result_send = 0;
 	int resultado_lista_satisfy = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -55,9 +53,9 @@ void sjfsd(){
 
 		//espero a que me digan que hay un nuevo proceso en listos
 		sem_wait(&new_process);
+		//sem_getvalue(&new_process,&sem_value);
+		//log_info(logger,"VALUE DE NEW PROCESS: %d", sem_value);
 
-		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
-		estadoListas();
 
 		sem_getvalue(&sem_pausar_planificacion,&sem_value);
 			if(sem_value<1){
@@ -66,6 +64,8 @@ void sjfsd(){
 
 		//replanifico aca, dependiendo de la rafaga
 		if(list_size(listos) >= 1){
+			log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
+			estadoListas();
 			log_info(logger,"Replanificando");
 			list_sort(listos, (void*)sort_by_estimacion);
 
@@ -77,23 +77,38 @@ void sjfsd(){
 
 		if(!resultado_lista){
 			nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-			log_info(logger,"ID de la ESI a ejecutar %d, con una estimacion de rafaga de %f", nodo_lista_ejecucion->id_ESI,nodo_lista_ejecucion->rafaga);
+			log_warning(logger,"ID de la ESI a ejecutar %d, con una estimacion de rafaga de %f", nodo_lista_ejecucion->id_ESI,nodo_lista_ejecucion->rafaga);
 			id_esi_global = nodo_lista_ejecucion->id_ESI;
 		}
 
-		//Mientras la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
-		while(nodo_lista_ejecucion->cantidadDeLineas >0){
+		//Ejecuto dentro de la misma ESI hasta que la ESI me avise que finalizo
+		while(1){
+			//utilizo para pausar
 			sem_getvalue(&sem_pausar_planificacion,&sem_value);
 			if(sem_value<1){
 				sem_wait(&sem_pausar_algoritmo);
+			}
+
+			if(nodo_lista_ejecucion->bloquear ==1){
+				//agrego a bloqueados en caso de recibir un bloquear por consola
+				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+				nodo_lista_ejecucion->lineas_ejecutadas ++;
+				log_debug(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas = 0;
+				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+				log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+				break;
 			}
 
 			//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 			result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 			//aca tengo que verificar
 			if (result_send <= 0) {
-				nodo_lista_ejecucion->cantidadDeLineas = 0;
-				laWeaReplanificadoraFIFO(muertos,ejecucion);
+				laWeaReplanificadoraFIFO(terminados,ejecucion);
 				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 				break;
 			}
@@ -102,70 +117,87 @@ void sjfsd(){
 			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
 			if (result_connection <= 0) {
-				id_esi_global = nodo_lista_ejecucion->id_ESI;
-				resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				while(resultado_lista_satisfy == 1){
+				flag_desconexion_esi = 1;
+			}
+
+			//200 equivale a finalizacion de ESI en protocolo
+			if(contestacionESI == 200){
+				send(nodo_lista_ejecucion->socket_esi, &permisoDeFinalizacion,1,0);
+				//if(nodo_lista_ejecucion->cantidadDeLineas <=0){
+					//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
+					log_warning(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+
+					//desalojo las claves tomadas en caso de que existan
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
+					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_satisfy == 1){
 					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					claves* clave_temporal = NULL;
-					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-					ESI_STORE(clave_temporal->claveAEjecutar,0);
-					free(clave_temporal);
-					//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+						claves* clave_temporal = NULL;
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						log_info(logger,"Clave '%s' eliminada correctamente de la lista de tomados",clave_temporal->claveAEjecutar);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						}
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					if(list_size(listos) >= 1){
+						sem_post(&new_process);
+					}
+					estadoListas();
+					//sem_getvalue(&new_process,&sem_value);
+							//log_info(logger,"VALUE DE NEW PROCESS: %d", sem_value);
+					//}
+				break;
+			}
+
+			else{
+				//magia con el coord (Recibe si es store/get y realiza acorde)
+				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
+
+				if(contestacionESI == 2) {
+					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
+					nodo_lista_ejecucion->lineas_ejecutadas ++;
+				} else {
+					//agrego a bloqueados en caso de recibir otra contestacion de la ESI
+					log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+					//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					log_debug(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+					//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+					nodo_lista_ejecucion->lineas_ejecutadas = 0;
+					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+					log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+					if(list_size(listos) >= 1){
+						sem_post(&new_process);
+					}
+					break;
+				}
+				if(flag_desconexion_esi>0){
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
 					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_lista_satisfy == 1){
+						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = NULL;
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					}
+					//hago close del socket
+
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					flag_desconexion_esi = 0;
+					break;
 				}
-
-				//hago close del socket
-
-				laWeaReplanificadoraFIFO(muertos,ejecucion);
-				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-				break;
-				}
-
-			//magia con el coord (Recibe si es store/get y realiza acorde)
-			coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI,nodo_lista_ejecucion->cantidadDeLineas);
-
-
-			if(contestacionESI == 2) {
-				//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
-				nodo_lista_ejecucion->cantidadDeLineas --;
-				nodo_lista_ejecucion->lineas_ejecutadas ++;
-			} else {
-				//agrego a bloqueados en caso de recibir otra contestacion de la ESI
-				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
-				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
-				nodo_lista_ejecucion->lineas_ejecutadas ++;
-				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
-				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
-				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
-				nodo_lista_ejecucion->lineas_ejecutadas = 0;
-				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
-				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
-				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-				break;
 			}
-
-		}
-		if(nodo_lista_ejecucion->cantidadDeLineas <=0){
-		//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
-		log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
-
-		//desalojo las claves tomadas en caso de que existan
-		id_esi_global = nodo_lista_ejecucion->id_ESI;
-		resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-		while(resultado_satisfy == 1){
-		//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-			claves* clave_temporal = NULL;
-			clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-			ESI_STORE(clave_temporal->claveAEjecutar,0);
-			free(clave_temporal);
-			resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-			}
-		laWeaReplanificadoraFIFO(terminados,ejecucion);
-		estadoListas();
 		}
 	}
 		else{
-			log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
+			//log_info(logger, "No era necesario replanificar ya que la cola de listos estaba vacia");
 			sem_getvalue(&new_process,&sem_value2);
 			for(l = 0;l<sem_value2;l++){
 				sem_wait(&new_process);
@@ -175,9 +207,8 @@ void sjfsd(){
 }
 
 void sjfcd(){
-	log_info(logger,"Estas en SJFCD");
-
 	unsigned char permisoDeEjecucion = 1;
+	unsigned char permisoDeFinalizacion = 58;
 	unsigned char contestacionESI = 0;
 	int sem_value = 0;
 	int sem_value2 = 0;
@@ -187,6 +218,7 @@ void sjfcd(){
 	int replanificar_en_ejecucion = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -195,6 +227,8 @@ void sjfcd(){
 
 		//espero a que me digan que hay un nuevo proceso en listos
 		sem_wait(&new_process);
+		sem_getvalue(&new_process,&sem_value);
+				//log_info(logger,"VALUE DE NEW PROCESS: %d", sem_value);
 
 		log_info(logger,"Nuevo elemento en la cola de listos o desbloqueo manual de una clave que genero una replanificacion");
 		estadoListas();
@@ -217,8 +251,8 @@ void sjfcd(){
 		laWeaReplanificadoraFIFO(ejecucion,listos);
 		log_info(logger,"Nodo de listos movido a Ejecucion");
 		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
-		log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+		log_warning(logger,"ID de la ESI a ejecutar '%d'", nodo_lista_ejecucion->id_ESI);
+		log_warning(logger, "Calculo de rafaga: '%f'", nodo_lista_ejecucion->rafaga);
 		id_esi_global = nodo_lista_ejecucion->id_ESI;
 
 		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
@@ -229,13 +263,28 @@ void sjfcd(){
 				sem_wait(&sem_pausar_algoritmo);
 			}
 			//Si la cantidadDeLineas de la ESI en ejecucion sea mayor a 0
-			if(nodo_lista_ejecucion->cantidadDeLineas >0) {
+			//if(nodo_lista_ejecucion->cantidadDeLineas >0) {
+
+			//Para bloquear!
+			if(nodo_lista_ejecucion->bloquear ==1){
+				//agrego a bloqueados en caso de recibir un bloquear por consola
+				log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+				nodo_lista_ejecucion->lineas_ejecutadas ++;
+				log_debug(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+				//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+				nodo_lista_ejecucion->lineas_ejecutadas = 0;
+				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+				log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+				break;
+			}
 
 				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 				if (result_send <= 0) {
-					nodo_lista_ejecucion->cantidadDeLineas = 0;
-					laWeaReplanificadoraFIFO(muertos,ejecucion);
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
 					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
 					break;
 				}
@@ -244,30 +293,42 @@ void sjfcd(){
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
 				if (result_connection <= 0) {
+					flag_desconexion_esi = 1;
+				}
+
+				//200 equivale a finalizacion de ESI en protocolo
+				if(contestacionESI == 200){
+					send(nodo_lista_ejecucion->socket_esi, &permisoDeFinalizacion,1,0);
+					//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
+					//printf("Entre a 1\n");
+					log_warning(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+					//desalojo las claves tomadas en caso de que existan
 					id_esi_global = nodo_lista_ejecucion->id_ESI;
-					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-					while(resultado_lista_satisfy == 1){
-						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-						claves* clave_temporal = (claves*) malloc(sizeof(claves));
+					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_satisfy == 1){
+					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = NULL;
 						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-						ESI_STORE(clave_temporal->claveAEjecutar,0);
+						log_info(logger,"Clave '%s' eliminada correctamente de la lista de tomados",clave_temporal->claveAEjecutar);
+						ESI_STORE(clave_temporal->claveAEjecutar);
 						free(clave_temporal);
-						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
 					}
-
-					//hago close del socket
-
-					laWeaReplanificadoraFIFO(muertos,ejecucion);
-					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					estadoListas();
+					replanificar = 1;
+					if(list_size(listos) >= 1){
+						sem_post(&new_process);
+					}
+					//sem_post(&new_process);
 					break;
-					}
+				}
 
 				//magia con el coord (Recibe si es store/get y realiza acorde)
-				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI,nodo_lista_ejecucion->cantidadDeLineas);
+				coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
 
 				if(contestacionESI == 2) {
 					//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
-					nodo_lista_ejecucion->cantidadDeLineas --;
 					nodo_lista_ejecucion->lineas_ejecutadas ++;
 					//resto a la rafaga en caso de ser replanificado en ejecucion
 					nodo_lista_ejecucion->rafaga --;
@@ -282,7 +343,7 @@ void sjfcd(){
 					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
 					nodo_lista_ejecucion->lineas_ejecutadas = 0;
 					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
-					//log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+					log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
 
 					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
 
@@ -293,45 +354,45 @@ void sjfcd(){
 					}
 					break;
 				}
+				if(flag_desconexion_esi>0){
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
+					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_lista_satisfy == 1){
+						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = (claves*) malloc(sizeof(claves));
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					}
 
-			} else {
-				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
-				//printf("Entre a 1\n");
-				log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
-				//desalojo las claves tomadas en caso de que existan
-				id_esi_global = nodo_lista_ejecucion->id_ESI;
-				resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				while(resultado_satisfy == 1){
-				//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					claves* clave_temporal = NULL;
-					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-					ESI_STORE(clave_temporal->claveAEjecutar,0);
-					free(clave_temporal);
-					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					//hago close del socket
+
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					flag_desconexion_esi = 0;
+					break;
 				}
-				laWeaReplanificadoraFIFO(terminados,ejecucion);
-				estadoListas();
-				replanificar = 1;
-			}
+
 		}
 		//evaluo si aun existia una esi en ejecucion ante la peticion de replanificar
-		if(nodo_lista_ejecucion->cantidadDeLineas >0 && !list_is_empty(ejecucion)){
+		if(!list_is_empty(ejecucion)){
 			replanificar_en_ejecucion = 1;
 		}
 
 		if(replanificar_en_ejecucion == 1){
 		//De ser asi, se replanifica la esi en ejecucion, moviendola de dicha lista a LISTOS
-		//Y se mueve la esi que estaba ejecutando a listos para su replanificacion
 			log_info(logger,"La ESI %d que se encontraba en EJECUCION se pasara a LISTOS",nodo_lista_ejecucion->id_ESI);
 			laWeaReplanificadoraFIFO(listos,ejecucion);
 			estadoListas();
 			replanificar = 1;
-			sem_post(&new_process);
+			if(list_size(listos) > 2){
+				sem_post(&new_process);
+			}
 			replanificar_en_ejecucion = 0;
 			//free(nodo_lista_ejecucion);
-
 		}
-		}
+	}
 	else{
 		sem_getvalue(&new_process,&sem_value2);
 		for(l = 0;l<sem_value2;l++){
@@ -339,13 +400,12 @@ void sjfcd(){
 		}
 
 	}
-}
+	}
 }
 
 void hrrn(){
-	log_info(logger,"Estas en HRRN");
-
 	unsigned char permisoDeEjecucion = 1;
+	unsigned char permisoDeFinalizacion = 58;
 	unsigned char contestacionESI = 0;
 	int sem_value = 0;
 	int sem_value2 = 0;
@@ -354,6 +414,7 @@ void hrrn(){
 	int result_send = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -375,114 +436,142 @@ void hrrn(){
 			obtenerPrioridad();
 			list_sort(listos, (void*)sort_by_aging);
 
-		//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
-		laWeaReplanificadoraFIFO(ejecucion,listos);
-		log_info(logger,"Nodo de listos movido a Ejecucion");
+			//Muevo de la lista de listos, el primer nodo a la lista de ejecucion
+			laWeaReplanificadoraFIFO(ejecucion,listos);
+			log_info(logger,"Nodo de listos movido a Ejecucion");
 
 
-		nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
-		nodo_lista_ejecucion->espera = 0;
-		log_info(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
-		log_info(logger, "Calculo de prioridad: %f", nodo_lista_ejecucion->prioridad);
-		//log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
-		id_esi_global = nodo_lista_ejecucion->id_ESI;
+			nodo_lista_ejecucion =  (ESI*) list_get(ejecucion, 0);
+			nodo_lista_ejecucion->espera = 0;
+			log_warning(logger,"ID de la ESI a ejecutar %d", nodo_lista_ejecucion->id_ESI);
+			log_warning(logger, "Calculo de RR: %f", nodo_lista_ejecucion->prioridad);
+			//log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+			id_esi_global = nodo_lista_ejecucion->id_ESI;
 
-		//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
-		while(nodo_lista_ejecucion->cantidadDeLineas >0){
+			//Ejecuto la esi seleccionada hasta recibir algun evento que necesite replanificar(nueva esi en listos, de bloqueado a listos, etc).
+			while(1){
 
-			//En caso de ejecutar el comando pausar se usa el siguiente semaforo y condicion
-			sem_getvalue(&sem_pausar_planificacion,&sem_value);
-			if(sem_value<1){
-				sem_wait(&sem_pausar_algoritmo);
-				//break;
-			}
-
-			//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
-			result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
-			//aca tengo que verificar
-			if (result_send <= 0) {
-				nodo_lista_ejecucion->cantidadDeLineas = 0;
-				laWeaReplanificadoraFIFO(muertos,ejecucion);
-				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-				break;
-			}
-
-			//Espero que la esi me conteste
-			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
-
-			if (result_connection <= 0) {
-				id_esi_global = nodo_lista_ejecucion->id_ESI;
-				resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				while(resultado_lista_satisfy == 1){
-					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					claves* clave_temporal = (claves*) malloc(sizeof(claves));
-					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-					ESI_STORE(clave_temporal->claveAEjecutar,0);
-					free(clave_temporal);
-					//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
-					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+				//En caso de ejecutar el comando pausar se usa el siguiente semaforo y condicion
+				sem_getvalue(&sem_pausar_planificacion,&sem_value);
+				if(sem_value<1){
+					sem_wait(&sem_pausar_algoritmo);
+					//break;
 				}
 
-				//hago close del socket
+				//Para bloquear!!
+				if(nodo_lista_ejecucion->bloquear ==1){
+					//agrego a bloqueados en caso de recibir un bloquear por consola
+					log_info(logger,"La ESI '%d' que se encontraba en EJECUCION se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+					//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+					nodo_lista_ejecucion->lineas_ejecutadas ++;
+					log_debug(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+					//estimo la rafaga que va a tener ahora que ya ejecuto algunas sentencias
+					nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+					nodo_lista_ejecucion->lineas_ejecutadas = 0;
+					nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+					log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+					laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+					break;
+				}
 
-				laWeaReplanificadoraFIFO(muertos,ejecucion);
-				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-				break;
-			}
+				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
+				result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
+				//aca tengo que verificar
+				if (result_send <= 0) {
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					break;
+				}
 
-			//magia con el coord (Recibe si es store/get y realiza acorde)
-			coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI,nodo_lista_ejecucion->cantidadDeLineas);
+				//Espero que la esi me conteste
+				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
-			 if(contestacionESI == 2) {
-				//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
-				nodo_lista_ejecucion->cantidadDeLineas --;
-				nodo_lista_ejecucion->lineas_ejecutadas ++;
-				//sumo 1 por cada instruccion a todas las esis en ready a su W
-				envejecerLista(1);
+				if (result_connection <= 0) {
+					flag_desconexion_esi = 1;
+				}
 
-			} else {
-				//agrego a bloqueados en caso de recibir otra contestacion de la ESI
-				log_info(logger,"La ESI %d que se encontraba en ejecucion se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
-				//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
-				nodo_lista_ejecucion->lineas_ejecutadas ++;
-				//Lo mismo para el wait time, contaria como uno extra
-				envejecerLista(1);
-				log_info(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
-				//envejecemos TODOS los nodos encolados ANTES de replanificar
-				nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
-				nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
-				log_info(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
-				//envejecerLista(nodo_lista_ejecucion->lineas_ejecutadas);
-				nodo_lista_ejecucion->lineas_ejecutadas = 0;
-				laWeaReplanificadoraFIFO(bloqueados,ejecucion);
-				break;
-			}
-
-		}
-			if(nodo_lista_ejecucion->cantidadDeLineas <=0) {
-				//Si la cantidad de lineas es menor a 0, muevo la ESI a la cola de terminados
-				log_info(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
-				//desalojo las claves tomadas en caso de que existan
-				id_esi_global = nodo_lista_ejecucion->id_ESI;
-				resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				while(resultado_satisfy == 1){
-				//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					claves* clave_temporal = NULL;
-					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-					ESI_STORE(clave_temporal->claveAEjecutar,0);
-					free(clave_temporal);
+				if(contestacionESI == 200){
+					send(nodo_lista_ejecucion->socket_esi, &permisoDeFinalizacion,1,0);
+					log_warning(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
+					//desalojo las claves tomadas en caso de que existan
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
 					resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_satisfy == 1){
+					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = NULL;
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						log_info(logger,"Clave '%s' eliminada correctamente de la lista de tomados",clave_temporal->claveAEjecutar);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						resultado_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					}
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					estadoListas();
+					if(list_size(listos) >= 1){
+						sem_post(&new_process);
+					}
+					replanificar = 1;
+					break;
 				}
-				laWeaReplanificadoraFIFO(terminados,ejecucion);
-				estadoListas();
-				replanificar = 1;
+
+				else{
+					//magia con el coord (Recibe si es store/get y realiza acorde)
+					coord_communication(nodo_lista_ejecucion->socket_esi,nodo_lista_ejecucion->id_ESI ,contestacionESI);
+
+					if(contestacionESI == 2) {
+						//Si es 2, entonces resto 1 a cada linea faltante y sumo 1 por cada ejecucion de sentencia a las sentencias ejecutadas
+						nodo_lista_ejecucion->lineas_ejecutadas ++;
+						//sumo 1 por cada instruccion a todas las esis en ready a su W
+						envejecerLista(1);
+
+					} else {
+						//agrego a bloqueados en caso de recibir otra contestacion de la ESI
+						log_info(logger,"La ESI %d que se encontraba en ejecucion se pasara a BLOQUEADOS",nodo_lista_ejecucion->id_ESI);
+						//Sumo uno a las lineas a ejecutar ya que intento ejecutar una sentencia aunque no pudo y cuenta segun issue foro: #1131
+						nodo_lista_ejecucion->lineas_ejecutadas ++;
+						//Lo mismo para el wait time, contaria como uno extra
+						envejecerLista(1);
+						log_debug(logger, "lineas ejecutadas so far: %d", nodo_lista_ejecucion->lineas_ejecutadas);
+						//envejecemos TODOS los nodos encolados ANTES de replanificar
+						nodo_lista_ejecucion->rafaga = calculoProxRafaga((float)alpha,nodo_lista_ejecucion->estimacion_rafaga,(float)nodo_lista_ejecucion->lineas_ejecutadas);
+						nodo_lista_ejecucion->estimacion_rafaga = nodo_lista_ejecucion->rafaga;
+						log_debug(logger, "Calculo de rafaga: %f", nodo_lista_ejecucion->rafaga);
+						//envejecerLista(nodo_lista_ejecucion->lineas_ejecutadas);
+						nodo_lista_ejecucion->lineas_ejecutadas = 0;
+						laWeaReplanificadoraFIFO(bloqueados,ejecucion);
+						if(list_size(listos) >= 1){
+							sem_post(&new_process);
+						}
+						break;
+					}
+					if(flag_desconexion_esi>0){
+						id_esi_global = nodo_lista_ejecucion->id_ESI;
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						while(resultado_lista_satisfy == 1){
+							//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+							claves* clave_temporal = (claves*) malloc(sizeof(claves));
+							clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+							ESI_STORE(clave_temporal->claveAEjecutar);
+							free(clave_temporal);
+							//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+							resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						}
+
+						//hago close del socket
+
+						laWeaReplanificadoraFIFO(terminados,ejecucion);
+						_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+						flag_desconexion_esi = 0;
+						break;
+					}
+				}
 			}
 		}
-	else{
-		sem_getvalue(&new_process,&sem_value2);
-				for(l = 0;l<sem_value2;l++){
-					sem_wait(&new_process);
-				}
+		else{
+			sem_getvalue(&new_process,&sem_value2);
+					for(l = 0;l<sem_value2;l++){
+						sem_wait(&new_process);
+					}
 		}
 	}
 }
@@ -518,10 +607,10 @@ void aplicarHRRN(ESI* esi){
 	}
 	else{
 	esi->prioridad = 1 + (espera / (esi->rafaga));
-	log_info(logger,"La ESI %d tiene los siguientes valores",esi->id_ESI);
-	log_info(logger,"El calculo de RR dio %f",esi->prioridad);
-	log_info(logger,"El calculo de W dio %f",espera);
-	log_info(logger,"El calculo de S dio %f",esi->rafaga);
+	log_warning(logger,"La ESI %d tiene los siguientes valores",esi->id_ESI);
+	log_warning(logger,"El calculo de W dio %f",espera);
+	log_warning(logger,"El calculo de S dio %f",esi->rafaga);
+	log_warning(logger,"El calculo de RR dio %f",esi->prioridad);
 	}
 }
 //HRRN functions//
@@ -541,6 +630,15 @@ bool sort_by_estimacion(void * data1, void * data2){
 		}
 		return false;
 }
+
+bool identificador(void * data){
+	int dato1 = (int)data;
+	if(dato1 == id_esi_global) {
+		return true;
+	}
+	return false;
+}
+
 
 bool identificador_ESI(void * data){
 	ESI *esi1= (ESI*) data;
@@ -574,6 +672,14 @@ bool identificador_clave_por_idESI(void * data){
 	return false;
 }
 
+bool identificador_deadlock(void * data){
+	claves *clave1= (claves*) data;
+	if(clave1->id_ESI == id_esi_global && strcmp(clave1->claveAEjecutar,clave_bloqueada_global)==0) {
+		return true;
+	}
+	return false;
+}
+
 void element_destroyer(void * data){
 	free(data);
 }
@@ -583,22 +689,156 @@ void nodo_lista_claves_destroyer(claves * data){
 }
 
 
+void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI, int socket){
+	claves* clave1 = (claves*) malloc(sizeof(claves));
+	memset(clave1, 0, sizeof(claves));
+	strcpy(clave1->claveAEjecutar,claveAEjecutar);
+	clave1->id_ESI = id_ESI;
+	id_esi_global = id_ESI;
+	ESI* esi = NULL;
+	unsigned char mensaje_coord = 35;
+	int cantidad_bloqueados = 1;
+	int tamanio_clave = 0;
+
+	strcpy(clave_bloqueada_global,claveAEjecutar);
+	if(list_any_satisfy(claves_tomadas, (void*) identificador_clave)){
+		if(list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI)){
+			log_info(logger,"La esi ya tiene tomada la clave");
+		}
+		else{
+			if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
+
+				t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
+				if(!list_is_empty(list_clave)){
+					if(list_any_satisfy(list_clave,(void*)identificador)){
+						log_info(logger,"La esi ya se encuentra bloqueada esperando un recurso");
+					}
+					//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+
+					else{
+						if(list_any_satisfy(listos,(void*)identificador_ESI)){
+							esi = list_find(listos,(void*)identificador_ESI);
+							if(esi->bloquear == 1){
+								log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+								free(clave1);
+							}
+							else{
+								esi->bloquear = 1;
+								list_add(list_clave, (int*)id_ESI);
+								log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+								free(clave1);
+							}
+						}
+						else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+							esi = list_find(listos,(void*)identificador_ESI);
+							if(esi->bloquear == 1){
+								log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+								free(clave1);
+							}
+							else{
+								esi->bloquear = 1;
+								list_add(list_clave, (int*)id_ESI);
+								log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+								free(clave1);
+							}
+						}
+						else{
+							log_info(logger, "La ESI no existe");
+						}
+					}
+				}
+			}
+			else {
+				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+				if(list_any_satisfy(listos,(void*)identificador_ESI)){
+					esi = list_find(listos,(void*)identificador_ESI);
+					if(esi->bloquear == 1){
+						log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+						free(clave1);
+					}
+					else{
+						esi->bloquear = 1;
+						t_list * list_clave = list_create();
+						list_add(list_clave,(int*)id_ESI);
+						dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
+				else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+					esi = list_find(listos,(void*)identificador_ESI);
+					if(esi->bloquear == 1){
+						log_info(logger, "La ESI ya se encuentra bloqueada por una clave");
+						free(clave1);
+					}
+					else{
+						esi->bloquear = 1;
+						t_list * list_clave = list_create();
+						list_add(list_clave, (int*)id_ESI);
+						dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
+				else{
+					log_info(logger, "La ESI no existe");
+				}
+			}
+		}
+	}
+	else{
+		if(list_any_satisfy(listos,(void*)identificador_ESI)){
+			send(socket,&mensaje_coord,1,0);
+			send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
+			tamanio_clave = strlen(claveAEjecutar);
+			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+			send(socket,claveAEjecutar,tamanio_clave,0);
+			send(socket,&id_ESI,sizeof(int),0);
+			list_add(claves_tomadas,clave1);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
+			//free(clave1);
+		}
+		else if(list_any_satisfy(ejecucion,(void*)identificador_ESI)){
+			send(socket,&mensaje_coord,1,0);
+			send(socket,&cantidad_bloqueados,sizeof(cantidad_bloqueados),0);
+			tamanio_clave = strlen(claveAEjecutar);
+			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
+			send(socket,claveAEjecutar,tamanio_clave,0);
+			send(socket,&id_ESI,sizeof(int),0);
+			log_info(logger, "ENTRE A 1");
+			list_add(claves_tomadas,clave1);
+			log_info(logger, "La Clave '%s'  fue tomada por la esi %d", clave_bloqueada_global, id_ESI);
+			//free(clave1);
+		}
+		else{
+			log_info(logger, "La ESI no existe");
+		}
+	}
+}
+
 void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 
 	claves* clave1 = (claves*) malloc(sizeof(claves));
 	memset(clave1, 0, sizeof(claves));
 	strcpy(clave1->claveAEjecutar,claveAEjecutar);
 	clave1->id_ESI = id_ESI;
+	id_esi_global = id_ESI;
 
-	if(esi_bloqueada_de_entrada==1){
+	if(esi_bloqueada_de_entrada==2){
 		strcpy(clave_bloqueada_global,claveAEjecutar);
-
 		if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
 				t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
-				//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
-				list_add(list_clave, (int*)id_ESI);
-				log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
-				free(clave1);
+				if(!list_is_empty(list_clave)){
+					if(list_any_satisfy(list_clave,(void*)identificador_clave_por_idESI)){
+						log_info(logger,"La esi '%d' ya se encuentra bloqueada esperando el recurso");
+					}
+					//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+					else{
+						list_add(list_clave, (int*)id_ESI);
+						log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+						free(clave1);
+					}
+				}
 		} else {
 				//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
 				printf("Entre en 2\n");
@@ -609,10 +849,51 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 				free(clave1);
 		}
 	}
+
+	else if(esi_bloqueada_de_entrada==1){
+		strcpy(clave_bloqueada_global,claveAEjecutar);
+		if(list_any_satisfy(claves_tomadas, (void*) identificador_clave)){
+			if(list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI)){
+				log_info(logger,"La esi ya tiene tomada la clave");
+			}
+			else{
+				if(dictionary_has_key(claves_bloqueadas,clave_bloqueada_global)){
+
+					t_list * list_clave = dictionary_get(claves_bloqueadas,clave_bloqueada_global);
+					if(!list_is_empty(list_clave)){
+						if(list_any_satisfy(list_clave,(void*)identificador)){
+							log_info(logger,"La esi ya se encuentra bloqueada esperando el recurso");
+						}
+						//Si la lista ya existe, se pushea el nuevo id_ESI en la lista de la clave bloqueada
+
+						else{
+							list_add(list_clave, (int*)id_ESI);
+							log_info(logger, "Inserte la esi %d en la queue de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+							free(clave1);
+						}
+					}
+				}
+				else {
+					//Si no existe la clave, creo la lista asociada, pusheo el id_ESI y agrego la clave con su cola asociada
+					printf("Entre en 2\n");
+					t_list * list_clave = list_create();
+					list_add(list_clave, (int*)id_ESI);
+					dictionary_put(claves_bloqueadas, claveAEjecutar, list_clave);
+					log_info(logger, "Inserte la esi %d en la que de claves bloqueadas, para la clave '%s'", id_ESI, clave_bloqueada_global);
+					free(clave1);
+				}
+			}
+		}
+		else{
+			list_add(claves_tomadas,clave1);
+			log_info(logger, "La clave '%s' pasara a bloquearse por el sistema ", claveAEjecutar);
+		}
+
+	}
 	else{
 		if(respuesta_ESI==2){
 			list_add(claves_tomadas, (claves*)clave1);
-			log_info(logger, "La esi %d tomo la clave '%s'", id_ESI, claveAEjecutar);
+			log_debug(logger, "La esi %d tomo la clave '%s'", id_ESI, claveAEjecutar);
 		}
 		else if(dictionary_has_key(claves_bloqueadas,claveAEjecutar)){
 			t_list * list_clave = dictionary_get(claves_bloqueadas,claveAEjecutar);
@@ -632,7 +913,7 @@ void ESI_GET(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI){
 	//free(clave1);//REVISAR!!!
 }
 
-void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
+void ESI_STORE(char *claveAEjecutar){
 	int list_vacia = 0;
     int id_esi_desbloqueado = 0;
     int key_existente = 0;
@@ -642,9 +923,8 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
     if(resultado_lista_satisfy==1){
     	//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
 		list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave,(void*)clave_destroy);
-		//printf("Clave removida de la lista %s\n",clave_temporal->claveAEjecutar);
+		log_info(logger,"Clave '%s' eliminada correctamente de la lista de tomados",clave_bloqueada_global);
 		//free(clave_temporal);
-		log_info(logger,"Clave eliminada correctamente de la lista de tomados\n");
     }
 
     //reviso si la clave existe en el diccionario
@@ -669,9 +949,10 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 			while(key_existente!=1){
 				if(resultado_lista_satisfy ==1){
 					esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
-					log_info(logger,"Procesos removido de bloqueados %d",esi1->id_ESI);
+					log_info(logger,"Proceso removido de bloqueados '%d'",esi1->id_ESI);
+					esi1->bloquear = 0;
 					list_add(listos, (ESI*)esi1);
-					log_info(logger,"Procesos agregado a la lista de listos %d",esi1->id_ESI);
+					log_info(logger,"Proceso agregado a la lista de listos '%d'",esi1->id_ESI);
 					//seteo los semaforos para el sjfcd
 					key_existente=1;
 					replanificar = 1;
@@ -697,7 +978,7 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
 	   }
 	    //Si la queue esta vacia, entonces la clave asociada no esta tomada (STORE innecesario)
 	    else{
-	    	log_info(logger,"la clave no esta tomada");
+	    	log_debug(logger,"la clave no esta tomada");
 	    	//list_destroy(list_clave);
 	    	//dictionary_remove_and_destroy(claves_bloqueadas,claveAEjecutar,(void*)clave_dictionary_destroy);
 				/*if(!list_is_empty(listos)){
@@ -711,7 +992,7 @@ void ESI_STORE(char *claveAEjecutar, int cantidadDeLineas){
     	}
     }
 	else{
-		log_info(logger,"La clave no existe en el diccionario, nada que desbloquear");
+		log_debug(logger,"La clave '%s' no existe en el diccionario, nada que desbloquear", clave_bloqueada_global);
 	}
 }
 
@@ -722,6 +1003,7 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	int resultado_lista_satisfy = 0;
 	unsigned char mensaje_coord = 34;
 	int tamanio_clave = 0;
+	int flag_listos = 0;
 	strcpy(clave_bloqueada_global,claveAEjecutar);
 	resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave);
 	if(resultado_lista_satisfy==1){
@@ -738,10 +1020,9 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	    list_vacia = list_is_empty(list_clave);
 	//reviso si la queue no esta vacia
 	    if(!list_vacia){
-	    	printf("Entre a queue NO vacia\n");
 	    	//saco el primer elemento de la lista, que sera la proxima esi a salir de bloqueados
 			id_esi_desbloqueado = (int)list_remove(list_clave,0);
-			log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario %d",id_esi_desbloqueado);
+			log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario: %d",id_esi_desbloqueado);
 			ESI* esi1 = NULL;//(ESI*) malloc(sizeof(ESI));
 			//asigno la esi a la variable global para utilizar en la funcion para remover de lista por condicion
 			id_esi_global = id_esi_desbloqueado;
@@ -753,21 +1034,26 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
 			while(key_existente!=1){
 					if(resultado_lista_satisfy ==1){
+						if(list_size(listos) <= 1){
+							flag_listos = 1;
+						}
 						esi1 = list_remove_by_condition(bloqueados, (void*)identificador_ESI);//recorre la lista y remueve bajo condicion
-						log_info(logger,"Procesos removido de bloqueados %d",esi1->id_ESI);
+						log_info(logger,"Proceso removido de bloqueados: %d",esi1->id_ESI);
+						esi1->bloquear = 0;
 						list_add(listos, (ESI*)esi1);
-						log_info(logger,"Procesos agregado a la lista de listos %d",esi1->id_ESI);
+						contador_movidos_a_listos ++;
+						log_info(logger,"Proceso agregado a la lista de listos: %d",esi1->id_ESI);
 						//seteo los semaforos para el sjfcd
 						key_existente=1;
 						}
 				//Si esta vacia, la esi no existe en la cola de bloqueados
 					else{
-						log_error(logger,"No existe la esi en la cola de bloqueados %d",id_esi_global);
+						log_error(logger,"No existe la esi '%d' en la cola de bloqueados ",id_esi_global);
 						//evaluo la proxima ESI que sigue en la queue
 						list_vacia = list_is_empty(list_clave);
 						if(!list_vacia){
 							id_esi_desbloqueado = (int)list_remove(list_clave,0);
-							log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario %d",id_esi_desbloqueado);
+							log_info(logger,"id ESI desbloqueado de la queue asociada a la key en el diccionario: %d",id_esi_desbloqueado);
 							id_esi_global = id_esi_desbloqueado;
 							resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
 						}
@@ -784,12 +1070,20 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 			send(socket,&tamanio_clave,sizeof(tamanio_clave),0);
 			send(socket,claveAEjecutar,tamanio_clave,0);
 			replanificar = 1;
-			sem_post(&new_process);
-			log_info(logger,"clave '%s' desbloqueada correctamente",claveAEjecutar);
-	    	}
+			if(contador_movidos_a_listos > 1 ){
+				sem_post(&new_process);
+			}
+			else if(list_size(listos) <= 1){
+				sem_post(&new_process);
+			}
+
+
+			log_warning(logger,"clave '%s' desbloqueada correctamente",claveAEjecutar);
+			contador_movidos_a_listos = 0;
 	    }
+    }
 	else{
-		printf("La clave no existe en el diccionario, nada que desbloquear\n");
+		log_error(logger,"La clave no existe en el diccionario, nada que desbloquear\n");
 	}
 }
 
@@ -802,7 +1096,7 @@ void clave_destroy(claves *self) {
     free(self);
 }
 
-void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi, int cantidadDeLineas){
+void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi){
 	int size_clave = 0, rc = 0;
 	char * clave = NULL;
 	unsigned char id_mensaje_coord = 32;
@@ -829,18 +1123,19 @@ void coord_communication(int socket_ESI, int id_ESI ,unsigned char estado_esi, i
 
 	switch (id_mensaje_coord) {
 		case 24:
-			log_info(logger,"Haciendo GET de la clave '%s' \n", clave);
+			log_debug(logger,"Haciendo GET de la clave '%s'", clave);
 			ESI_GET(clave, id_ESI, estado_esi);
 			break;
 		case 26:
-			log_info(logger,"Haciendo STORE de la clave '%s' \n", clave);
-			ESI_STORE(clave,cantidadDeLineas);
+			log_debug(logger,"Haciendo STORE de la clave '%s'", clave);
+			ESI_STORE(clave);
 			break;
 		case 25:
 			//log_info(logger,"Haciendo SET de la clave '%s' \n", clave);
 			break;
 		default:
-			//TODO: Aca hace algo negro
+			_exit_with_error(socket_ESI,"La ESI sera abortada porque se genero un error",NULL);
+			laWeaReplanificadoraFIFO(terminados,ejecucion);
 			break;
 	}
 	//TODO: Fijate si esto es necesario o explota
@@ -861,24 +1156,31 @@ void get_keys_bloqueadas_de_entrada(int socket){
 	esi_bloqueada_de_entrada = 1;
 	char* string = config_get_string_value(config_file, "claves_bloqueadas");
 
-	token = strtok(string, comma);
+	if(string == NULL){
+		log_info(logger,"Nada que bloquear por archivo de config");
+	}
 
-	while( token != NULL ) {
-	//printf( " %s\n", token );
-	queue_push(queue_clave_inicio,token);
-	token = strtok(NULL, comma);
-	   }
+	else{
+		token = strtok(string, comma);
 
-	tamanio_queue = queue_size(queue_clave_inicio);
-	send(socket,&mensaje_coord,1,0);
-	send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+		while( token != NULL ) {
+		//printf( " %s\n", token );
+		queue_push(queue_clave_inicio,token);
+		token = strtok(NULL, comma);
+		   }
 
-	while(!queue_is_empty(queue_clave_inicio)){
-		token = queue_pop(queue_clave_inicio);
-		tamanio_clave = strlen(token);
-		send(socket,&tamanio_clave,sizeof(int),0);
-		send(socket,token,tamanio_clave,0);
-		ESI_GET(token,-1,0);
+		tamanio_queue = queue_size(queue_clave_inicio);
+		cantidad_bloqueadas_de_entrada = tamanio_queue;
+		send(socket,&mensaje_coord,1,0);
+		send(socket,&tamanio_queue,sizeof(tamanio_queue),0);
+
+		while(!queue_is_empty(queue_clave_inicio)){
+			token = queue_pop(queue_clave_inicio);
+			tamanio_clave = strlen(token);
+			send(socket,&tamanio_clave,sizeof(int),0);
+			send(socket,token,tamanio_clave,0);
+			ESI_GET(token,-1,0);
+		}
 	}
 	//free(token);
 	free(string);

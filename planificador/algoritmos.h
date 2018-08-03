@@ -39,6 +39,7 @@ sem_t sem_pausar_algoritmo;
 //pthread_mutex_t mutex_ejecucionn = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t mutex_ejecucion;
 t_dictionary * claves_bloqueadas;
+int contador_movidos_a_listos;
 int replanificar;
 int socket_coord;
 int esi_bloqueada_de_entrada;
@@ -48,6 +49,7 @@ int id_esi_global_kill;
 int alpha;
 int estimacion_inicial;
 int algoritmo_elegido;
+int cantidad_bloqueadas_de_entrada;
 enum {SJFSD , SJFCD, HRRN};
 
 void laWeaReplanificadoraFIFO(t_list *, t_list *);
@@ -55,7 +57,7 @@ void estadoListas();
 void fifo();
 bool identificador_ESI(void*);
 bool identificador_ESI_kill(void*);
-
+bool identificador_deadlock(void*);
 bool sort_by_estimacion(void*, void*);
 bool sort_by_aging(void *, void *);
 void element_destroyer(void *);
@@ -64,10 +66,10 @@ void sjfsd();
 void sjfcd();
 void hrrn();
 void ESI_GET(char *, int, unsigned char);
-void ESI_STORE(char *,int);
+void ESI_STORE(char *);
 void clave_dictionary_destroy(t_dictionary *data);
 void clave_destroy(claves *);
-void coord_communication(int,int,unsigned char,int);
+void coord_communication(int,int,unsigned char);
 bool identificador_clave(void *);
 bool identificador_clave_por_idESI(void * data);
 void nodo_lista_claves_destroyer(claves * data);
@@ -76,6 +78,8 @@ void desbloquear_del_diccionario(char *,int);
 void aplicarHRRN(ESI*);
 void obtenerPrioridad();
 void envejecerLista(int);
+void ESI_GET_BLOQUEAR(char * claveAEjecutar, int id_ESI, unsigned char respuesta_ESI, int socket);
+
 
 
 

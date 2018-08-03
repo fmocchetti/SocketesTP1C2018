@@ -31,7 +31,8 @@ int main (int argc, char *argv[])
 	sem_init(&sem_pausar_planificacion, 0, 1);
 	sem_init(&sem_pausar_algoritmo, 0, 1);
 
-	config_file = config_create("planificador.conf");
+	//config_file = config_create("planificador.conf");
+	config_file = config_create(argv[1]);
 	//Configuro los logs a utilizar
 	configure_logger();
 	//configure_logger_consola();
@@ -77,7 +78,9 @@ void generate_planning(){
 	switch(algoritmo_elegido) {
 			case SJFSD:
 				printf("Algoritmo seleccionado SJFSD\n");
+				esi_bloqueada_de_entrada=1;
 				get_keys_bloqueadas_de_entrada(socket_coord);
+				esi_bloqueada_de_entrada=0;
 				sjfsd();
 				break;
 			case SJFCD:

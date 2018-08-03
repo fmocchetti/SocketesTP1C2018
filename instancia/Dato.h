@@ -12,7 +12,7 @@ struct Dato{
 
 	char* posicionMemoria;
 	unsigned int cantidadDeBytes;
-	char* clave[40];
+	char* clave;
 };
 
 

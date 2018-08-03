@@ -10,13 +10,13 @@ int main(int argc, char **argv){
 	esi->cantidadDeLineas = 0;
 	esi->operacion = 0;
 	unsigned char mensaje_a_planificador_de_mi_info = 18;
+	unsigned char finalizacion = 200;
 	FILE *script;
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	bool respuestaCoordinador;
 	int numeroDeLinea = 0; //contador de lineas del parser
-	int sd;
 
 	configure_logger();
 
@@ -57,14 +57,14 @@ int main(int argc, char **argv){
 
 	//envio al planificador el id y la cantidad de lineas del archivo y espero la solicitud de ejecucion
 	send(socket_planificador, &mensaje_a_planificador_de_mi_info, 1, 0);
-    sd = send(socket_planificador, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
+    /*sd = send(socket_planificador, &esi->cantidadDeLineas, sizeof(esi->cantidadDeLineas), 0);
 	if (sd < 0){
 		printf("Error en enviar cantidadDeLineas al planificador\n");
 		exit(EXIT_FAILURE);
 	}
 
 	log_info(logger, "Le envie la cantidad de lineas al planificador");
-
+*/
 	//El machete estuvo aqui
 
 	read = getline(&line, &len, script);
@@ -117,6 +117,9 @@ int main(int argc, char **argv){
 		}
 
 	}
+	solicitudDeEjecucionPlanificador(socket_planificador);
+	send(socket_planificador, &finalizacion, 1, 0);
+	//finalizacionESI(socket_planificador);
 
 	fclose(script);
 
@@ -125,7 +128,9 @@ int main(int argc, char **argv){
 
 
 	free(esi);
+
 	return EXIT_SUCCESS;
+
 
 }
 
@@ -159,6 +164,29 @@ bool solicitudDeEjecucionPlanificador(int socket){
 		printf("ERROR bad address\n");
 		exit(EXIT_FAILURE);
 	}else if(buffer != 1){
+		log_error(logger, "El buffer es %d", buffer);
+		return false;
+	}
+
+	//Si el buffer es 1 entonces es OK (segun el protocolo)
+	return true;
+}
+
+bool finalizacionESI(int socket){
+
+	unsigned char buffer;
+	int rc;
+
+	//recivo del planificador el ok para mandar la esi al coordinador
+	rc = recv(socket, &buffer, sizeof(buffer), 0);
+
+	if (rc == 0){
+		printf("Desconexion con el Planificador\n");
+		exit(EXIT_FAILURE);
+	}else if (rc == -1){
+		printf("ERROR bad address\n");
+		exit(EXIT_FAILURE);
+	}else if(buffer != 58){
 		log_error(logger, "El buffer es %d", buffer);
 		return false;
 	}
@@ -217,10 +245,24 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 			return true;
 			break;
 		case ESI_BLOCK:
+			log_error(logger,"Esta clave ya esta tomada");
 			return false;
 			break;
-		case ESI_ERROR:
-			exit(EXIT_FAILURE);
+		case ESI_ERROR_TAM_CLAVE:
+			log_error(logger,"El tamanio de la clave excede los 40 caracteres");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_NO_IDEN:
+			log_error(logger,"La clave no existe en el sistema");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_INACC:
+			log_error(logger,"La clave existe en el sistema, pero la instancia en donde se encuentra esta caida");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_NO_BLOQ:
+			log_error(logger,"Intentando hacer un SET de una clave que no me pertenece");
+			return true;
 			break;
 		default:
 			exit(EXIT_FAILURE);

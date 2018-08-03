@@ -16,7 +16,7 @@
 typedef struct  {
   int socket_esi;
   int id_ESI;
-  int cantidadDeLineas;
+  int bloquear;
   float rafaga;
   int lineas_ejecutadas;
   float estimacion_rafaga;

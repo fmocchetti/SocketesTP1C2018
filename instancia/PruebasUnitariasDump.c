@@ -30,14 +30,14 @@ void testDumpear(){
 
 
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
+	SET_circular(-1,&posicionDeLectura,&tabla,&claveValor,storage,posicionFinDeMemoria);
 
 
 	strcpy(claveValor2.clave,otraClave);
 	claveValor2.valor = (char*)&otraMateria;
 	claveValor2.tamanioEntrada = tamanioEntradas;
 
-	SET_circular(&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
+	SET_circular(-1,&posicionDeLectura,&tabla,&claveValor2,storage,posicionFinDeMemoria);
 
 	configure_logger();
 
@@ -45,7 +45,7 @@ void testDumpear(){
 	respaldar_informacion(tabla,"",logger);
 
 
-	struct Dato* unDato = (struct Dato*)list_get(tabla,1);
+
 
 
 	CU_ASSERT_STRING_EQUAL(1,1);

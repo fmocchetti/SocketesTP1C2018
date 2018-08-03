@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <commons/log.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -23,6 +24,6 @@
 
 char* obtener_valor_de_archivo(char * dir , char* path);
 
-int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,t_list** tabla,t_dictionary* tablaDeRequeridas,char* posicionDeLectura,char* posicionFinDeMemoria,char* path);
+int levantar_archivos_a_memoria(char** storage,int tamanioEntrada,int cantidadEntradas,t_list** tabla,t_dictionary* tablaDeRequeridas,char** posicionDeLectura,char* posicionFinDeMemoria,char* path);
 
 #endif /* ELLEVANTADORDEARCHIVOS_H_ */

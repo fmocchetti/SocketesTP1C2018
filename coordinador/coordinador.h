@@ -24,7 +24,9 @@ int instancias_activas;
 int instancia_to_find;
 pthread_mutex_t mutex;
 sem_t mutex_planificador;
+sem_t mutex_esi;
 sem_t mutex_instancia;
+sem_t mutex_status;
 
 int listening_port;
 int cantidad_entradas;
@@ -39,6 +41,7 @@ typedef struct {
     unsigned char operacion;
     bool status;
     int entradasLibres;
+    int socket_instancia;
 } t_instancia;
 
 typedef struct {
