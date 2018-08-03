@@ -12,6 +12,7 @@ int main (int argc, char *argv[])
 
 	pthread_mutex_init(&mutex, NULL);
 	sem_init(&mutex_planificador, 1, 0);
+	sem_init(&mutex_esi, 1, 0);
 	sem_init(&mutex_instancia, 1, 0);
 	sem_init(&mutex_status, 1, 0);
 	instancia_to_find = total_instancias = 0;

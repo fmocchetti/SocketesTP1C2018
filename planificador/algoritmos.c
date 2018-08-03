@@ -1017,6 +1017,7 @@ void desbloquear_del_diccionario(char *claveAEjecutar, int socket){
 	 muevo a listos y replanifico. En caso de no encontrarla, sigue buscando la proxima, ya que dicha ESI no estaria bloqueada,
 	 por lo que replanificar no tendria sentido
 	 */
+			log_error(logger, "Lista de bloqueados %d", list_size(bloqueados));
 			resultado_lista_satisfy= list_any_satisfy(bloqueados, (void*)identificador_ESI);
 			while(key_existente!=1){
 					if(resultado_lista_satisfy ==1){
