@@ -44,6 +44,7 @@ void sjfsd(){
 	int resultado_lista_satisfy = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1){
 		ESI *nodo_lista_ejecucion = NULL;//(ESI*) malloc(sizeof(ESI));
@@ -116,24 +117,8 @@ void sjfsd(){
 			result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
 			if (result_connection <= 0) {
-				id_esi_global = nodo_lista_ejecucion->id_ESI;
-				resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				while(resultado_lista_satisfy == 1){
-					//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-					claves* clave_temporal = NULL;
-					clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-					ESI_STORE(clave_temporal->claveAEjecutar);
-					free(clave_temporal);
-					//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
-					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-				}
-
-				//hago close del socket
-
-				laWeaReplanificadoraFIFO(terminados,ejecucion);
-				_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-				break;
-				}
+				flag_desconexion_esi = 1;
+			}
 
 			//200 equivale a finalizacion de ESI en protocolo
 			if(contestacionESI == 200){
@@ -189,6 +174,25 @@ void sjfsd(){
 					}
 					break;
 				}
+				if(flag_desconexion_esi>0){
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
+					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_lista_satisfy == 1){
+						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = NULL;
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					}
+					//hago close del socket
+
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					flag_desconexion_esi = 0;
+					break;
+				}
 			}
 		}
 	}
@@ -214,6 +218,7 @@ void sjfcd(){
 	int replanificar_en_ejecucion = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -276,7 +281,6 @@ void sjfcd(){
 				break;
 			}
 
-
 				//Envio al socket de la esi que esta en ejecucion, que puede ejecutarse
 				result_send = send(nodo_lista_ejecucion->socket_esi, &permisoDeEjecucion, 1, 0);
 				if (result_send <= 0) {
@@ -289,23 +293,8 @@ void sjfcd(){
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
 				if (result_connection <= 0) {
-					id_esi_global = nodo_lista_ejecucion->id_ESI;
-					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-					while(resultado_lista_satisfy == 1){
-						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-						claves* clave_temporal = (claves*) malloc(sizeof(claves));
-						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-						ESI_STORE(clave_temporal->claveAEjecutar);
-						free(clave_temporal);
-						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-					}
-
-					//hago close del socket
-
-					laWeaReplanificadoraFIFO(terminados,ejecucion);
-					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-					break;
-					}
+					flag_desconexion_esi = 1;
+				}
 
 				//200 equivale a finalizacion de ESI en protocolo
 				if(contestacionESI == 200){
@@ -365,6 +354,25 @@ void sjfcd(){
 					}
 					break;
 				}
+				if(flag_desconexion_esi>0){
+					id_esi_global = nodo_lista_ejecucion->id_ESI;
+					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					while(resultado_lista_satisfy == 1){
+						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+						claves* clave_temporal = (claves*) malloc(sizeof(claves));
+						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+						ESI_STORE(clave_temporal->claveAEjecutar);
+						free(clave_temporal);
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+					}
+
+					//hago close del socket
+
+					laWeaReplanificadoraFIFO(terminados,ejecucion);
+					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+					flag_desconexion_esi = 0;
+					break;
+				}
 
 		}
 		//evaluo si aun existia una esi en ejecucion ante la peticion de replanificar
@@ -406,6 +414,7 @@ void hrrn(){
 	int result_send = 0;
 	int l = 0;
 	int resultado_satisfy = 0;
+	int flag_desconexion_esi = 0;
 
 	while(1) {
 		ESI *nodo_lista_ejecucion = NULL;
@@ -478,24 +487,9 @@ void hrrn(){
 				result_connection = recv(nodo_lista_ejecucion->socket_esi, &contestacionESI, 1,0);
 
 				if (result_connection <= 0) {
-					id_esi_global = nodo_lista_ejecucion->id_ESI;
-					resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-					while(resultado_lista_satisfy == 1){
-						//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
-						claves* clave_temporal = (claves*) malloc(sizeof(claves));
-						clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
-						ESI_STORE(clave_temporal->claveAEjecutar);
-						free(clave_temporal);
-						//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
-						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
-					}
-
-					//hago close del socket
-
-					laWeaReplanificadoraFIFO(terminados,ejecucion);
-					_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
-					break;
+					flag_desconexion_esi = 1;
 				}
+
 				if(contestacionESI == 200){
 					send(nodo_lista_ejecucion->socket_esi, &permisoDeFinalizacion,1,0);
 					log_warning(logger, "Ejecucion de la ESI '%d' terminada", nodo_lista_ejecucion->id_ESI);
@@ -548,6 +542,26 @@ void hrrn(){
 						if(list_size(listos) >= 1){
 							sem_post(&new_process);
 						}
+						break;
+					}
+					if(flag_desconexion_esi>0){
+						id_esi_global = nodo_lista_ejecucion->id_ESI;
+						resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						while(resultado_lista_satisfy == 1){
+							//elimino de lista de claves tomadas la ESI y hago un Store avisando que otra clave puede pasarse a ready
+							claves* clave_temporal = (claves*) malloc(sizeof(claves));
+							clave_temporal = list_remove_by_condition(claves_tomadas,identificador_clave_por_idESI);
+							ESI_STORE(clave_temporal->claveAEjecutar);
+							free(clave_temporal);
+							//list_remove_and_destroy_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI,(void*)clave_destroy);
+							resultado_lista_satisfy = list_any_satisfy(claves_tomadas, (void*)identificador_clave_por_idESI);
+						}
+
+						//hago close del socket
+
+						laWeaReplanificadoraFIFO(terminados,ejecucion);
+						_exit_with_error(nodo_lista_ejecucion->socket_esi, "La ESI en ejecucion murio", NULL);
+						flag_desconexion_esi = 0;
 						break;
 					}
 				}
