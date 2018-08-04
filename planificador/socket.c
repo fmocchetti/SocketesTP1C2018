@@ -88,10 +88,10 @@ void thread_on_connection(int listen_sd) {
           break;
         }
 
-        log_info(logger,"accept() ok");
+       // log_info(logger,"accept() ok");
         message = IDENTIFY;
 
-        printf("%d envie x bytes \n", (int) sizeof(message));
+       // printf("%d envie x bytes \n", (int) sizeof(message));
 
         send(new_sd , &message, sizeof(message), 0);
 

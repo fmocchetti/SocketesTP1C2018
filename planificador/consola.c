@@ -43,7 +43,7 @@ void consola(){
  	} else if(!strncmp(input,"status", 6)){
  		status();
  	} else if(!strncmp(input,"deadlock",8)){
- 		deadlock();
+ 		looking_for_deadlocks();
  	}
  	else{
  		log_error(logger,"mensaje incorrecto!\n");
@@ -78,32 +78,32 @@ void opciones(){
 
 void pausar(){
 	int sem_value = 0;
-	log_info(logger,"Entre a Pausa");
+	//log_info(logger,"Entre a Pausa");
 	sem_getvalue(&sem_pausar_planificacion,&sem_value);
 	if(sem_value<1){
-		log_info(logger,"La planificacion ya se encuentra pausada");
-		printf("La planificacion ya se encuentra pausada\n");
+		log_warning(logger,"La planificacion ya se encuentra pausada");
+		//printf("La planificacion ya se encuentra pausada\n");
 	}
 	else{
 		sem_wait(&sem_pausar_planificacion);
 		sem_wait(&sem_pausar_algoritmo);
-		log_info(logger,"Planificacion Pausada");
+		log_warning(logger,"Planificacion Pausada");
 	}
 
 }
 
 void continuar(){
 	int sem_value = 0;
-	log_info(logger,"Entre a Continuar");
+	//log_info(logger,"Entre a Continuar");
 	sem_getvalue(&sem_pausar_planificacion,&sem_value);
 	if(sem_value>0){
-		log_info(logger,"La planificacion no se encuentra pausada");
+		log_warning(logger,"La planificacion no se encuentra pausada");
 	}
 	else{
 		sem_post(&sem_pausar_planificacion);
 		sem_post(&sem_pausar_algoritmo);
 		sem_post(&sem_pausar_algoritmo);
-		log_info(logger,"Planificacion Restaurada");
+		log_warning(logger,"Planificacion Restaurada");
 	}
 }
 
@@ -167,7 +167,7 @@ void listar_tomadas(char* key){
 			log_info(logger,"El recurso se encuentra tomado actualmente por la ESI %d",clave_temporal->id_ESI);
 		}
 		else{
-			log_info(logger,"El recurso no se encuentra tomado actualmente por una ESI");
+			log_error(logger,"El recurso no se encuentra tomado actualmente por una ESI");
 		}
 	}
 
@@ -184,7 +184,7 @@ void listar_tomadas(char* key){
 		}
 	}
 	else{
-		log_info(logger,"No hay ESIs bloqueadas esperando al rescurso %s",key);
+		log_error(logger,"No hay ESIs bloqueadas esperando al rescurso %s",key);
 	}
 }
 
@@ -215,7 +215,7 @@ void kill(){
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
 	else{
-		log_info(logger,"NO ESTA EN EJECUCION");
+		log_error(logger,"NO ESTA EN EJECUCION");
 	}
 	resultado_satisfy = list_any_satisfy(listos, (void*)identificador_ESI_kill);
 	if(resultado_satisfy==1){
@@ -226,7 +226,7 @@ void kill(){
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
 	else{
-		log_info(logger,"NO ESTA EN LISTOS");
+		log_error(logger,"NO ESTA EN LISTOS");
 	}
 	resultado_satisfy = list_any_satisfy(bloqueados, (void*)identificador_ESI_kill);
 	if(resultado_satisfy==1){
@@ -237,7 +237,7 @@ void kill(){
 		log_error(logger,"El proceso %d murio viejo", id);
 	}
 	else{
-		log_info(logger,"NO ESTA EN BLOQUEADOS");
+		log_error(logger,"NO ESTA EN BLOQUEADOS");
 	}
 }
 
@@ -281,14 +281,10 @@ void status(int socket){
 		log_info(logger,"La instancia donde se guardaria seria %d",instanciaAGuardar);
 	}
 	else{
-		log_info(logger,"No hay instancias disponibles");
+		log_error(logger,"No hay instancias disponibles");
 	}
 	//Aviso cuales ESIs esperan esta clave
 	listar_tomadas(key);
-}
-
-void deadlock(){
-	looking_for_deadlocks();
 }
 
 void looking_for_deadlocks(){
@@ -300,6 +296,115 @@ void looking_for_deadlocks(){
 	int id_esi_a_buscar = 0;
 	int resultado_satisfy = 0;
 	int contabilidad_resultados = 0;
+	int flag_deadlock = 0;
+	t_list* lista_dicc;
+	t_list* lista_dicc2;
+	//claves* nodo_tomados = (claves*) malloc(sizeof(claves));
+	//claves* nodo_tomados2 = (claves*) malloc(sizeof(claves));
+	claves* nodo_tomados = NULL;
+	claves* nodo_tomados2 = NULL;
+
+	cantidad_lista_tomados = list_size(claves_tomadas);
+
+	printf("Cantidad tomados %d\n", cantidad_lista_tomados);
+
+	//void mostrar_tomados(claves* esi1) {
+		    //printf("%d\n",esi1->id_ESI);
+		   // printf("%s\n",esi1->claveAEjecutar);
+		    // }
+	//list_map(claves_tomadas, (void*) mostrar_tomados);
+
+	if(cantidad_lista_tomados > 0){
+		//reviso la cantidad de claves que hay tomadas
+		for(i= 0; i < cantidad_lista_tomados; i++){
+			//hago un list get de cada una mediante el for
+			nodo_tomados = list_get(claves_tomadas,i);
+			//printf("AGARRE = %d\n", nodo_tomados->id_ESI);
+			//printf("AGARRE = %s\n", nodo_tomados->claveAEjecutar);
+			//reviso si el diccionario tiene la key asociada
+			//if(nodo_tomados->id_ESI >0){////////
+			if(dictionary_has_key(claves_bloqueadas,nodo_tomados->claveAEjecutar)){
+				//si esta, agarro la lista asociada a la key
+				lista_dicc = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
+				cantidad_lista_dicc = list_size(lista_dicc);
+				//reviso cada entrada de la lista mediante el for, para ver si esta tomada por alguna esi
+				for(j= 0; j < cantidad_lista_dicc; j++){
+					//tomo el elemento de la lista, para buscarlo en la lista de claves tomadas
+					id_esi_a_buscar = (int)list_get(lista_dicc,j);
+					id_esi_global = id_esi_a_buscar;
+					resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
+					if(resultado_satisfy==1){
+						contabilidad_resultados = list_count_satisfying(claves_tomadas,(void*)identificador_clave_por_idESI);
+						t_list* lista_aux = list_create();
+						lista_aux = list_filter(claves_tomadas,(void*)identificador_clave_por_idESI );
+						for(k= 0; k < contabilidad_resultados; k++){
+							//si esta, busco el nodo de la lista que tiene dicha esi
+							nodo_tomados2 = list_get(lista_aux,k);
+
+							//log_info(logger,"El nodo de la lista encontrada es de la ESI %d", nodo_tomados2->id_ESI);
+							//log_info(logger,"La clave tomada por dicha ESI es '%s'", nodo_tomados2->claveAEjecutar);
+							//busco si existe una clave en el diccionario que tenga asociada dicha key
+							if(dictionary_has_key(claves_bloqueadas,nodo_tomados2->claveAEjecutar)){
+								//tomo la lista de esa entrada del diccionario y evaluo si existe la primer esi
+								lista_dicc2 = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
+								id_esi_global = nodo_tomados->id_ESI;
+								resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
+								if(resultado_satisfy == 1){
+									if(nodo_tomados->id_ESI!=nodo_tomados2->id_ESI){
+										log_warning(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados->id_ESI,nodo_tomados2->id_ESI);
+										flag_deadlock = 1;
+										break;
+									}
+									else{
+										log_debug(logger,"Evaluo el otro elemento");
+									}
+								}
+								else{
+									log_debug(logger,"Las claves no estan en deadlock");
+								}
+							}
+							else{
+								log_debug(logger,"No existe la clave '%s' en el diccionario, nadie la esta esperando",nodo_tomados2->claveAEjecutar);
+							}
+						}
+						//list_destroy_and_destroy_elements(lista_aux,(void*)nodo_lista_claves_destroyer);
+						list_destroy(lista_aux);
+					}
+					else{
+						log_debug(logger,"La clave '%s' no bloquea a ninguna otra", nodo_tomados2->claveAEjecutar);
+					}
+				}
+			}
+			else{
+				log_debug(logger,"No existe la clave '%s' en el diccionario, nadie la esta esperando",nodo_tomados->claveAEjecutar);
+			}
+		}
+		//list_map(claves_tomadas, (void*) mostrar_tomados);
+
+
+	}
+	else{
+		log_info(logger,"No hay nada en la lista de tomados");
+	}
+	if(flag_deadlock>0){
+		log_error(logger,"Se encontraron deadlocks en el sistema!!");
+	}
+	else{
+		log_warning(logger,"No se detectaron deadlocks :)");
+	}
+}
+
+	/*
+void looking_for_deadlocks(){
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	int cantidad_lista_tomados = 0;
+	int cantidad_lista_dicc = 0;
+	int id_esi_a_buscar = 0;
+	int resultado_satisfy = 0;
+	int contabilidad_resultados = 0;
+	int flag_deadlock = 0;
 	t_list* lista_dicc;
 	t_list* lista_dicc2;
 	t_list* lista_aux = list_create();
@@ -309,12 +414,142 @@ void looking_for_deadlocks(){
 	claves* nodo_tomados2 = NULL;
 
 	cantidad_lista_tomados = list_size(claves_tomadas);
+
+	printf("Cantidad tomados %d\n", cantidad_lista_tomados);
+
+	//void mostrar_tomados(claves* esi1) {
+		    //printf("%d\n",esi1->id_ESI);
+		   // printf("%s\n",esi1->claveAEjecutar);
+		    // }
+	//list_map(claves_tomadas, (void*) mostrar_tomados);
+
 	if(cantidad_lista_tomados > 0){
 		//reviso la cantidad de claves que hay tomadas
 		for(i= 0; i < cantidad_lista_tomados; i++){
 			//hago un list get de cada una mediante el for
 			nodo_tomados = list_get(claves_tomadas,i);
+			//printf("AGARRE = %d\n", nodo_tomados->id_ESI);
+			//printf("AGARRE = %s\n", nodo_tomados->claveAEjecutar);
 			//reviso si el diccionario tiene la key asociada
+			//if(nodo_tomados->id_ESI >0){////////
+			if(dictionary_has_key(claves_bloqueadas,nodo_tomados->claveAEjecutar)){
+				//si esta, agarro la lista asociada a la key
+				lista_dicc = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
+				cantidad_lista_dicc = list_size(lista_dicc);
+				//reviso cada entrada de la lista mediante el for, para ver si esta tomada por alguna esi
+				for(j= 0; j < cantidad_lista_dicc; j++){
+					//tomo el elemento de la lista, para buscarlo en la lista de claves tomadas
+					id_esi_a_buscar = (int)list_get(lista_dicc,j);
+					id_esi_global = id_esi_a_buscar;
+					resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
+					if(resultado_satisfy==1){
+						contabilidad_resultados = list_count_satisfying(claves_tomadas,(void*)identificador_clave_por_idESI);
+						lista_aux = list_filter(claves_tomadas,(void*)identificador_clave_por_idESI );//hace rlo mismo que aca pero abajo!!!
+						for(k= 0; k < contabilidad_resultados; k++){
+						//si esta, busco el nodo de la lista que tiene dicha esi
+							nodo_tomados2 = list_get(lista_aux,k); //hace rlo mismo que aca pero abajo!!!
+						//log_info(logger,"El nodo de la lista encontrada es de la ESI %d", nodo_tomados2->id_ESI);
+						//log_info(logger,"La clave tomada por dicha ESI es '%s'", nodo_tomados2->claveAEjecutar);
+						//busco si existe una clave en el diccionario que tenga asociada dicha key
+						if(dictionary_has_key(claves_bloqueadas,nodo_tomados2->claveAEjecutar)){
+							//tomo la lista de esa entrada del diccionario y evaluo si existe la primer esi
+							lista_dicc2 = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
+							id_esi_global = nodo_tomados->id_ESI;
+							resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
+							if(resultado_satisfy == 1){
+								if(nodo_tomados->id_ESI!=nodo_tomados2->id_ESI){
+									//log_warning(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados->id_ESI,nodo_tomados2->id_ESI);
+									log_warning(logger,"Existe deadlock");
+									flag_deadlock = 1;
+									break;
+								}
+								else{
+									nodo_tomados2 = list_remove_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI);
+									list_add(lista_aux,nodo_tomados2);
+									//i--;
+									cantidad_lista_tomados--;
+								}
+							}
+							else{
+								log_error(logger,"Las claves no estan en deadlock");
+							}
+						}
+						else{
+
+							nodo_tomados2 = list_remove_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI);
+							log_debug(logger,"La esi '%d' sera barrida", nodo_tomados2->id_ESI);
+							log_debug(logger,"La clave '%s' sera barrida", nodo_tomados2->claveAEjecutar);
+							list_add(lista_aux,nodo_tomados2);
+							if(i>0){
+								i--;
+							}
+																cantidad_lista_tomados--;
+							log_debug(logger,"BARRIENDO LAS DEMAS CLAVES DE LA ESI RELACIONADA EN BUSCA DE DEADLOCK");
+							//cantidad_lista_tomados = list_size(claves_tomadas);
+
+							//printf("Cantidad tomados %d\n", cantidad_lista_tomados);
+						}
+						}
+					}
+					else{
+						log_info(logger,"La clave '%s' no bloquea a ninguna otra", nodo_tomados2->claveAEjecutar);
+					}
+				}
+			}
+			else{
+				log_info(logger,"No existe la clave '%s' en el diccionario, nadie la esta esperando",nodo_tomados->claveAEjecutar);
+			}
+		}
+	}
+	else{
+		log_info(logger,"No hay nada en la lista de tomados");
+	}
+	if(flag_deadlock>0){
+		log_error(logger,"Se encontraron deadlocks en el sistema!!");
+	}
+	else{
+		log_warning(logger,"No se detectaron deathlocks :)");
+	}
+}
+*/
+/*
+void looking_for_deadlocks(){
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	int cantidad_lista_tomados = 0;
+	int cantidad_lista_dicc = 0;
+	int id_esi_a_buscar = 0;
+	int resultado_satisfy = 0;
+	int contabilidad_resultados = 0;
+	int flag_deadlock = 0;
+	t_list* lista_dicc;
+	t_list* lista_dicc2;
+	t_list* lista_aux = list_create();
+	//claves* nodo_tomados = (claves*) malloc(sizeof(claves));
+	//claves* nodo_tomados2 = (claves*) malloc(sizeof(claves));
+	claves* nodo_tomados = NULL;
+	claves* nodo_tomados2 = NULL;
+
+	cantidad_lista_tomados = list_size(claves_tomadas);
+
+	printf("Cantidad tomados %d\n", cantidad_lista_tomados);
+
+	//void mostrar_tomados(claves* esi1) {
+		    //printf("%d\n",esi1->id_ESI);
+		   // printf("%s\n",esi1->claveAEjecutar);
+		    // }
+	//list_map(claves_tomadas, (void*) mostrar_tomados);
+
+	if(cantidad_lista_tomados > 0){
+		//reviso la cantidad de claves que hay tomadas
+		for(i= 0; i < cantidad_lista_tomados; i++){
+			//hago un list get de cada una mediante el for
+			nodo_tomados = list_get(claves_tomadas,i);
+			//printf("AGARRE = %d\n", nodo_tomados->id_ESI);
+			//printf("AGARRE = %s\n", nodo_tomados->claveAEjecutar);
+			//reviso si el diccionario tiene la key asociada
+			//if(nodo_tomados->id_ESI >0){////////
 			if(dictionary_has_key(claves_bloqueadas,nodo_tomados->claveAEjecutar)){
 				//si esta, agarro la lista asociada a la key
 				lista_dicc = dictionary_get(claves_bloqueadas,nodo_tomados->claveAEjecutar);
@@ -341,7 +576,8 @@ void looking_for_deadlocks(){
 							resultado_satisfy = list_any_satisfy(claves_tomadas,(void*)identificador_clave_por_idESI);
 							if(resultado_satisfy == 1){
 								if(nodo_tomados->id_ESI!=nodo_tomados2->id_ESI){
-									log_info(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados->id_ESI,nodo_tomados2->id_ESI);
+									log_warning(logger,"Existe deadlock entre las esis %d y %d",nodo_tomados->id_ESI,nodo_tomados2->id_ESI);
+									flag_deadlock = 1;
 									break;
 								}
 								else{
@@ -352,32 +588,48 @@ void looking_for_deadlocks(){
 								}
 							}
 							else{
-								log_info(logger,"Las claves no estan en deadlock");
+								log_error(logger,"Las claves no estan en deadlock");
 							}
 						}
 						else{
 							nodo_tomados2 = list_remove_by_condition(claves_tomadas,(void*)identificador_clave_por_idESI);
-																list_add(lista_aux,nodo_tomados2);
-																i--;
+							log_debug(logger,"La esi '%d' sera barrida", nodo_tomados2->id_ESI);
+							log_debug(logger,"La clave '%s' sera barrida", nodo_tomados2->claveAEjecutar);
+							list_add(lista_aux,nodo_tomados2);
+							if(i>0){
+								i--;
+							}
 																cantidad_lista_tomados--;
-							log_info(logger,"BARRIENDO LAS DEMAS CLAVES DE LA ESI RELACIONADA EN BUSCA DE DEADLOCK");
+							log_debug(logger,"BARRIENDO LAS DEMAS CLAVES DE LA ESI RELACIONADA EN BUSCA DE DEADLOCK");
+							//cantidad_lista_tomados = list_size(claves_tomadas);
+
+							//printf("Cantidad tomados %d\n", cantidad_lista_tomados);
 						}
 						}
 					}
 					else{
-						//log_info(logger,"No existe ninguna clave de las bloqueadas tomando otra clave");
+						log_info(logger,"La clave '%s' no bloquea a ninguna otra", nodo_tomados2->claveAEjecutar);
 					}
 				}
 			}
 			else{
-				//log_info(logger,"No existe la clave '%s' en el diccionario, nadie la esta esperando",nodo_tomados->claveAEjecutar);
+				log_info(logger,"No existe la clave '%s' en el diccionario, nadie la esta esperando",nodo_tomados->claveAEjecutar);
 			}
-
 		}
+
 		list_add_all(claves_tomadas,lista_aux);
 		list_destroy(lista_aux);
+		//list_map(claves_tomadas, (void*) mostrar_tomados);
+
+
 	}
 	else{
 		log_info(logger,"No hay nada en la lista de tomados");
 	}
-}
+	if(flag_deadlock>0){
+		log_error(logger,"Se encontraron deadlocks en el sistema!!");
+	}
+	else{
+		log_warning(logger,"No se detectaron deathlocks :)");
+	}
+}*/

@@ -108,7 +108,7 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 
 
 					//compactar ajusta el puntero posicionDeLectura
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}
@@ -164,7 +164,7 @@ int SET_BSU(int server,t_list** tabla,char* primeraPosicionMemoria,
 						}
 
 						//compactar ajusta el puntero posicionDeLectura
-						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}

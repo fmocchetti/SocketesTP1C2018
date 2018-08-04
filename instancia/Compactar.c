@@ -85,7 +85,7 @@ bool hay_espacio_fragmentado_para_el_valor(t_list** tabla,struct ClaveValor* cv)
 return (cantEntradas > entradasNetasNecesarias);
 }
 
-int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada){
+int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada,int cantEntradas){
 
 	t_list* tablaAux = copiar(*tabla);
 
@@ -136,11 +136,11 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 			dato.posicionMemoria = posicionInsercion;
 			registrar_dato_en_tabla(tabla,&dato);
 			//unDato->posicionMemoria = posicionInsercion;
-			log_error(logger,"COMPACTAR LE ASIGNO %p",posicionInsercion);
+			//log_error(logger,"COMPACTAR LE ASIGNO %p",posicionInsercion);
 			free(a);
 
 		posicionInsercion += espacioAOcupar;
-		log_error(logger,"COMPACTAR punteroLectura %p",posicionInsercion);
+		//log_error(logger,"COMPACTAR punteroLectura %p",posicionInsercion);
 
 
 	}
@@ -148,6 +148,14 @@ int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntra
 	*posicionDeLectura = posicionInsercion;
 
 	log_info(logger,"COMPACTAR: Se compacto el storage");
+
+	log_info(logger,"COMPACTAR: El estado de la tabla es:");
+
+	printf("\n");
+
+	mostrar_tabla(*tabla,cantEntradas,tamEntrada,storage);
+
+	printf("\n");
 
 
 

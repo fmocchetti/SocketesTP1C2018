@@ -34,6 +34,7 @@
 #include "ElLevantadorDeArchivos.h"
 #include "Compactar.h"
 #include "BSU.h"
+#include "MostrarTabla.h"
 
 
 

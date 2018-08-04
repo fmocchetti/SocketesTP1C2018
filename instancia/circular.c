@@ -144,7 +144,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 					}
 
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}
@@ -193,7 +193,7 @@ int SET_circular(int server,char** posicionDeLectura,t_list** tabla,struct Clave
 
 
 					//compactar ajusta el puntero posicionDeLectura
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}

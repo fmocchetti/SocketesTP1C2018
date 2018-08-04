@@ -11,6 +11,7 @@ void _planificador(int socket_local) {
 	thread_planificador = planificador_create();
 
 	while(1) {
+		log_info(logger, "Espero solicitud planificador");
         rc = recv(socket_local, &identificador, 1, 0);
         if (rc == 0) {
         	log_error(logger, "  recv() failed");
@@ -42,7 +43,8 @@ void _planificador(int socket_local) {
 				log_info(logger, "Enviandole al planificador %d bytes", messageLength);
 				send(socket_local, mensajes, messageLength, 0);
 				free(mensajes);
-
+				sem_post(&mutex_esi);
+				log_info(logger, "Desbloqueo ESI");
 				break;
 			case PLANIFICADOR_BLOQUEAR:
 				recv(socket_local, &cantidad_claves, 4, 0);
@@ -58,13 +60,11 @@ void _planificador(int socket_local) {
 	        			clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
 	        			if(!clave_diccionario->tomada) {
 	            			clave_diccionario->tomada = true;
-	            			clave_diccionario->instancia = -1;
 	        			}
 	        		} else {
 	        			dictionary_put(diccionario_claves, clave, clave_create(0, -1, true));
 	        		}
-	        		sem_wait(&mutex_instancia);
-	        		log_info(logger, "Se almaceno la clave en la instancia %d", instancia_destino->id);
+	        		log_info(logger, "Se bloqueo la clave");
 	        		//free(clave);//////////TE AGREGUE ESTE FREE CHANGUI
 				}
 				break;
@@ -77,7 +77,6 @@ void _planificador(int socket_local) {
 				log_info(logger, "Voy a desbloquear la clave '%s'", clave);
 				if(dictionary_has_key(diccionario_claves, clave)) {
 					clave_diccionario = (t_clave * ) dictionary_get(diccionario_claves, clave);
-					store_clave(clave, clave_diccionario->instancia);
 					clave_diccionario->tomada = false;
 					log_error(logger, "clave desbloqueada");
 				} else {

@@ -12,6 +12,7 @@ int informar_planificador(char * clave, unsigned char status) {
 	thread_planificador->status = status;
 	sem_post(&mutex_planificador);
 	log_info(logger, "Desbloqueo planificador");
+	sem_wait(&mutex_esi);
 	return 0;
 }
 
@@ -70,12 +71,13 @@ t_instancia * distribuir(char * clave) {
 	char letra_inicial = 0;
 	int indice_busqueda = 0;
 
-	if(!total_instancias && !instancias_activas) {
+	log_info(logger, "Voy a buscar a que instancia se la debo asignar");
+
+
+	if(!total_instancias || !instancias_activas) {
 		log_error(logger, "No hay instancias disponibles, finalizando coordinador");
 		exit_gracefully(-1);
 	}
-
-	log_info(logger, "Voy a buscar a que instancia se la debo asignar");
 
 	switch(algoritmo_elegido) {
 		case EL:
@@ -160,17 +162,24 @@ int store_clave(char * clave, int instancia) {
 }
 
 int buscarMasLibre(int totalInstancias){
-	int posicionMasLibre;
+	int posicionMasLibre = -1;
 	int masEntradasLibres = 0;
+	int i = 0;
 	t_instancia *instanciaA;
-	totalInstancias--;
-	for(; totalInstancias >= 0; totalInstancias--){
-		instanciaA = list_get(list_instances, totalInstancias);
+	for(; i < totalInstancias; i++){
+		instanciaA = list_get(list_instances, i);
 		log_info(logger, "Consultando la instancia: %d, con %d entradas libres y esta en estado: %d", instanciaA->id, instanciaA->entradasLibres, instanciaA->status);
 		if(instanciaA->status && masEntradasLibres < instanciaA->entradasLibres){
-			posicionMasLibre = totalInstancias;
+			posicionMasLibre = i;
 			masEntradasLibres = instanciaA->entradasLibres;
 		}
 	}
+
+	if(posicionMasLibre == -1) {
+		log_error(logger, "No hay mas entradas libres");
+		algoritmo_elegido = EL;
+		posicionMasLibre = ultima_instancia;
+	}
+
 	return posicionMasLibre;
 }

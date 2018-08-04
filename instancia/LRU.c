@@ -173,7 +173,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 					}
 
-					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+					compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}
@@ -220,7 +220,7 @@ int SET_LRU(int server,t_list** registro,t_list** tabla,char* primeraPosicionMem
 
 						}
 
-						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada);
+						compactar(tabla,primeraPosicionMemoria,posicionDeLectura,claveValor->tamanioEntrada,claveValor->cantidadEntradas);
 
 
 				}

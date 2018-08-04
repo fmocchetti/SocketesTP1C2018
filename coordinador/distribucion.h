@@ -9,6 +9,7 @@
 #define DISTRIBUCION_H_
 
 enum {EL , KE, LSU};
+int algoritmo_elegido_anterior;
 int algoritmo_elegido;
 int ultima_instancia;
 int instanciaLSU;

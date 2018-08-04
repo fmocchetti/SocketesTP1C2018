@@ -17,7 +17,6 @@ int main(int argc, char **argv){
 	ssize_t read;
 	bool respuestaCoordinador;
 	int numeroDeLinea = 0; //contador de lineas del parser
-	int sd;
 
 	configure_logger();
 
@@ -246,10 +245,24 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 			return true;
 			break;
 		case ESI_BLOCK:
+			log_error(logger,"Esta clave ya esta tomada");
 			return false;
 			break;
-		case ESI_ERROR:
-			exit(EXIT_FAILURE);
+		case ESI_ERROR_TAM_CLAVE:
+			log_error(logger,"El tamanio de la clave excede los 40 caracteres");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_NO_IDEN:
+			log_error(logger,"La clave no existe en el sistema");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_INACC:
+			log_error(logger,"La clave existe en el sistema, pero la instancia en donde se encuentra esta caida");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_NO_BLOQ:
+			log_error(logger,"Intentando hacer un SET de una clave que no me pertenece");
+			return true;
 			break;
 		default:
 			exit(EXIT_FAILURE);
