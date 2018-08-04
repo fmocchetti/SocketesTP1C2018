@@ -58,9 +58,9 @@ int STORE(t_list** tabla,t_list** registro,char* primeraPosicionMemoria,char* cl
 	log_info(logger,"STORE:Se cierra el archivo");
 
 
+	int cantidEntradasAOcupar = calcular_cantidad_entradas(claveBuscada->cantidadDeBytes,tamanioEntrada);
 
-
-	registrar_acceso_a_entrada(registro,primeraPosicionMemoria,claveBuscada->posicionMemoria,tamanioEntrada);
+	registrar_acceso_a_entrada(registro,primeraPosicionMemoria,claveBuscada->posicionMemoria,tamanioEntrada,cantidEntradasAOcupar);
 
 	log_info(logger,"STORE:Se registro acceso a entrada");
 

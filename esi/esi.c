@@ -97,7 +97,7 @@ int main(int argc, char **argv){
 				        exit(EXIT_FAILURE);
 				}
 				//envio la esi y recivo la respuesta del coordinador
-				respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, esi);
+				respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, esi, false);
 				log_info(logger, "Coordinador me informo el estado: %d", respuestaCoordinador);
 				enviarRespuestaAlPlanificador(socket_planificador, respuestaCoordinador);
 				log_info(logger, "Informe al planificador");
@@ -113,6 +113,10 @@ int main(int argc, char **argv){
 		    destruir_operacion(parsed);
 		}else{
 			fprintf(stderr, "La linea <%s> no es valida\n", line);
+			respuestaCoordinador = envioYRespuestaCoordinador(socket_coordinador, esi, true);
+			log_info(logger, "Coordinador me informo el estado: %d", respuestaCoordinador);
+			enviarRespuestaAlPlanificador(socket_planificador, respuestaCoordinador);
+			log_info(logger, "Informe al planificador");
 		    exit(EXIT_FAILURE);
 		}
 
@@ -195,7 +199,7 @@ bool finalizacionESI(int socket){
 	return true;
 }
 
-bool envioYRespuestaCoordinador(int socket, ESI* esi){
+bool envioYRespuestaCoordinador(int socket, ESI* esi, bool estado_erroneo){
 	int sd, rc;
 	unsigned char identificador = esi->operacion;
 
@@ -208,17 +212,24 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 		size_valor = strlen(esi->valor);
 		messageLength += 4 + size_valor;
 	}
+	if(estado_erroneo) {
+		identificador = 206;
+		messageLength = 1;
+	} else {
+		identificador = esi->operacion + 21;
+	}
 
-	identificador = esi->operacion + 21;
 	char * mensajes = (char *) malloc (messageLength);
 	memcpy(mensajes, &(identificador), 1);
-	memcpy(mensajes+1, &size_clave, 4);
-	memcpy(mensajes+5, esi->clave, size_clave);
-	printf("Clave: %.*s %d %s\n", size_clave, mensajes+5,size_clave, esi->clave);
-	if(esi->operacion == SET) {
-		memcpy(mensajes+5+size_clave, &size_valor, 4);
-		memcpy(mensajes+9+size_clave, esi->valor, size_valor);
-		printf("Valor: %.*s %d %s\n", size_valor, mensajes+9+size_clave, size_valor, esi->valor);
+	if(!estado_erroneo) {
+		memcpy(mensajes+1, &size_clave, 4);
+		memcpy(mensajes+5, esi->clave, size_clave);
+		printf("Clave: %.*s %d %s\n", size_clave, mensajes+5,size_clave, esi->clave);
+		if(esi->operacion == SET) {
+			memcpy(mensajes+5+size_clave, &size_valor, 4);
+			memcpy(mensajes+9+size_clave, esi->valor, size_valor);
+			printf("Valor: %.*s %d %s\n", size_valor, mensajes+9+size_clave, size_valor, esi->valor);
+		}
 	}
 
 	log_info(logger, "Enviandole al coordinador %d bytes", messageLength);
@@ -262,6 +273,10 @@ bool envioYRespuestaCoordinador(int socket, ESI* esi){
 			break;
 		case ESI_ERROR_CLAVE_NO_BLOQ:
 			log_error(logger,"Intentando hacer un SET de una clave que no me pertenece");
+			return true;
+			break;
+		case ESI_ERROR_CLAVE_LARGA:
+			log_error(logger,"La clave tiene mas de 40 caracteres");
 			return true;
 			break;
 		default:

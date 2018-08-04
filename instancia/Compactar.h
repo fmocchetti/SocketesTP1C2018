@@ -12,8 +12,9 @@
 #include "socket_client.h"
 #include "ClaveValor.h"
 #include "circular.h"
+#include "MostrarTabla.h"
 
-int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada);
+int compactar(t_list** tabla,char* storage,char** posicionDeLectura,int tamEntrada,int cantEntradas);
 
 bool hay_espacio_fragmentado_para_el_valor(t_list** tabla,struct ClaveValor* cv);
 

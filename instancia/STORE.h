@@ -11,6 +11,7 @@
 #include "tabla.h"
 #include "Dump.h"
 #include "socket_client.h"
+#include "LRU.h"
 
 int STORE(t_list** tabla,t_list** registro,char* primeraPosicionMemoria,char* clave,char* ruta,int tamanioEntrada);
 

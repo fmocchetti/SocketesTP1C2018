@@ -10,6 +10,7 @@
 #include "Dato.h"
 #include "socket_client.h"
 
+
 void freeDeClaves(void*);
 
 void ordenar_tabla(t_list** tabla,char* primeraPosicion);
@@ -27,8 +28,6 @@ struct Dato* buscar_dato_por_posicion(t_list *tabla,char* posicion);
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato);
 
 int actualizarTabla(t_list** tabla, int bytesDeDatosASobreescribir);
-
-int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir);
 
 bool existe_la_clave(t_list *tabla,char* claveBuscada);
 

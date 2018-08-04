@@ -144,7 +144,7 @@ void thread_on_connection(int listen_sd) {
 			 _exit_with_error((int)socket, "id de mensaje incorrecto", NULL);
 			 _exit_with_error_and_close((int)socket_coord, "Desconexion con el coordinador, saliendo", NULL);
 		}
-
+		id_mensaje_esi = 0;
 /*
 		//Si lo es, sigo recibiendo
 

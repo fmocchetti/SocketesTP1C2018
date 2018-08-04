@@ -334,15 +334,18 @@ int main (int argc, char * argv[]) {
 				}
 
 				//MUESTRA ESTADO DE TABLA --------------------------------------------------------------------------------------------------
-
-				t_list* tablaAux = list_duplicate(tabla);
+				pthread_mutex_lock(&lock_dump);
+				//t_list* tablaAux = list_duplicate(tabla);
+				mostrar_tabla(tabla,init.cantidad_entradas,init.tamanioEntrada,storage);
+				pthread_mutex_unlock(&lock_dump);
 				//log_error(logger,"punteroLectura %p, punteroFin %p",posicionDeLectura,posicionFinDeMemoria);
+				/*
 				printf("\n");
 				log_info(logger,"ESTADO DE TABLA:");
 				printf("\n");
 				ordenar_tabla(&tablaAux,storage);
 				int i=0,z=0;
-				while(i<list_size(tabla)){
+				while(i<list_size(tablaAux)){
 
 
 					struct Dato* unDato = list_get(tablaAux,i);
@@ -383,16 +386,17 @@ int main (int argc, char * argv[]) {
 				printf("\n");
 				//liberar_recursos(&tablaAux);
 				free(tablaAux);
-
+*/
 				//FIN: MUESTRA ESTADO DE TABLA --------------------------------------------------------------------------------------------------
 
 				free(valor);
 
-
+				pthread_mutex_lock(&lock_dump);
 				int entradasOcupadas = entradas_ocupadas(tabla, init);
+				pthread_mutex_unlock(&lock_dump);
 				log_error(logger, "Entradas ocupadas %d", entradasOcupadas);
 				identificador = 204;
-				int tamanioBuffer = 1 + 4;
+				//int tamanioBuffer = 1 + 4;
 				log_info(logger, "INSTANCIA %d: Informo entradas ocupadas al coordinador",nombre);
 				char* buffer = (char*) malloc (5);
 				*buffer = 0;
@@ -447,7 +451,7 @@ int main (int argc, char * argv[]) {
 
 				pthread_mutex_lock(&lock_dump);
 
-				compactar(&tabla,storage,&posicionDeLectura,init.tamanioEntrada);
+				compactar(&tabla,storage,&posicionDeLectura,init.tamanioEntrada,init.cantidad_entradas);
 
 				pthread_mutex_unlock(&lock_dump);
 

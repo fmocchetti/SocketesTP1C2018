@@ -1,6 +1,7 @@
 #include "tabla.h"
 
 
+
 void* buscar(t_list *tabla,char* claveBuscada){
 
 	bool elemento_buscado(void* unDato) {
@@ -140,15 +141,6 @@ return 0;
 
 }
 
-
-int actualizar_tabla_LRU(t_list** tabla, int bytesDeDatosASobreescribir){
-
-
-
-
-return 0;
-}
-
 void registrar_dato_en_tabla(t_list** tabla,struct Dato* unDato){
 
 	struct Dato* otroDato = (struct Dato*)malloc(sizeof(struct Dato));
@@ -252,7 +244,7 @@ void liberar_recursos(t_list** tabla){
 
 		struct Dato* unDato = (struct Dato*)d;
 
-		free(unDato->clave);
+		//free(unDato->clave);
 		free(unDato);
 
 	}

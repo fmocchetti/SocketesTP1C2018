@@ -192,6 +192,12 @@ void _esi(int socket_local) {
         		instancia = NULL;
         	    break;
         	default:
+        		//informar esi error
+				identificador = ESI_ERROR_CLAVE_LARGA;
+				exit_status = true;
+				send(socket_local, &identificador, 1, 0);
+				log_error(logger, "La clave era demasiado larga");
+        		informar_planificador(clave, COORDINADOR_ERROR);
         		break;
         }
 	}
